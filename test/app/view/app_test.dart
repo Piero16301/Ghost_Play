@@ -3,7 +3,7 @@
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ghost_play/app/app.dart';
-import 'package:ghost_play/counter/counter.dart';
+import 'package:ghost_play/home/home.dart';
 
 void main() {
   group('App', () {

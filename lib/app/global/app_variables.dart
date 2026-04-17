@@ -1,0 +1,46 @@
+import 'package:flutter/material.dart';
+
+class AppVariables {
+  static const String appName = 'Omni Remote';
+  static const Color defaultBaseColor = Colors.green;
+  static const String defaultFontFamily = 'Poppins';
+
+  static const tabletMaxWidth = 500.0;
+  static const tabletMaxHeight = 400.0;
+
+  static Map<String, String> availableFonts = getAvailableFonts();
+
+  static Map<String, String> getAvailableFonts() {
+    return {
+      'Merriweather': 'Merriweather',
+      'Montserrat': 'Montserrat',
+      'Nunito': 'Nunito',
+      'Open Sans': 'Open Sans',
+      'Orbitron': 'Orbitron',
+      'Pacifico': 'Pacifico',
+      'Playfair Display': 'Playfair Display',
+      'Poppins': 'Poppins',
+      'Roboto': 'Roboto',
+      'Source Code Pro': 'Source Code Pro',
+    };
+  }
+
+  static const List<Locale> supportedLocales = [
+    Locale('en', 'US'),
+    Locale('es', 'ES'),
+    Locale('it', 'IT'),
+  ];
+}
+
+enum SnackBarType {
+  success,
+  error,
+  warning,
+  info
+  ;
+
+  bool get isSuccess => this == SnackBarType.success;
+  bool get isError => this == SnackBarType.error;
+  bool get isWarning => this == SnackBarType.warning;
+  bool get isInfo => this == SnackBarType.info;
+}
