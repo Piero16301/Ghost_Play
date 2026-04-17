@@ -1,0 +1,30 @@
+{
+    "flutter": {
+        "platforms": {
+            "android": {
+                "default": {
+                    "appId": "1:199136516945:android:df5b10d0e271451f061170",
+                    "fileOutput": "android/app/google-services.json",
+                    "projectId": "ghost-play-3f298"
+                }
+            },
+            "dart": {
+                "lib/firebase_options.dart": {
+                    "configurations": {
+                        "android": "1:199136516945:android:df5b10d0e271451f061170",
+                        "ios": "1:199136516945:ios:37bcbf35308ce698061170"
+                    },
+                    "projectId": "ghost-play-3f298"
+                }
+            },
+            "ios": {
+                "default": {
+                    "appId": "1:199136516945:ios:37bcbf35308ce698061170",
+                    "fileOutput": "ios/Runner/GoogleService-Info.plist",
+                    "projectId": "ghost-play-3f298",
+                    "uploadDebugSymbols": true
+                }
+            }
+        }
+    }
+}

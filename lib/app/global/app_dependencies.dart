@@ -20,6 +20,12 @@ void setupServiceLocator(Environment env) {
       () => AnalyticsService(
         analyticsRepository: ServiceFactory.getAnalyticsRepository(env),
       ),
+    )
+    // 2. Configuración y Almacenamiento Local
+    ..registerLazySingleton<LocalStorageService>(
+      () => LocalStorageService(
+        localStorageRepository: ServiceFactory.getLocalStorageRepository(env),
+      ),
     );
 }
 
@@ -50,6 +56,15 @@ class ServiceFactory {
         return MockAnalyticsRepository();
       case Environment.prod:
         return FirebaseAnalyticsRepository();
+    }
+  }
+
+  static LocalStorageRepository getLocalStorageRepository(Environment env) {
+    switch (env) {
+      case Environment.mock:
+        return MockLocalStorageRepository();
+      case Environment.prod:
+        return SharedPrefsLocalStorageRepository();
     }
   }
 }

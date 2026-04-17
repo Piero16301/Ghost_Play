@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "199136516945",
+    "project_id": "ghost-play-3f298",
+    "storage_bucket": "ghost-play-3f298.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:199136516945:android:df5b10d0e271451f061170",
+        "android_client_info": {
+          "package_name": "com.pmorales.ghost.play"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA_3IyHxcZWlKsklYqxP95qL7IrdHCdjNs"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
