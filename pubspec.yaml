@@ -20,10 +20,27 @@ dev_dependencies:
   bloc_lint: ^0.4.1
   bloc_test: ^10.0.0
   bloc_tools: ^0.1.0-dev.23
+  flutter_launcher_icons: ^0.14.4
   flutter_test:
     sdk: flutter
   mocktail: ^1.0.5
   very_good_analysis: ^10.2.0
+
+flutter_launcher_icons:
+  android: true
+  image_path_android: "assets/images/app-main-logo-rounded.png"
+  adaptive_icon_background: "#0F1B33"
+  adaptive_icon_foreground: "assets/images/app-main-logo-rounded.png"
+  ios: true
+  image_path_ios: "assets/images/app-main-logo-rounded.png"
+  remove_alpha_ios: true
+  background_color_ios: "#0F1B33"
+  web:
+    generate: false
+  windows:
+    generate: false
+  macos:
+    generate: false
 
 flutter:
   generate: true
