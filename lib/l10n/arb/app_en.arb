@@ -1,9 +1,21 @@
 {
     "@@locale": "en",
-    "settingsVersionTitle": "Version",
-    "@settingsVersionTitle": {},
-    "settingsUpdateDateTitle": "Last update",
-    "@settingsUpdateDateTitle": {},
+    "loadingAudiosError": "An error occurred while loading the audios, please restart the app",
+    "@loadingAudiosError": {},
+    "welcomeTitle": "Welcome to {appName}!",
+    "@welcomeTitle": {
+        "placeholders": {
+            "appName": {
+                "type": "String"
+            }
+        }
+    },
+    "welcomeDescription": "To listen to your voice notes, we need access to the WhatsApp audio folder",
+    "@welcomeDescription": {},
+    "givePermissionButton": "Grant permission",
+    "@givePermissionButton": {},
+    "noAudiosFound": "No audios found yet in the WhatsApp folder",
+    "@noAudiosFound": {},
     "settingsAppBarTitle": "Settings",
     "@settingsAppBarTitle": {},
     "settingsLanguageTitle": "Language",
@@ -63,5 +75,9 @@
     "settingsColorBlueGrey": "Blue grey",
     "@settingsColorBlueGrey": {},
     "settingsFontTitle": "Font",
-    "@settingsFontTitle": {}
+    "@settingsFontTitle": {},
+    "settingsVersionTitle": "Version",
+    "@settingsVersionTitle": {},
+    "settingsUpdateDateTitle": "Last update",
+    "@settingsUpdateDateTitle": {}
 }

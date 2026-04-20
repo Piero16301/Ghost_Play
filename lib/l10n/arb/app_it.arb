@@ -1,9 +1,21 @@
 {
     "@@locale": "it",
-    "settingsVersionTitle": "Versione",
-    "@settingsVersionTitle": {},
-    "settingsUpdateDateTitle": "Data di aggiornamento",
-    "@settingsUpdateDateTitle": {},
+    "loadingAudiosError": "Si è verificato un errore durante il caricamento degli audio, riavvia l'app",
+    "@loadingAudiosError": {},
+    "welcomeTitle": "Benvenuto in {appName}!",
+    "@welcomeTitle": {
+        "placeholders": {
+            "appName": {
+                "type": "String"
+            }
+        }
+    },
+    "welcomeDescription": "Per ascoltare i tuoi messaggi vocali, abbiamo bisogno di accedere alla cartella degli audio di WhatsApp",
+    "@welcomeDescription": {},
+    "givePermissionButton": "Concedi permesso",
+    "@givePermissionButton": {},
+    "noAudiosFound": "Non sono ancora stati trovati audios nella cartella di WhatsApp",
+    "@noAudiosFound": {},
     "settingsAppBarTitle": "Impostazioni",
     "@settingsAppBarTitle": {},
     "settingsLanguageTitle": "Lingua",
@@ -63,5 +75,9 @@
     "settingsColorBlueGrey": "Grigio bluastro",
     "@settingsColorBlueGrey": {},
     "settingsFontTitle": "Carattere",
-    "@settingsFontTitle": {}
+    "@settingsFontTitle": {},
+    "settingsVersionTitle": "Versione",
+    "@settingsVersionTitle": {},
+    "settingsUpdateDateTitle": "Data di aggiornamento",
+    "@settingsUpdateDateTitle": {}
 }

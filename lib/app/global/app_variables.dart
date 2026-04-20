@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 class AppVariables {
   static const String appName = 'Ghost Play';
@@ -10,6 +11,8 @@ class AppVariables {
 
   static const waVoiceNotesPath =
       'Android/media/com.whatsapp/WhatsApp/Media/WhatsApp Voice Notes';
+
+  static final DateFormat formatDateTime = DateFormat('dd/MM/yyyy HH:mm');
 
   static Map<String, String> availableFonts = getAvailableFonts();
 
