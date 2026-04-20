@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 
 class AppVariables {
-  static const String appName = 'Omni Remote';
+  static const String appName = 'Ghost Play';
   static const Color defaultBaseColor = Colors.green;
   static const String defaultFontFamily = 'Poppins';
 
   static const tabletMaxWidth = 500.0;
   static const tabletMaxHeight = 400.0;
+
+  static const waVoiceNotesPath =
+      'Android/media/com.whatsapp/WhatsApp/Media/WhatsApp Voice Notes';
 
   static Map<String, String> availableFonts = getAvailableFonts();
 
