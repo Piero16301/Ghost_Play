@@ -13,26 +13,24 @@ class AppCubit extends Cubit<AppState> {
   final AnalyticsService _analyticsService = getIt<AnalyticsService>();
 
   void initialize() {
-    // Setting the language to the device language if it's not set
-    final language = _localStorage.getLanguage();
+    var language = _localStorage.getLanguage();
     if (language == null) {
-      final deviceLanguage = AppVariables.supportedLocales.first;
-      _localStorage.saveLanguage(language: deviceLanguage);
+      language = AppVariables.supportedLocales.first;
+      _localStorage.saveLanguage(language: language);
     }
 
-    // Setting the theme to the device theme if it's not set
-    final theme = _localStorage.getTheme();
+    var theme = _localStorage.getTheme();
     if (theme == null) {
-      _localStorage.saveTheme(theme: ThemeMode.system);
+      theme = ThemeMode.system;
+      _localStorage.saveTheme(theme: theme);
     }
 
-    // Setting the base color to GREEN if it's not set
-    final baseColor = _localStorage.getBaseColor();
+    var baseColor = _localStorage.getBaseColor();
     if (baseColor == null) {
-      _localStorage.saveBaseColor(baseColor: AppVariables.defaultBaseColor);
+      baseColor = AppVariables.defaultBaseColor;
+      _localStorage.saveBaseColor(baseColor: baseColor);
     }
 
-    // Setting the font family to Popping if it's not set
     var fontFamily = _localStorage.getFontFamily();
     final isFontSupported =
         fontFamily != null &&
@@ -46,29 +44,19 @@ class AppCubit extends Cubit<AppState> {
       fontFamily = defaultFont;
     }
 
-    // Add custom keys for CrashService
+    // Update CrashService with finalized values
     _crashService
-      ..setCustomKey(
-        'language',
-        _localStorage.getLanguage()?.languageCode ??
-            AppVariables.supportedLocales.first.languageCode,
-      )
-      ..setCustomKey(
-        'theme',
-        _localStorage.getTheme()?.name ?? ThemeMode.system.name,
-      )
-      ..setCustomKey(
-        'fontFamily',
-        _localStorage.getFontFamily() ?? AppVariables.defaultFontFamily,
-      );
+      ..setCustomKey('language', language.languageCode)
+      ..setCustomKey('theme', theme.name)
+      ..setCustomKey('fontFamily', fontFamily);
 
-    // Emit state with all loaded configurations at once
+    // Emit consolidated state
     emit(
       state.copyWith(
-        language: _localStorage.getLanguage(),
-        theme: _localStorage.getTheme(),
-        baseColor: _localStorage.getBaseColor(),
-        fontFamily: _localStorage.getFontFamily(),
+        language: language,
+        theme: theme,
+        baseColor: baseColor,
+        fontFamily: fontFamily,
       ),
     );
   }

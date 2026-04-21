@@ -2,16 +2,23 @@ import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter/services.dart';
 import 'package:ghost_play/app/app.dart';
+import 'package:ghost_play/home/home.dart';
 import 'package:saf/saf.dart';
 
 part 'home_state.dart';
 
 class HomeCubit extends Cubit<HomeState> {
-  HomeCubit() : super(const HomeState());
+  HomeCubit({
+    StorageService? storageService,
+  }) : _storageService = storageService ?? MethodChannelStorageService(),
+       super(const HomeState());
+
+  final StorageService _storageService;
 
   Future<void> initStorage() async {
     try {
-      final persistedDirs = await Saf.getPersistedPermissionDirectories();
+      final persistedDirs = await _storageService
+          .getPersistedPermissionDirectories();
 
       if (persistedDirs != null && persistedDirs.isNotEmpty) {
         final saf = Saf(persistedDirs.first);
@@ -49,14 +56,9 @@ class HomeCubit extends Cubit<HomeState> {
     emit(state.copyWith(status: HomeStatus.loading));
 
     try {
-      const platform = MethodChannel('ghostplay/storage');
-
-      final result = await platform.invokeMethod<List<dynamic>>(
-        'getRecentAudios',
-        {
-          'uri': state.savedDirectoryUri,
-          'weeks': state.weeks,
-        },
+      final result = await _storageService.getRecentAudios(
+        uri: state.savedDirectoryUri,
+        weeks: state.weeks,
       );
 
       if (result != null) {
@@ -82,13 +84,13 @@ class HomeCubit extends Cubit<HomeState> {
   }
 
   Future<void> requestPermission() async {
-    final tempSaf = Saf(AppVariables.waVoiceNotesPath);
-    final isGranted = await tempSaf.getDirectoryPermission(
-      grantWritePermission: false,
+    final isGranted = await _storageService.getDirectoryPermission(
+      AppVariables.waVoiceNotesPath,
     );
 
     if (isGranted == true) {
-      final persistedDirs = await Saf.getPersistedPermissionDirectories();
+      final persistedDirs = await _storageService
+          .getPersistedPermissionDirectories();
       if (persistedDirs != null && persistedDirs.isNotEmpty) {
         final saf = Saf(persistedDirs.first);
         emit(

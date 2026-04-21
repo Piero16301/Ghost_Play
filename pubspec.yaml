@@ -1,6 +1,6 @@
 name: ghost_play
 description: Listen to voice notes without blue ticks. No last seen, zero traces.
-version: 1.0.0+1
+version: 1.0.0
 publish_to: none
 
 environment:

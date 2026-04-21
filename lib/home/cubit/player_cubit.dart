@@ -8,11 +8,13 @@ import 'package:just_audio/just_audio.dart' as ja;
 part 'player_state.dart';
 
 class PlayerCubit extends Cubit<PlayerState> {
-  PlayerCubit() : super(const PlayerState()) {
+  PlayerCubit({ja.AudioPlayer? audioPlayer})
+    : _audioPlayer = audioPlayer ?? ja.AudioPlayer(),
+      super(const PlayerState()) {
     _initSubscriptions();
   }
 
-  final ja.AudioPlayer _audioPlayer = ja.AudioPlayer();
+  final ja.AudioPlayer _audioPlayer;
   StreamSubscription<Duration>? _positionSubscription;
   StreamSubscription<Duration?>? _durationSubscription;
   StreamSubscription<ja.PlayerState>? _playerStateSubscription;

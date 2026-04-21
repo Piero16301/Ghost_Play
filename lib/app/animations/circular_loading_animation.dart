@@ -60,7 +60,7 @@ class _CircularLoadingAnimationState extends State<CircularLoadingAnimation>
             builder: (context, child) {
               return CustomPaint(
                 size: Size(widget.size * 0.8, widget.size * 0.8),
-                painter: _LoadingPainter(
+                painter: LoadingPainter(
                   progress: _controller.value,
                   outerColor: widget.outerCircleColor,
                   innerColor: widget.innerCircleColor,
@@ -75,8 +75,8 @@ class _CircularLoadingAnimationState extends State<CircularLoadingAnimation>
   }
 }
 
-class _LoadingPainter extends CustomPainter {
-  _LoadingPainter({
+class LoadingPainter extends CustomPainter {
+  LoadingPainter({
     required this.progress,
     required this.outerColor,
     required this.innerColor,
@@ -127,7 +127,7 @@ class _LoadingPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(_LoadingPainter oldDelegate) {
+  bool shouldRepaint(LoadingPainter oldDelegate) {
     return oldDelegate.progress != progress ||
         oldDelegate.outerColor != outerColor ||
         oldDelegate.innerColor != innerColor;

@@ -43,12 +43,12 @@ class PlayerState extends Equatable {
 
   @override
   List<Object?> get props => [
-        status,
-        isVisible,
-        currentAudio,
-        position,
-        duration,
-        errorMessage,
-        playbackSpeed,
-      ];
+    status,
+    isVisible,
+    currentAudio,
+    position,
+    duration,
+    errorMessage,
+    playbackSpeed,
+  ];
 }
