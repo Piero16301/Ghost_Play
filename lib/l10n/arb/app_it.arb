@@ -16,6 +16,24 @@
     "@givePermissionButton": {},
     "noAudiosFound": "Non sono ancora stati trovati audios nella cartella di WhatsApp",
     "@noAudiosFound": {},
+    "audiosFound": "{audios, plural, =1{1 audio} other{{audios} audios}}",
+    "@audiosFound": {
+        "placeholders": {
+            "audios": {
+                "type": "int"
+            }
+        }
+    },
+    "weeksFilter": "{weeks, plural, =1{Ultima settimana} other{Ultime {weeks} settimane}}",
+    "@weeksFilter": {
+        "placeholders": {
+            "weeks": {
+                "type": "int"
+            }
+        }
+    },
+    "weeksFilterTitle": "Filtra le ultime settimane",
+    "@weeksFilterTitle": {},
     "settingsAppBarTitle": "Impostazioni",
     "@settingsAppBarTitle": {},
     "settingsLanguageTitle": "Lingua",

@@ -24,6 +24,7 @@ dependencies:
   go_router: ^17.2.1
   hugeicons: ^1.1.6
   intl: ^0.20.2
+  just_audio: ^0.10.5
   package_info_plus: ^10.0.0
   saf: ^1.0.4
   shared_preferences: ^2.5.5

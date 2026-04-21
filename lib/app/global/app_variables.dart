@@ -12,7 +12,9 @@ class AppVariables {
   static const waVoiceNotesPath =
       'Android/media/com.whatsapp/WhatsApp/Media/WhatsApp Voice Notes';
 
-  static final DateFormat formatDateTime = DateFormat('dd/MM/yyyy HH:mm');
+  static final DateFormat formatDateTime = DateFormat('dd/MM/yyyy hh:mm a');
+
+  static final List<int> weeksOptions = [1, 2, 3, 4, 5, 6, 7, 8];
 
   static Map<String, String> availableFonts = getAvailableFonts();
 

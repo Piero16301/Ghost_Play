@@ -21,7 +21,6 @@ class MainActivity : FlutterActivity() {
 
                 val uriString = call.argument<String>("uri")
                 val weeksToScan = call.argument<Int>("weeks") ?: 2
-                val maxFiles = call.argument<Int>("maxFiles") ?: 50
 
                 if (uriString == null) {
                     result.error("INVALID_URI", "URI is null", null)
@@ -110,7 +109,7 @@ class MainActivity : FlutterActivity() {
                                     }
                                 }
 
-                                val topFiles = allOpusFiles.sortedByDescending { it.lastModified }.take(maxFiles)
+                                val topFiles = allOpusFiles.sortedByDescending { it.lastModified }
 
                                 val resultList = mutableListOf<Map<String, Any>>()
                                 val retriever = MediaMetadataRetriever()

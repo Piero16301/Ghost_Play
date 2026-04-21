@@ -1,6 +1,5 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:ghost_play/app/app.dart';
 import 'package:saf/saf.dart';
@@ -38,10 +37,7 @@ class HomeCubit extends Cubit<HomeState> {
     }
   }
 
-  Future<void> loadAudios({
-    int weeks = 2,
-    int maxFiles = 100,
-  }) async {
+  Future<void> loadAudios() async {
     if (state.saf == null) {
       return;
     }
@@ -59,8 +55,7 @@ class HomeCubit extends Cubit<HomeState> {
         'getRecentAudios',
         {
           'uri': state.savedDirectoryUri,
-          'weeks': weeks,
-          'maxFiles': maxFiles,
+          'weeks': state.weeks,
         },
       );
 
@@ -71,7 +66,6 @@ class HomeCubit extends Cubit<HomeState> {
                   AudioMetadata.fromMap(Map<String, dynamic>.from(data as Map)),
             )
             .toList();
-        debugPrint('Se han encontrado ${loadedAudios.length} audios');
 
         emit(
           state.copyWith(
@@ -109,5 +103,11 @@ class HomeCubit extends Cubit<HomeState> {
         await loadAudios();
       }
     }
+  }
+
+  Future<void> setWeeks(int weeks) async {
+    if (weeks == state.weeks) return;
+    emit(state.copyWith(weeks: weeks));
+    await loadAudios();
   }
 }

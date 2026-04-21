@@ -34,6 +34,7 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
     final hasPermission = context.read<HomeCubit>().state.hasPermission;
     if (state == AppLifecycleState.resumed && hasPermission) {
       unawaited(context.read<HomeCubit>().loadAudios());
+      unawaited(context.read<PlayerCubit>().closePlayer());
     }
   }
 
@@ -141,40 +142,169 @@ class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
                 );
               }
 
-              return RefreshIndicator(
-                onRefresh: context.read<HomeCubit>().loadAudios,
-                child: ListView.builder(
-                  itemCount: state.audios.length,
-                  itemBuilder: (context, index) {
-                    final audio = state.audios[index];
-                    return ListTile(
-                      leading: HugeIcon(
-                        icon: HugeIcons.strokeRoundedAudioWave01,
-                        strokeWidth: 2,
-                        color: Theme.of(context).colorScheme.primary,
+              return Stack(
+                alignment: AlignmentGeometry.bottomCenter,
+                children: [
+                  Column(
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Row(
+                            spacing: 4,
+                            children: [
+                              const HugeIcon(
+                                icon: HugeIcons.strokeRoundedAudioWave02,
+                                strokeWidth: 2,
+                              ),
+                              Text(l10n.audiosFound(state.audios.length)),
+                            ],
+                          ),
+                          InkWell(
+                            onTap: () => _showWeeksMenu(context, state.weeks),
+                            borderRadius: BorderRadius.circular(8),
+                            child: Chip(
+                              padding: const EdgeInsets.all(4),
+                              backgroundColor: Theme.of(
+                                context,
+                              ).colorScheme.secondaryContainer,
+                              side: BorderSide(
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.secondaryContainer,
+                              ),
+                              label: Row(
+                                spacing: 4,
+                                children: [
+                                  const HugeIcon(
+                                    icon: HugeIcons.strokeRoundedCalendar02,
+                                  ),
+                                  Text(l10n.weeksFilter(state.weeks)),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
-                      title: Text(
-                        audio.name,
-                        style: Theme.of(context).textTheme.bodyLarge,
-                      ),
-                      subtitle: Text(
-                        AppVariables.formatDateTime.format(audio.date),
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          fontWeight: FontWeight.w600,
+                      Expanded(
+                        child: RefreshIndicator(
+                          onRefresh: context.read<HomeCubit>().loadAudios,
+                          child: ListView.builder(
+                            physics: const BouncingScrollPhysics(),
+                            itemCount: state.audios.length,
+                            itemBuilder: (context, index) {
+                              final audio = state.audios[index];
+                              return ListTile(
+                                leading: HugeIcon(
+                                  icon: HugeIcons.strokeRoundedAudioWave01,
+                                  strokeWidth: 2,
+                                  color: Theme.of(context).colorScheme.primary,
+                                ),
+                                title: Text(
+                                  audio.name.split('.').first,
+                                  style: Theme.of(context).textTheme.bodyLarge,
+                                ),
+                                subtitle: Text(
+                                  AppVariables.formatDateTime.format(
+                                    audio.date,
+                                  ),
+                                  style: Theme.of(context).textTheme.bodySmall
+                                      ?.copyWith(
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                ),
+                                trailing: Text(
+                                  audio.formattedDuration,
+                                  style: Theme.of(context).textTheme.bodySmall
+                                      ?.copyWith(
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                ),
+                                onTap: () => context
+                                    .read<PlayerCubit>()
+                                    .playAudio(audio),
+                              );
+                            },
+                          ),
                         ),
                       ),
-                      trailing: Text(
-                        audio.formattedDuration,
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      onTap: () {},
-                    );
-                  },
-                ),
+                    ],
+                  ),
+                  const MiniPlayer(),
+                ],
               );
             },
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _showWeeksMenu(BuildContext context, int currentWeeks) {
+    final l10n = AppLocalizations.of(context);
+
+    unawaited(
+      showModalBottomSheet<void>(
+        context: context,
+        isScrollControlled: true,
+        builder: (modalContext) => DraggableScrollableSheet(
+          initialChildSize: 0.4,
+          minChildSize: 0.3,
+          maxChildSize: 0.9,
+          expand: false,
+          builder: (dragContext, scrollController) => Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: Theme.of(context).scaffoldBackgroundColor,
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(24),
+              ),
+            ),
+            child: Column(
+              children: [
+                Center(
+                  child: Container(
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).buttonTheme.colorScheme!.primary,
+                      borderRadius: const BorderRadius.all(Radius.circular(2)),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  l10n.weeksFilterTitle,
+                  style: Theme.of(context).textTheme.titleLarge,
+                ),
+                const SizedBox(height: 16),
+                Expanded(
+                  child: SingleChildScrollView(
+                    controller: scrollController,
+                    child: RadioGroup<int?>(
+                      groupValue: currentWeeks,
+                      onChanged: (value) {
+                        unawaited(
+                          context.read<HomeCubit>().setWeeks(value ?? 1),
+                        );
+                        Navigator.pop(context);
+                      },
+                      child: Column(
+                        children: AppVariables.weeksOptions.map((weeks) {
+                          return RadioListTile<int?>(
+                            title: Text(l10n.weeksFilter(weeks)),
+                            value: weeks,
+                            contentPadding: EdgeInsets.zero,
+                          );
+                        }).toList(),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20),
+              ],
+            ),
           ),
         ),
       ),

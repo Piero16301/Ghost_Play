@@ -20,6 +20,7 @@ class HomeState extends Equatable {
     this.hasPermission = false,
     this.savedDirectoryUri = '',
     this.audios = const <AudioMetadata>[],
+    this.weeks = 1,
   });
 
   final HomeStatus status;
@@ -27,6 +28,7 @@ class HomeState extends Equatable {
   final bool hasPermission;
   final String savedDirectoryUri;
   final List<AudioMetadata> audios;
+  final int weeks;
 
   HomeState copyWith({
     HomeStatus? status,
@@ -34,6 +36,7 @@ class HomeState extends Equatable {
     bool? hasPermission,
     String? savedDirectoryUri,
     List<AudioMetadata>? audios,
+    int? weeks,
   }) {
     return HomeState(
       status: status ?? this.status,
@@ -41,6 +44,7 @@ class HomeState extends Equatable {
       hasPermission: hasPermission ?? this.hasPermission,
       savedDirectoryUri: savedDirectoryUri ?? this.savedDirectoryUri,
       audios: audios ?? this.audios,
+      weeks: weeks ?? this.weeks,
     );
   }
 
@@ -51,5 +55,6 @@ class HomeState extends Equatable {
     hasPermission,
     savedDirectoryUri,
     audios,
+    weeks,
   ];
 }
