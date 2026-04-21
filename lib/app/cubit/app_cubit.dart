@@ -11,54 +11,60 @@ class AppCubit extends Cubit<AppState> {
   final LocalStorageService _localStorage = getIt<LocalStorageService>();
   final CrashService _crashService = getIt<CrashService>();
   final AnalyticsService _analyticsService = getIt<AnalyticsService>();
+  final PerformanceService _performanceService = getIt<PerformanceService>();
 
   void initialize() {
-    var language = _localStorage.getLanguage();
-    if (language == null) {
-      language = AppVariables.supportedLocales.first;
-      _localStorage.saveLanguage(language: language);
+    final trace = _performanceService.startTrace('app_cubit_initialize');
+    try {
+      var language = _localStorage.getLanguage();
+      if (language == null) {
+        language = AppVariables.supportedLocales.first;
+        _localStorage.saveLanguage(language: language);
+      }
+
+      var theme = _localStorage.getTheme();
+      if (theme == null) {
+        theme = ThemeMode.system;
+        _localStorage.saveTheme(theme: theme);
+      }
+
+      var baseColor = _localStorage.getBaseColor();
+      if (baseColor == null) {
+        baseColor = AppVariables.defaultBaseColor;
+        _localStorage.saveBaseColor(baseColor: baseColor);
+      }
+
+      var fontFamily = _localStorage.getFontFamily();
+      final isFontSupported =
+          fontFamily != null &&
+          AppVariables.availableFonts.containsValue(fontFamily);
+
+      if (!isFontSupported) {
+        final defaultFont =
+            AppVariables.availableFonts[AppVariables.defaultFontFamily] ??
+            AppVariables.defaultFontFamily;
+        _localStorage.saveFontFamily(fontFamily: defaultFont);
+        fontFamily = defaultFont;
+      }
+
+      // Update CrashService with finalized values
+      _crashService
+        ..setCustomKey('language', language.languageCode)
+        ..setCustomKey('theme', theme.name)
+        ..setCustomKey('fontFamily', fontFamily);
+
+      // Emit consolidated state
+      emit(
+        state.copyWith(
+          language: language,
+          theme: theme,
+          baseColor: baseColor,
+          fontFamily: fontFamily,
+        ),
+      );
+    } finally {
+      _performanceService.stopTrace(trace);
     }
-
-    var theme = _localStorage.getTheme();
-    if (theme == null) {
-      theme = ThemeMode.system;
-      _localStorage.saveTheme(theme: theme);
-    }
-
-    var baseColor = _localStorage.getBaseColor();
-    if (baseColor == null) {
-      baseColor = AppVariables.defaultBaseColor;
-      _localStorage.saveBaseColor(baseColor: baseColor);
-    }
-
-    var fontFamily = _localStorage.getFontFamily();
-    final isFontSupported =
-        fontFamily != null &&
-        AppVariables.availableFonts.containsValue(fontFamily);
-
-    if (!isFontSupported) {
-      final defaultFont =
-          AppVariables.availableFonts[AppVariables.defaultFontFamily] ??
-          AppVariables.defaultFontFamily;
-      _localStorage.saveFontFamily(fontFamily: defaultFont);
-      fontFamily = defaultFont;
-    }
-
-    // Update CrashService with finalized values
-    _crashService
-      ..setCustomKey('language', language.languageCode)
-      ..setCustomKey('theme', theme.name)
-      ..setCustomKey('fontFamily', fontFamily);
-
-    // Emit consolidated state
-    emit(
-      state.copyWith(
-        language: language,
-        theme: theme,
-        baseColor: baseColor,
-        fontFamily: fontFamily,
-      ),
-    );
   }
 
   void changeLanguage({required Locale language}) {

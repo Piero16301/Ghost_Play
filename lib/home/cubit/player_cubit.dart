@@ -15,6 +15,9 @@ class PlayerCubit extends Cubit<PlayerState> {
   }
 
   final ja.AudioPlayer _audioPlayer;
+  final AnalyticsService _analyticsService = getIt<AnalyticsService>();
+  final CrashService _crashService = getIt<CrashService>();
+  final PerformanceService _performanceService = getIt<PerformanceService>();
   StreamSubscription<Duration>? _positionSubscription;
   StreamSubscription<Duration?>? _durationSubscription;
   StreamSubscription<ja.PlayerState>? _playerStateSubscription;
@@ -63,7 +66,9 @@ class PlayerCubit extends Cubit<PlayerState> {
   Future<void> playAudio(AudioMetadata audio) async {
     if (state.currentAudio?.uri == audio.uri) return;
 
+    final trace = _performanceService.startTrace('player_cubit_play_audio');
     try {
+      _analyticsService.logEvent(name: 'play_audio');
       await _audioPlayer.stop();
 
       emit(
@@ -82,22 +87,33 @@ class PlayerCubit extends Cubit<PlayerState> {
       );
 
       await _audioPlayer.setSpeed(1);
+      _crashService.log('Playing audio: ${audio.uri}');
       await _audioPlayer.play();
-    } on Exception catch (e) {
+    } on Exception catch (e, stackTrace) {
+      _crashService.recordError(
+        e,
+        stackTrace,
+        reason: 'Error playing audio: ${audio.uri}',
+      );
       emit(
         state.copyWith(
           status: PlayerStatus.error,
           errorMessage: e.toString(),
         ),
       );
+    } finally {
+      _performanceService.stopTrace(trace);
     }
   }
 
   Future<void> pause() async {
+    _analyticsService.logEvent(name: 'pause_audio');
+    _crashService.log('Audio paused manually');
     await _audioPlayer.pause();
   }
 
   Future<void> resume() async {
+    _analyticsService.logEvent(name: 'resume_audio');
     if (state.status == PlayerStatus.completed) {
       await _audioPlayer.seek(Duration.zero);
     }
@@ -105,6 +121,11 @@ class PlayerCubit extends Cubit<PlayerState> {
   }
 
   Future<void> seek(Duration position) async {
+    _analyticsService.logEvent(
+      name: 'seek_audio',
+      parameters: {'position_seconds': position.inSeconds},
+    );
+    _crashService.log('Seeking to ${position.inSeconds} seconds');
     await _audioPlayer.seek(position);
   }
 
@@ -118,11 +139,16 @@ class PlayerCubit extends Cubit<PlayerState> {
       nextSpeed = 1.0;
     }
 
+    _analyticsService.logEvent(
+      name: 'change_speed',
+      parameters: {'speed': nextSpeed},
+    );
     await _audioPlayer.setSpeed(nextSpeed);
     emit(state.copyWith(playbackSpeed: nextSpeed));
   }
 
   Future<void> closePlayer() async {
+    _analyticsService.logEvent(name: 'close_player');
     await _audioPlayer.stop();
     emit(const PlayerState());
   }

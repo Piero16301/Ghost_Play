@@ -14,13 +14,18 @@ class HomeCubit extends Cubit<HomeState> {
        super(const HomeState());
 
   final StorageService _storageService;
+  final AnalyticsService _analyticsService = getIt<AnalyticsService>();
+  final CrashService _crashService = getIt<CrashService>();
+  final PerformanceService _performanceService = getIt<PerformanceService>();
 
   Future<void> initStorage() async {
+    final trace = _performanceService.startTrace('home_cubit_init_storage');
     try {
       final persistedDirs = await _storageService
           .getPersistedPermissionDirectories();
 
       if (persistedDirs != null && persistedDirs.isNotEmpty) {
+        _crashService.log('Persisted directories found, loading audios.');
         final saf = Saf(persistedDirs.first);
         emit(
           state.copyWith(
@@ -33,14 +38,22 @@ class HomeCubit extends Cubit<HomeState> {
 
         await loadAudios();
       } else {
+        _crashService.log('No persisted directories, need permission.');
         emit(
           state.copyWith(
             hasPermission: false,
           ),
         );
       }
-    } on Exception catch (_) {
+    } on Exception catch (e, stackTrace) {
+      _crashService.recordError(
+        e,
+        stackTrace,
+        reason: 'Failed to init storage',
+      );
       emit(state.copyWith(status: HomeStatus.failure));
+    } finally {
+      _performanceService.stopTrace(trace);
     }
   }
 
@@ -55,6 +68,7 @@ class HomeCubit extends Cubit<HomeState> {
 
     emit(state.copyWith(status: HomeStatus.loading));
 
+    final trace = _performanceService.startTrace('home_cubit_load_audios');
     try {
       final result = await _storageService.getRecentAudios(
         uri: state.savedDirectoryUri,
@@ -69,6 +83,7 @@ class HomeCubit extends Cubit<HomeState> {
             )
             .toList();
 
+        _crashService.log('Successfully loaded ${loadedAudios.length} audios.');
         emit(
           state.copyWith(
             status: HomeStatus.success,
@@ -76,14 +91,27 @@ class HomeCubit extends Cubit<HomeState> {
           ),
         );
       }
-    } on PlatformException catch (_) {
+    } on PlatformException catch (e, stackTrace) {
+      _crashService.recordError(
+        e,
+        stackTrace,
+        reason: 'PlatformException loading audios',
+      );
       emit(state.copyWith(status: HomeStatus.failure));
-    } on Exception catch (_) {
+    } on Exception catch (e, stackTrace) {
+      _crashService.recordError(
+        e,
+        stackTrace,
+        reason: 'Exception loading audios',
+      );
       emit(state.copyWith(status: HomeStatus.failure));
+    } finally {
+      _performanceService.stopTrace(trace);
     }
   }
 
   Future<void> requestPermission() async {
+    _analyticsService.logEvent(name: 'request_permission_action');
     final isGranted = await _storageService.getDirectoryPermission(
       AppVariables.waVoiceNotesPath,
     );
@@ -93,6 +121,7 @@ class HomeCubit extends Cubit<HomeState> {
           .getPersistedPermissionDirectories();
       if (persistedDirs != null && persistedDirs.isNotEmpty) {
         final saf = Saf(persistedDirs.first);
+        _crashService.log('Permission granted by user.');
         emit(
           state.copyWith(
             status: HomeStatus.success,
@@ -104,11 +133,18 @@ class HomeCubit extends Cubit<HomeState> {
 
         await loadAudios();
       }
+    } else {
+      _crashService.log('Permission explicitly denied by user.');
     }
   }
 
   Future<void> setWeeks(int weeks) async {
+    _analyticsService.logEvent(
+      name: 'change_weeks_filter_action',
+      parameters: {'weeks': weeks},
+    );
     if (weeks == state.weeks) return;
+    _crashService.setCustomKey('filter_weeks', weeks);
     emit(state.copyWith(weeks: weeks));
     await loadAudios();
   }
