@@ -191,32 +191,12 @@ void main() {
       await tester.tap(find.byType(Chip));
       await tester.pumpAndSettle();
 
-      expect(find.text('Filter last weeks'), findsOneWidget);
+      expect(find.text('Filter by weeks'), findsOneWidget);
 
       await tester.tap(find.text('Last 4 weeks'));
       await tester.pumpAndSettle();
 
       verify(() => homeCubit.setWeeks(4)).called(1);
-    });
-
-    testWidgets('triggers loadAudios on resume if hasPermission', (
-      tester,
-    ) async {
-      when(() => homeCubit.state).thenReturn(
-        const HomeState(hasPermission: true),
-      );
-
-      await tester.pumpApp(
-        const HomeView(),
-        homeCubit: homeCubit,
-        playerCubit: playerCubit,
-      );
-
-      tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.resumed);
-      await tester.pump();
-
-      verify(() => homeCubit.loadAudios()).called(greaterThan(0));
-      verify(() => playerCubit.closePlayer()).called(greaterThan(0));
     });
 
     testWidgets('settings button triggers navigation', (tester) async {

@@ -15,27 +15,16 @@ class HomeView extends StatefulWidget {
   State<HomeView> createState() => _HomeViewState();
 }
 
-class _HomeViewState extends State<HomeView> with WidgetsBindingObserver {
+class _HomeViewState extends State<HomeView> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addObserver(this);
     unawaited(context.read<HomeCubit>().initStorage());
   }
 
   @override
   void dispose() {
-    WidgetsBinding.instance.removeObserver(this);
     super.dispose();
-  }
-
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    final hasPermission = context.read<HomeCubit>().state.hasPermission;
-    if (state == AppLifecycleState.resumed && hasPermission) {
-      unawaited(context.read<HomeCubit>().loadAudios());
-      unawaited(context.read<PlayerCubit>().closePlayer());
-    }
   }
 
   @override

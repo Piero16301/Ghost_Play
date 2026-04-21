@@ -10,6 +10,7 @@ void main() {
   late MockLocalStorageService localStorageService;
   late MockAnalyticsService analyticsService;
   late MockCrashService crashService;
+  late MockPerformanceService performanceService;
 
   setUpAll(registerFallbackValues);
 
@@ -17,14 +18,17 @@ void main() {
     localStorageService = MockLocalStorageService();
     analyticsService = MockAnalyticsService();
     crashService = MockCrashService();
+    performanceService = MockPerformanceService();
 
     await getIt.reset();
     getIt
       ..registerSingleton<LocalStorageService>(localStorageService)
       ..registerSingleton<AnalyticsService>(analyticsService)
-      ..registerSingleton<CrashService>(crashService);
+      ..registerSingleton<CrashService>(crashService)
+      ..registerSingleton<PerformanceService>(performanceService);
 
     when(() => crashService.setCustomKey(any(), any())).thenReturn(null);
+    when(() => performanceService.startTrace(any())).thenReturn(MockTrace());
     when(
       () => analyticsService.logEvent(
         name: any(named: 'name'),

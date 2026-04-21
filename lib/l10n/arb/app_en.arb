@@ -32,7 +32,7 @@
             }
         }
     },
-    "weeksFilterTitle": "Filter last weeks",
+    "weeksFilterTitle": "Filter by weeks",
     "@weeksFilterTitle": {},
     "settingsAppBarTitle": "Settings",
     "@settingsAppBarTitle": {},

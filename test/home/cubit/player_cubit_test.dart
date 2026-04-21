@@ -18,13 +18,43 @@ void main() {
     late StreamController<Duration?> durationController;
     late StreamController<ja.PlayerState> playerStateController;
 
+    late MockAnalyticsService analyticsService;
+    late MockCrashService crashService;
+    late MockPerformanceService performanceService;
+
     setUpAll(() {
       TestWidgetsFlutterBinding.ensureInitialized();
       registerFallbackValues();
     });
 
-    setUp(() {
+    setUp(() async {
       audioPlayer = MockAudioPlayer();
+
+      analyticsService = MockAnalyticsService();
+      crashService = MockCrashService();
+      performanceService = MockPerformanceService();
+
+      await getIt.reset();
+      getIt
+        ..registerSingleton<AnalyticsService>(analyticsService)
+        ..registerSingleton<CrashService>(crashService)
+        ..registerSingleton<PerformanceService>(performanceService);
+
+      when(() => crashService.setCustomKey(any(), any())).thenReturn(null);
+      when(
+        () => crashService.recordError(
+          any<dynamic>(),
+          any<StackTrace?>(),
+          reason: any<dynamic>(named: 'reason'),
+        ),
+      ).thenReturn(null);
+      when(() => performanceService.startTrace(any())).thenReturn(MockTrace());
+      when(
+        () => analyticsService.logEvent(
+          name: any(named: 'name'),
+          parameters: any(named: 'parameters'),
+        ),
+      ).thenAnswer((_) async {});
 
       positionController = StreamController<Duration>.broadcast();
       durationController = StreamController<Duration?>.broadcast();

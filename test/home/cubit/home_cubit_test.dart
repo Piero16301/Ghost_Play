@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:bloc_test/bloc_test.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:ghost_play/app/app.dart';
 import 'package:ghost_play/home/home.dart';
 import 'package:mocktail/mocktail.dart';
 
@@ -14,12 +15,43 @@ void main() {
     late HomeCubit homeCubit;
     late MockSaf mockSaf;
 
+    late MockAnalyticsService analyticsService;
+    late MockCrashService crashService;
+    late MockPerformanceService performanceService;
+
     setUpAll(registerFallbackValues);
 
-    setUp(() {
+    setUp(() async {
       storageService = MockStorageService();
-      homeCubit = HomeCubit(storageService: storageService);
       mockSaf = MockSaf();
+
+      analyticsService = MockAnalyticsService();
+      crashService = MockCrashService();
+      performanceService = MockPerformanceService();
+
+      await getIt.reset();
+      getIt
+        ..registerSingleton<AnalyticsService>(analyticsService)
+        ..registerSingleton<CrashService>(crashService)
+        ..registerSingleton<PerformanceService>(performanceService);
+
+      homeCubit = HomeCubit(storageService: storageService);
+
+      when(() => crashService.setCustomKey(any(), any())).thenReturn(null);
+      when(
+        () => crashService.recordError(
+          any<dynamic>(),
+          any<StackTrace?>(),
+          reason: any<dynamic>(named: 'reason'),
+        ),
+      ).thenReturn(null);
+      when(() => performanceService.startTrace(any())).thenReturn(MockTrace());
+      when(
+        () => analyticsService.logEvent(
+          name: any(named: 'name'),
+          parameters: any(named: 'parameters'),
+        ),
+      ).thenAnswer((_) async {});
     });
 
     tearDown(() {

@@ -47,6 +47,7 @@ void main() {
       ),
     ).thenReturn(null);
     when(() => crashService.setCustomKey(any(), any())).thenReturn(null);
+    when(() => performanceService.startTrace(any())).thenReturn(MockTrace());
     when(
       () => analyticsService.logEvent(
         name: any(named: 'name'),
