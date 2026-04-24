@@ -1,10 +1,25 @@
-part of 'player_cubit.dart';
+part of 'audios_home_cubit.dart';
 
-enum PlayerStatus { initial, loading, playing, paused, completed, error }
+enum AudiosHomeStatus {
+  initial,
+  loading,
+  playing,
+  paused,
+  completed,
+  error
+  ;
 
-class PlayerState extends Equatable {
-  const PlayerState({
-    this.status = PlayerStatus.initial,
+  bool get isInitial => this == initial;
+  bool get isLoading => this == loading;
+  bool get isPlaying => this == playing;
+  bool get isPaused => this == paused;
+  bool get isCompleted => this == completed;
+  bool get isError => this == error;
+}
+
+class AudiosHomeState extends Equatable {
+  const AudiosHomeState({
+    this.status = AudiosHomeStatus.initial,
     this.isVisible = false,
     this.currentAudio,
     this.position = Duration.zero,
@@ -13,7 +28,7 @@ class PlayerState extends Equatable {
     this.playbackSpeed = 1.0,
   });
 
-  final PlayerStatus status;
+  final AudiosHomeStatus status;
   final bool isVisible;
   final AudioMetadata? currentAudio;
   final Duration position;
@@ -21,8 +36,8 @@ class PlayerState extends Equatable {
   final String? errorMessage;
   final double playbackSpeed;
 
-  PlayerState copyWith({
-    PlayerStatus? status,
+  AudiosHomeState copyWith({
+    AudiosHomeStatus? status,
     bool? isVisible,
     AudioMetadata? currentAudio,
     Duration? position,
@@ -30,7 +45,7 @@ class PlayerState extends Equatable {
     String? errorMessage,
     double? playbackSpeed,
   }) {
-    return PlayerState(
+    return AudiosHomeState(
       status: status ?? this.status,
       isVisible: isVisible ?? this.isVisible,
       currentAudio: currentAudio ?? this.currentAudio,

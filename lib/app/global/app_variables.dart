@@ -9,12 +9,12 @@ class AppVariables {
   static const tabletMaxWidth = 500.0;
   static const tabletMaxHeight = 400.0;
 
-  static const waVoiceNotesPath =
-      'Android/media/com.whatsapp/WhatsApp/Media/WhatsApp Voice Notes';
+  static const waVoiceNotesPath = 'Android/media/com.whatsapp/WhatsApp/Media';
 
   static final DateFormat formatDateTime = DateFormat('dd/MM/yyyy hh:mm a');
-
   static final List<int> weeksOptions = [1, 2, 3, 4, 5, 6, 7, 8];
+  static const animationDuration = Duration(milliseconds: 400);
+  static const snackBarDuration = Duration(seconds: 5);
 
   static Map<String, String> availableFonts = getAvailableFonts();
 
@@ -38,4 +38,17 @@ class AppVariables {
     Locale('es', 'ES'),
     Locale('it', 'IT'),
   ];
+}
+
+enum SnackBarType {
+  success,
+  error,
+  warning,
+  info
+  ;
+
+  bool get isSuccess => this == SnackBarType.success;
+  bool get isError => this == SnackBarType.error;
+  bool get isWarning => this == SnackBarType.warning;
+  bool get isInfo => this == SnackBarType.info;
 }

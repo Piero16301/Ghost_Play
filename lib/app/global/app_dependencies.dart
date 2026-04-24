@@ -26,6 +26,11 @@ void setupServiceLocator(Environment env) {
       () => LocalStorageService(
         localStorageRepository: ServiceFactory.getLocalStorageRepository(env),
       ),
+    )
+    ..registerLazySingleton<StorageService>(
+      () => StorageService(
+        storageRepository: ServiceFactory.getStorageRepository(env),
+      ),
     );
 }
 
@@ -65,6 +70,15 @@ class ServiceFactory {
         return MockLocalStorageRepository();
       case Environment.prod:
         return SharedPrefsLocalStorageRepository();
+    }
+  }
+
+  static StorageRepository getStorageRepository(Environment env) {
+    switch (env) {
+      case Environment.mock:
+        return MockStorageRepository();
+      case Environment.prod:
+        return MethodChannelStorageRepository();
     }
   }
 }

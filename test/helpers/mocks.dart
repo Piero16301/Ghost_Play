@@ -16,7 +16,11 @@ class MockAppCubit extends MockCubit<AppState> implements AppCubit {}
 
 class MockHomeCubit extends MockCubit<HomeState> implements HomeCubit {}
 
-class MockPlayerCubit extends MockCubit<PlayerState> implements PlayerCubit {}
+class MockAudiosHomeCubit extends MockCubit<AudiosHomeState>
+    implements AudiosHomeCubit {}
+
+class MockStatesHomeCubit extends MockCubit<StatesHomeState>
+    implements StatesHomeCubit {}
 
 class MocktailLocalStorageRepository extends Mock
     implements LocalStorageRepository {}
@@ -60,15 +64,21 @@ class FakeAppState extends Fake implements AppState {}
 
 class FakeHomeState extends Fake implements HomeState {}
 
-class FakePlayerState extends Fake implements PlayerState {}
+class FakeAudiosHomeState extends Fake implements AudiosHomeState {}
+
+class FakeStatesHomeState extends Fake implements StatesHomeState {}
 
 class FakeAudioMetadata extends Fake implements AudioMetadata {}
+
+class FakeStateMetadata extends Fake implements StateMetadata {}
 
 void registerFallbackValues() {
   registerFallbackValue(FakeAppState());
   registerFallbackValue(FakeHomeState());
-  registerFallbackValue(FakePlayerState());
+  registerFallbackValue(FakeAudiosHomeState());
+  registerFallbackValue(FakeStatesHomeState());
   registerFallbackValue(FakeAudioMetadata());
+  registerFallbackValue(FakeStateMetadata());
   registerFallbackValue(const Locale('en', 'US'));
   registerFallbackValue(ThemeMode.system);
   registerFallbackValue(Colors.blue);

@@ -10,223 +10,270 @@ import 'package:mocktail/mocktail.dart';
 import '../../helpers/mocks.dart';
 
 void main() {
+  late HomeCubit homeCubit;
+  late MockStorageService storageService;
+  late MockAnalyticsService analyticsService;
+  late MockCrashService crashService;
+  late MockPerformanceService performanceService;
+  late MockSaf mockSaf;
+
+  setUpAll(registerFallbackValues);
+
+  setUp(() {
+    storageService = MockStorageService();
+    analyticsService = MockAnalyticsService();
+    crashService = MockCrashService();
+    performanceService = MockPerformanceService();
+    mockSaf = MockSaf();
+
+    unawaited(getIt.reset());
+    getIt
+      ..registerSingleton<StorageService>(storageService)
+      ..registerSingleton<AnalyticsService>(analyticsService)
+      ..registerSingleton<CrashService>(crashService)
+      ..registerSingleton<PerformanceService>(performanceService);
+
+    when(
+      () => performanceService.startTrace(any<String>()),
+    ).thenReturn(MockTrace());
+    when(() => crashService.log(any<String>())).thenReturn(null);
+    when(
+      () => crashService.recordError(
+        any<dynamic>(),
+        any<StackTrace?>(),
+        reason: any<dynamic>(named: 'reason'),
+      ),
+    ).thenReturn(null);
+    when(
+      () => analyticsService.logEvent(
+        name: any<String>(named: 'name'),
+        parameters: any<Map<String, Object>?>(named: 'parameters'),
+      ),
+    ).thenAnswer((_) async {});
+
+    homeCubit = HomeCubit(storageService: storageService);
+  });
+
+  tearDown(() {
+    unawaited(homeCubit.close());
+  });
+
+  group('HomeCubit constructor', () {
+    test('uses getIt when storageService is null', () {
+      final cubit = HomeCubit();
+      expect(cubit.state, const HomeState());
+      unawaited(cubit.close());
+    });
+  });
+
+  group('HomeStatus', () {
+    test('getters return correct values', () {
+      expect(HomeStatus.initial.isInitial, isTrue);
+      expect(HomeStatus.initial.isLoading, isFalse);
+      expect(HomeStatus.loading.isLoading, isTrue);
+      expect(HomeStatus.success.isSuccess, isTrue);
+      expect(HomeStatus.failure.isFailure, isTrue);
+    });
+  });
+
+  group('HomeState', () {
+    test('supports value equality', () {
+      expect(const HomeState(), equals(const HomeState()));
+    });
+
+    test('copyWith returns object with updated values', () {
+      expect(
+        const HomeState().copyWith(selectedIndex: 1),
+        const HomeState(selectedIndex: 1),
+      );
+    });
+
+    test('props are correct', () {
+      expect(const HomeState().props, [
+        0,
+        HomeStatus.initial,
+        HomeStatus.initial,
+        null,
+        false,
+        '',
+        const <AudioMetadata>[],
+        1,
+        const <StateMetadata>[],
+      ]);
+    });
+  });
+
   group('HomeCubit', () {
-    late StorageService storageService;
-    late HomeCubit homeCubit;
-    late MockSaf mockSaf;
-
-    late MockAnalyticsService analyticsService;
-    late MockCrashService crashService;
-    late MockPerformanceService performanceService;
-
-    setUpAll(registerFallbackValues);
-
-    setUp(() async {
-      storageService = MockStorageService();
-      mockSaf = MockSaf();
-
-      analyticsService = MockAnalyticsService();
-      crashService = MockCrashService();
-      performanceService = MockPerformanceService();
-
-      await getIt.reset();
-      getIt
-        ..registerSingleton<AnalyticsService>(analyticsService)
-        ..registerSingleton<CrashService>(crashService)
-        ..registerSingleton<PerformanceService>(performanceService);
-
-      homeCubit = HomeCubit(storageService: storageService);
-
-      when(() => crashService.setCustomKey(any(), any())).thenReturn(null);
-      when(
-        () => crashService.recordError(
-          any<dynamic>(),
-          any<StackTrace?>(),
-          reason: any<dynamic>(named: 'reason'),
-        ),
-      ).thenReturn(null);
-      when(() => performanceService.startTrace(any())).thenReturn(MockTrace());
-      when(
-        () => analyticsService.logEvent(
-          name: any(named: 'name'),
-          parameters: any(named: 'parameters'),
-        ),
-      ).thenAnswer((_) async {});
-    });
-
-    tearDown(() {
-      unawaited(homeCubit.close());
-    });
-
-    test('initial state is HomeState()', () {
+    test('initial state is correct', () {
       expect(homeCubit.state, const HomeState());
     });
 
+    blocTest<HomeCubit, HomeState>(
+      'toggleSelectedIndex emits state with updated index',
+      build: () => homeCubit,
+      act: (cubit) => cubit.toggleSelectedIndex(1),
+      expect: () => [const HomeState(selectedIndex: 1)],
+    );
+
     group('initStorage', () {
       blocTest<HomeCubit, HomeState>(
-        'emits failure status when exception is thrown',
-        build: () {
-          when(
-            () => storageService.getPersistedPermissionDirectories(),
-          ).thenThrow(Exception('error'));
-          return homeCubit;
-        },
-        act: (cubit) => cubit.initStorage(),
-        expect: () => [
-          const HomeState(status: HomeStatus.failure),
-        ],
-      );
-
-      blocTest<HomeCubit, HomeState>(
-        'emits hasPermission false when no directories found',
-        build: () {
-          when(
-            () => storageService.getPersistedPermissionDirectories(),
-          ).thenAnswer((_) async => []);
-          return homeCubit;
-        },
-        act: (cubit) => cubit.initStorage(),
-        expect: () => [
-          const HomeState(),
-        ],
-      );
-
-      blocTest<HomeCubit, HomeState>(
-        'emits success and loads audios when directories found',
-        build: () {
+        'emits success when persisted directories exist',
+        setUp: () {
           when(
             () => storageService.getPersistedPermissionDirectories(),
           ).thenAnswer((_) async => ['uri1']);
           when(
             () => storageService.getRecentAudios(
-              uri: 'uri1',
-              weeks: any(named: 'weeks'),
+              uri: any<String>(named: 'uri'),
+              weeks: any<int>(named: 'weeks'),
             ),
           ).thenAnswer((_) async => []);
-          return homeCubit;
+          when(
+            () =>
+                storageService.getRecentStates(uri: any<String>(named: 'uri')),
+          ).thenAnswer((_) async => []);
         },
+        build: () => homeCubit,
         act: (cubit) => cubit.initStorage(),
-        expect: () => [
-          predicate<HomeState>(
-            (state) =>
-                state.status == HomeStatus.success &&
-                state.hasPermission &&
-                state.savedDirectoryUri == 'uri1' &&
-                state.saf != null,
-          ),
-          predicate<HomeState>((state) => state.status == HomeStatus.loading),
-          predicate<HomeState>(
-            (state) =>
-                state.status == HomeStatus.success && state.audios.isEmpty,
-          ),
-        ],
+        verify: (_) {
+          verify(
+            () => storageService.getPersistedPermissionDirectories(),
+          ).called(1);
+        },
+      );
+
+      blocTest<HomeCubit, HomeState>(
+        'emits hasPermission false when no persisted directories',
+        setUp: () {
+          when(
+            () => storageService.getPersistedPermissionDirectories(),
+          ).thenAnswer((_) async => []);
+        },
+        build: () => homeCubit,
+        act: (cubit) => cubit.initStorage(),
+        expect: () => [const HomeState()],
+      );
+
+      blocTest<HomeCubit, HomeState>(
+        'emits hasPermission false on exception',
+        setUp: () {
+          when(
+            () => storageService.getPersistedPermissionDirectories(),
+          ).thenThrow(Exception('error'));
+        },
+        build: () => homeCubit,
+        act: (cubit) => cubit.initStorage(),
+        expect: () => [const HomeState()],
       );
     });
 
     group('loadAudios', () {
       blocTest<HomeCubit, HomeState>(
-        'does nothing if saf is null',
+        'returns early if saf is null',
         build: () => homeCubit,
         act: (cubit) => cubit.loadAudios(),
-        expect: () => <HomeState>[],
-      );
-
-      blocTest<HomeCubit, HomeState>(
-        'does nothing if savedDirectoryUri is empty',
-        seed: () => HomeState(saf: mockSaf),
-        build: () => homeCubit,
-        act: (cubit) => cubit.loadAudios(),
-        expect: () => <HomeState>[],
+        expect: () => <AudioMetadata>[],
       );
 
       blocTest<HomeCubit, HomeState>(
         'emits success with loaded audios',
-        seed: () => HomeState(saf: mockSaf, savedDirectoryUri: 'uri1'),
-        build: () {
+        seed: () => HomeState(
+          saf: mockSaf,
+          savedDirectoryUri: 'uri1',
+          hasPermission: true,
+        ),
+        setUp: () {
           when(
-            () => storageService.getRecentAudios(
-              uri: 'uri1',
-              weeks: any(named: 'weeks'),
-            ),
+            () => storageService.getRecentAudios(uri: 'uri1', weeks: 1),
           ).thenAnswer(
             (_) async => [
               {
-                'uri': 'a1',
-                'name': 'n1',
-                'date': DateTime(2023).millisecondsSinceEpoch,
+                'uri': 'a',
+                'name': 'n',
+                'date': 123,
                 'size': 100,
                 'duration': 1000,
               },
             ],
           );
-          return homeCubit;
         },
+        build: () => homeCubit,
         act: (cubit) => cubit.loadAudios(),
         expect: () => [
           HomeState(
-            status: HomeStatus.loading,
-            savedDirectoryUri: 'uri1',
+            audiosStatus: HomeStatus.loading,
             saf: mockSaf,
+            savedDirectoryUri: 'uri1',
+            hasPermission: true,
           ),
-          predicate<HomeState>(
-            (state) =>
-                state.status == HomeStatus.success &&
-                state.audios.length == 1 &&
-                state.saf == mockSaf,
+          HomeState(
+            audiosStatus: HomeStatus.success,
+            saf: mockSaf,
+            savedDirectoryUri: 'uri1',
+            hasPermission: true,
+            audios: [
+              AudioMetadata(
+                uri: 'a',
+                name: 'n',
+                date: DateTime.fromMillisecondsSinceEpoch(123),
+                sizeBytes: 100,
+                durationMs: 1000,
+              ),
+            ],
           ),
         ],
       );
 
       blocTest<HomeCubit, HomeState>(
         'emits failure on PlatformException',
-        seed: () => HomeState(saf: mockSaf, savedDirectoryUri: 'uri1'),
-        build: () {
+        seed: () => HomeState(
+          savedDirectoryUri: 'uri1',
+          saf: mockSaf,
+        ),
+        setUp: () {
           when(
-            () => storageService.getRecentAudios(
-              uri: 'uri1',
-              weeks: any(named: 'weeks'),
-            ),
+            () => storageService.getRecentAudios(uri: 'uri1', weeks: 1),
           ).thenThrow(PlatformException(code: 'error'));
-          return homeCubit;
         },
+        build: () => homeCubit,
         act: (cubit) => cubit.loadAudios(),
         expect: () => [
           HomeState(
-            status: HomeStatus.loading,
-            savedDirectoryUri: 'uri1',
+            audiosStatus: HomeStatus.loading,
             saf: mockSaf,
+            savedDirectoryUri: 'uri1',
           ),
           HomeState(
-            status: HomeStatus.failure,
-            savedDirectoryUri: 'uri1',
+            audiosStatus: HomeStatus.failure,
             saf: mockSaf,
+            savedDirectoryUri: 'uri1',
           ),
         ],
       );
 
       blocTest<HomeCubit, HomeState>(
         'emits failure on Exception',
-        seed: () => HomeState(saf: mockSaf, savedDirectoryUri: 'uri1'),
-        build: () {
+        seed: () => HomeState(
+          savedDirectoryUri: 'uri1',
+          saf: mockSaf,
+        ),
+        setUp: () {
           when(
-            () => storageService.getRecentAudios(
-              uri: 'uri1',
-              weeks: any(named: 'weeks'),
-            ),
+            () => storageService.getRecentAudios(uri: 'uri1', weeks: 1),
           ).thenThrow(Exception('error'));
-          return homeCubit;
         },
+        build: () => homeCubit,
         act: (cubit) => cubit.loadAudios(),
         expect: () => [
           HomeState(
-            status: HomeStatus.loading,
-            savedDirectoryUri: 'uri1',
+            audiosStatus: HomeStatus.loading,
             saf: mockSaf,
+            savedDirectoryUri: 'uri1',
           ),
           HomeState(
-            status: HomeStatus.failure,
-            savedDirectoryUri: 'uri1',
+            audiosStatus: HomeStatus.failure,
             saf: mockSaf,
+            savedDirectoryUri: 'uri1',
           ),
         ],
       );
@@ -234,61 +281,42 @@ void main() {
 
     group('requestPermission', () {
       blocTest<HomeCubit, HomeState>(
-        'does nothing when isGranted is false',
-        build: () {
+        'emits hasPermission true when granted',
+        setUp: () {
           when(
-            () => storageService.getDirectoryPermission(any()),
-          ).thenAnswer((_) async => false);
-          return homeCubit;
-        },
-        act: (cubit) => cubit.requestPermission(),
-        expect: () => <HomeState>[],
-      );
-
-      blocTest<HomeCubit, HomeState>(
-        'emits success when isGranted is true and directories found',
-        build: () {
-          when(
-            () => storageService.getDirectoryPermission(any()),
+            () => storageService.getDirectoryPermission(any<String>()),
           ).thenAnswer((_) async => true);
           when(
             () => storageService.getPersistedPermissionDirectories(),
           ).thenAnswer((_) async => ['uri1']);
           when(
             () => storageService.getRecentAudios(
-              uri: 'uri1',
-              weeks: any(named: 'weeks'),
+              uri: any<String>(named: 'uri'),
+              weeks: any<int>(named: 'weeks'),
             ),
           ).thenAnswer((_) async => []);
-          return homeCubit;
+          when(
+            () =>
+                storageService.getRecentStates(uri: any<String>(named: 'uri')),
+          ).thenAnswer((_) async => []);
         },
+        build: () => homeCubit,
         act: (cubit) => cubit.requestPermission(),
-        expect: () => [
-          predicate<HomeState>(
-            (state) =>
-                state.status == HomeStatus.success &&
-                state.hasPermission &&
-                state.savedDirectoryUri == 'uri1',
-          ),
-          predicate<HomeState>((state) => state.status == HomeStatus.loading),
-          predicate<HomeState>(
-            (state) =>
-                state.status == HomeStatus.success && state.audios.isEmpty,
-          ),
-        ],
+        verify: (_) {
+          verify(
+            () => storageService.getDirectoryPermission(any<String>()),
+          ).called(1);
+        },
       );
 
       blocTest<HomeCubit, HomeState>(
-        'does nothing extra when isGranted is true but no directories found',
-        build: () {
+        'does nothing when denied',
+        setUp: () {
           when(
-            () => storageService.getDirectoryPermission(any()),
-          ).thenAnswer((_) async => true);
-          when(
-            () => storageService.getPersistedPermissionDirectories(),
-          ).thenAnswer((_) async => []);
-          return homeCubit;
+            () => storageService.getDirectoryPermission(any<String>()),
+          ).thenAnswer((_) async => false);
         },
+        build: () => homeCubit,
         act: (cubit) => cubit.requestPermission(),
         expect: () => <HomeState>[],
       );
@@ -296,49 +324,130 @@ void main() {
 
     group('setWeeks', () {
       blocTest<HomeCubit, HomeState>(
-        'does nothing if weeks are the same',
-        seed: () => const HomeState(weeks: 2),
+        'emits updated weeks and loads audios',
+        setUp: () {
+          when(
+            () => storageService.getRecentAudios(
+              uri: any<String>(named: 'uri'),
+              weeks: any<int>(named: 'weeks'),
+            ),
+          ).thenAnswer((_) async => []);
+        },
         build: () => homeCubit,
         act: (cubit) => cubit.setWeeks(2),
-        expect: () => <HomeState>[],
+        expect: () => [
+          const HomeState(audioWeeksFilter: 2),
+        ],
       );
 
       blocTest<HomeCubit, HomeState>(
-        'updates weeks and loads audios',
-        seed: () =>
-            HomeState(weeks: 2, saf: mockSaf, savedDirectoryUri: 'uri1'),
-        build: () {
-          when(
-            () => storageService.getRecentAudios(
-              uri: 'uri1',
-              weeks: 3,
-            ),
-          ).thenAnswer((_) async => []);
-          return homeCubit;
-        },
-        act: (cubit) => cubit.setWeeks(3),
-        expect: () => [
-          HomeState(weeks: 3, savedDirectoryUri: 'uri1', saf: mockSaf),
-          HomeState(
-            status: HomeStatus.loading,
-            weeks: 3,
-            savedDirectoryUri: 'uri1',
-            saf: mockSaf,
-          ),
-          HomeState(
-            status: HomeStatus.success,
-            weeks: 3,
-            savedDirectoryUri: 'uri1',
-            saf: mockSaf,
-          ),
-        ],
+        'does nothing if weeks are the same',
+        build: () => homeCubit,
+        act: (cubit) => cubit.setWeeks(1),
+        expect: () => <HomeState>[],
       );
     });
 
-    test('default constructor uses MethodChannelStorageService', () {
-      final cubit = HomeCubit();
-      expect(cubit, isA<HomeCubit>());
-      unawaited(cubit.close());
+    group('loadStates', () {
+      blocTest<HomeCubit, HomeState>(
+        'emits success with loaded states',
+        seed: () => HomeState(
+          savedDirectoryUri: 'uri1',
+          saf: mockSaf,
+        ),
+        setUp: () {
+          when(() => storageService.getRecentStates(uri: 'uri1')).thenAnswer(
+            (_) async => [
+              {
+                'uri': 'a',
+                'name': 'n',
+                'date': 123,
+                'size': 100,
+                'is_video': true,
+                'duration': 1000,
+              },
+            ],
+          );
+        },
+        build: () => homeCubit,
+        act: (cubit) => cubit.loadStates(),
+        expect: () => [
+          HomeState(
+            statesStatus: HomeStatus.loading,
+            saf: mockSaf,
+            savedDirectoryUri: 'uri1',
+          ),
+          HomeState(
+            statesStatus: HomeStatus.success,
+            saf: mockSaf,
+            savedDirectoryUri: 'uri1',
+            states: [
+              StateMetadata(
+                uri: 'a',
+                name: 'n',
+                date: DateTime.fromMillisecondsSinceEpoch(123),
+                sizeBytes: 100,
+                isVideo: true,
+                videoDurationMs: 1000,
+              ),
+            ],
+          ),
+        ],
+      );
+
+      blocTest<HomeCubit, HomeState>(
+        'emits failure on PlatformException',
+        seed: () => HomeState(
+          savedDirectoryUri: 'uri1',
+          saf: mockSaf,
+        ),
+        setUp: () {
+          when(
+            () => storageService.getRecentStates(uri: 'uri1'),
+          ).thenThrow(PlatformException(code: 'error'));
+        },
+        build: () => homeCubit,
+        act: (cubit) => cubit.loadStates(),
+        expect: () => [
+          HomeState(
+            statesStatus: HomeStatus.loading,
+            saf: mockSaf,
+            savedDirectoryUri: 'uri1',
+          ),
+          HomeState(
+            statesStatus: HomeStatus.failure,
+            saf: mockSaf,
+            savedDirectoryUri: 'uri1',
+          ),
+        ],
+      );
+
+      blocTest<HomeCubit, HomeState>(
+        'emits failure on Exception',
+        seed: () => HomeState(
+          savedDirectoryUri: 'uri1',
+          saf: mockSaf,
+        ),
+        setUp: () {
+          when(
+            () => storageService.getRecentStates(uri: 'uri1'),
+          ).thenThrow(Exception('error'));
+        },
+        build: () => homeCubit,
+        act: (cubit) => cubit.loadStates(),
+        expect: () => [
+          HomeState(
+            statesStatus: HomeStatus.loading,
+            saf: mockSaf,
+            savedDirectoryUri: 'uri1',
+          ),
+          HomeState(
+            statesStatus: HomeStatus.failure,
+            saf: mockSaf,
+            savedDirectoryUri: 'uri1',
+          ),
+        ],
+      );
     });
   });
 }

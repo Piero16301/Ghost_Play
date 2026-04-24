@@ -7,11 +7,8 @@ class HomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MultiBlocProvider(
-      providers: [
-        BlocProvider(create: (_) => HomeCubit()),
-        BlocProvider(create: (_) => PlayerCubit()),
-      ],
+    return BlocProvider(
+      create: (_) => HomeCubit(),
       child: const HomeView(),
     );
   }

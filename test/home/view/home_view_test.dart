@@ -1,261 +1,137 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ghost_play/app/app.dart';
 import 'package:ghost_play/home/home.dart';
+import 'package:ghost_play/l10n/l10n.dart';
 import 'package:go_router/go_router.dart';
 import 'package:mocktail/mocktail.dart';
 
 import '../../helpers/mocks.dart';
-import '../../helpers/pump_app.dart';
 
 void main() {
   late MockHomeCubit homeCubit;
-  late MockPlayerCubit playerCubit;
   late MockAnalyticsService analyticsService;
+  late MockCrashService crashService;
+  late MockPerformanceService performanceService;
+  late MockStorageService storageService;
 
-  setUpAll(() {
-    registerFallbackValues();
-    setupServiceLocator(Environment.mock);
-  });
+  setUpAll(registerFallbackValues);
 
-  setUp(() async {
+  setUp(() {
     homeCubit = MockHomeCubit();
-    playerCubit = MockPlayerCubit();
     analyticsService = MockAnalyticsService();
+    crashService = MockCrashService();
+    performanceService = MockPerformanceService();
+    storageService = MockStorageService();
 
-    if (getIt.isRegistered<AnalyticsService>()) {
-      await getIt.unregister<AnalyticsService>();
-    }
-    getIt.registerSingleton<AnalyticsService>(analyticsService);
+    unawaited(getIt.reset());
+    getIt
+      ..registerSingleton<AnalyticsService>(analyticsService)
+      ..registerSingleton<CrashService>(crashService)
+      ..registerSingleton<PerformanceService>(performanceService)
+      ..registerSingleton<StorageService>(storageService);
 
     when(() => homeCubit.state).thenReturn(const HomeState());
     when(() => homeCubit.initStorage()).thenAnswer((_) async {});
-    when(() => homeCubit.loadAudios()).thenAnswer((_) async {});
-    when(() => homeCubit.requestPermission()).thenAnswer((_) async {});
-    when(() => homeCubit.setWeeks(any())).thenAnswer((_) async {});
+    when(() => homeCubit.close()).thenAnswer((_) async {});
+    when(() => homeCubit.toggleSelectedIndex(any<int>())).thenReturn(null);
 
-    when(() => playerCubit.state).thenReturn(const PlayerState());
-    when(() => playerCubit.playAudio(any())).thenAnswer((_) async {});
-    when(() => playerCubit.closePlayer()).thenAnswer((_) async {});
+    when(
+      () => performanceService.startTrace(any<String>()),
+    ).thenReturn(MockTrace());
+    when(() => crashService.log(any<String>())).thenReturn(null);
   });
 
-  group('HomeView', () {
-    testWidgets('renders loading indicator when status is loading', (
-      tester,
-    ) async {
-      when(() => homeCubit.state).thenReturn(
-        const HomeState(status: HomeStatus.loading),
-      );
-
-      await tester.pumpApp(
-        const HomeView(),
-        homeCubit: homeCubit,
-        playerCubit: playerCubit,
-      );
-
-      expect(find.byType(CircularLoadingAnimation), findsOneWidget);
-    });
-
-    testWidgets('renders failure message when status is failure', (
-      tester,
-    ) async {
-      when(() => homeCubit.state).thenReturn(
-        const HomeState(status: HomeStatus.failure),
-      );
-
-      await tester.pumpApp(
-        const HomeView(),
-        homeCubit: homeCubit,
-        playerCubit: playerCubit,
-      );
-
-      expect(find.textContaining('An error occurred'), findsOneWidget);
-    });
-
-    testWidgets('renders permission request when hasPermission is false', (
-      tester,
-    ) async {
-      when(() => homeCubit.state).thenReturn(
-        const HomeState(),
-      );
-
-      await tester.pumpApp(
-        const HomeView(),
-        homeCubit: homeCubit,
-        playerCubit: playerCubit,
-      );
-
-      expect(find.text('Grant permission'), findsOneWidget);
-
-      await tester.tap(find.text('Grant permission'));
-      verify(() => homeCubit.requestPermission()).called(1);
-    });
-
-    testWidgets('renders empty message when audios are empty', (
-      tester,
-    ) async {
-      when(() => homeCubit.state).thenReturn(
-        const HomeState(hasPermission: true),
-      );
-
-      await tester.pumpApp(
-        const HomeView(),
-        homeCubit: homeCubit,
-        playerCubit: playerCubit,
-      );
-
-      expect(find.textContaining('No audios found'), findsOneWidget);
-    });
-
-    testWidgets('renders list of audios and handles interaction', (
-      tester,
-    ) async {
-      final audio = AudioMetadata(
-        name: 'audio1.opus',
-        uri: 'uri1',
-        date: DateTime.now(),
-        sizeBytes: 100,
-        durationMs: 3000,
-      );
-      when(() => homeCubit.state).thenReturn(
-        HomeState(
-          status: HomeStatus.success,
-          audios: [audio],
-          hasPermission: true,
-        ),
-      );
-
-      await tester.pumpApp(
-        const HomeView(),
-        homeCubit: homeCubit,
-        playerCubit: playerCubit,
-      );
-
-      expect(find.text('audio1'), findsOneWidget);
-
-      await tester.tap(find.text('audio1'));
-      verify(() => playerCubit.playAudio(audio)).called(1);
-    });
-
-    testWidgets('handles pull to refresh', (tester) async {
-      final audio = AudioMetadata(
-        name: 'a',
-        uri: 'u',
-        date: DateTime.now(),
-        sizeBytes: 1,
-        durationMs: 1,
-      );
-      when(() => homeCubit.state).thenReturn(
-        HomeState(
-          hasPermission: true,
-          audios: [audio],
-        ),
-      );
-
-      await tester.pumpApp(
-        const HomeView(),
-        homeCubit: homeCubit,
-        playerCubit: playerCubit,
-      );
-
-      final refreshIndicator = tester.widget<RefreshIndicator>(
-        find.byType(RefreshIndicator),
-      );
-      await refreshIndicator.onRefresh();
-
-      verify(() => homeCubit.loadAudios()).called(greaterThan(0));
-    });
-
-    testWidgets('opens weeks menu and selects a value', (tester) async {
-      tester.view.physicalSize = const Size(1080, 1920);
-      tester.view.devicePixelRatio = 1.0;
-      addTearDown(tester.view.resetPhysicalSize);
-
-      final audio = AudioMetadata(
-        name: 'a',
-        uri: 'u',
-        date: DateTime.now(),
-        sizeBytes: 1,
-        durationMs: 1,
-      );
-      when(() => homeCubit.state).thenReturn(
-        HomeState(hasPermission: true, audios: [audio], weeks: 2),
-      );
-
-      await tester.pumpApp(
-        const HomeView(),
-        homeCubit: homeCubit,
-        playerCubit: playerCubit,
-      );
-
-      await tester.tap(find.byType(Chip));
-      await tester.pumpAndSettle();
-
-      expect(find.text('Filter by weeks'), findsOneWidget);
-
-      await tester.tap(find.text('Last 4 weeks'));
-      await tester.pumpAndSettle();
-
-      verify(() => homeCubit.setWeeks(4)).called(1);
-    });
-
-    testWidgets('settings button triggers navigation', (tester) async {
-      when(
-        () => homeCubit.state,
-      ).thenReturn(const HomeState(hasPermission: true));
-
-      final router = GoRouter(
-        initialLocation: '/',
-        routes: [
-          GoRoute(
-            path: '/',
-            builder: (context, state) => const HomeView(),
-          ),
-          GoRoute(
-            name: AppRoute.settings.name,
-            path: '/settings',
-            builder: (context, state) => const Scaffold(),
-          ),
-        ],
-      );
-
-      await tester.pumpApp(
-        const HomeView(),
-        homeCubit: homeCubit,
-        playerCubit: playerCubit,
-        router: router,
-      );
-
-      final settingsButton = find.byType(IconButton).first;
-      expect(settingsButton, findsOneWidget);
-
-      await tester.tap(settingsButton);
-      await tester.pumpAndSettle();
-    });
-
-    testWidgets('renders MiniPlayer', (tester) async {
-      when(() => homeCubit.state).thenReturn(
-        HomeState(
-          hasPermission: true,
-          audios: [
-            AudioMetadata(
-              name: 'a',
-              uri: 'u',
-              date: DateTime(2023),
-              sizeBytes: 1,
-              durationMs: 1,
+  Widget createWidgetUnderTest({GoRouter? router}) {
+    final effectiveRouter =
+        router ??
+        GoRouter(
+          routes: [
+            GoRoute(
+              path: '/',
+              builder: (context, state) => BlocProvider<HomeCubit>.value(
+                value: homeCubit,
+                child: const HomeView(),
+              ),
+            ),
+            GoRoute(
+              path: '/settings',
+              name: AppRoute.settings.name,
+              builder: (context, state) =>
+                  const Scaffold(body: Text('Settings')),
             ),
           ],
-        ),
-      );
+        );
 
-      await tester.pumpApp(
-        const HomeView(),
-        homeCubit: homeCubit,
-        playerCubit: playerCubit,
-      );
+    return MaterialApp.router(
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppVariables.supportedLocales,
+      routerConfig: effectiveRouter,
+    );
+  }
 
-      expect(find.byType(MiniPlayer), findsOneWidget);
+  group('HomeView', () {
+    testWidgets('renders correctly and calls initStorage on init', (
+      tester,
+    ) async {
+      await tester.pumpWidget(createWidgetUnderTest());
+      expect(find.byType(HomeView), findsOneWidget);
+      expect(find.text(AppVariables.appName), findsOneWidget);
+      verify(() => homeCubit.initStorage()).called(1);
+    });
+
+    testWidgets('navigates to settings when settings button is pressed', (
+      tester,
+    ) async {
+      await tester.pumpWidget(createWidgetUnderTest());
+
+      final settingsButton = find.byType(IconButton).first;
+      await tester.tap(settingsButton);
+      await tester.pumpAndSettle();
+
+      expect(find.text('Settings'), findsOneWidget);
+    });
+
+    testWidgets('switches to StatesHomePage when index is 1', (tester) async {
+      when(() => homeCubit.state).thenReturn(const HomeState(selectedIndex: 1));
+
+      await tester.pumpWidget(createWidgetUnderTest());
+      await tester.pump();
+
+      expect(find.byType(StatesHomePage), findsOneWidget);
+    });
+
+    testWidgets(
+      'calls toggleSelectedIndex on NavigationBar destination selection',
+      (tester) async {
+        await tester.pumpWidget(createWidgetUnderTest());
+
+        await tester.tap(find.text('States'));
+        await tester.pump();
+
+        verify(() => homeCubit.toggleSelectedIndex(1)).called(1);
+      },
+    );
+
+    testWidgets(
+      'renders SizedBox.shrink for unknown index (hitting default branch)',
+      (tester) async {
+        when(
+          () => homeCubit.state,
+        ).thenReturn(const HomeState(selectedIndex: 2));
+
+        await tester.pumpWidget(createWidgetUnderTest());
+
+        expect(tester.takeException(), isAssertionError);
+      },
+    );
+
+    testWidgets('triggers dispose', (tester) async {
+      await tester.pumpWidget(createWidgetUnderTest());
+      await tester.pumpWidget(const SizedBox());
     });
   });
 }

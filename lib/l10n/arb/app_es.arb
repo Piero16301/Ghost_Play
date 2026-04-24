@@ -10,12 +10,16 @@
             }
         }
     },
-    "welcomeDescription": "Para escuchar tus notas de voz, necesitamos acceso a la carpeta de audios de WhatsApp",
-    "@welcomeDescription": {},
+    "welcomeAudiosDescription": "Para escuchar tus audios, necesitamos acceso a la carpeta de WhatsApp",
+    "@welcomeAudiosDescription": {},
+    "welcomeStatesDescription": "Para ver y guardar tus estados, necesitamos acceso a la carpeta de WhatsApp",
+    "@welcomeStatesDescription": {},
     "givePermissionButton": "Conceder permiso",
     "@givePermissionButton": {},
-    "noAudiosFound": "Aún no se han encontrado audios en la carpeta de WhatsApp",
+    "noAudiosFound": "Aún no se han encontrado audios",
     "@noAudiosFound": {},
+    "noStatesFound": "Aún no se han encontrado estados",
+    "@noStatesFound": {},
     "audiosFound": "{audios, plural, =1{1 audio} other{{audios} audios}}",
     "@audiosFound": {
         "placeholders": {
@@ -34,6 +38,12 @@
     },
     "weeksFilterTitle": "Filtrar por semanas",
     "@weeksFilterTitle": {},
+    "homeAudiosTitle": "Audios",
+    "@homeAudiosTitle": {},
+    "homeStatesTitle": "Estados",
+    "@homeStatesTitle": {},
+    "loadingStatesError": "Ocurrió un error al cargar los estados, por favor reinicia la app",
+    "@loadingStatesError": {},
     "settingsAppBarTitle": "Ajustes",
     "@settingsAppBarTitle": {},
     "settingsLanguageTitle": "Idioma",
@@ -97,5 +107,17 @@
     "settingsVersionTitle": "Versión",
     "@settingsVersionTitle": {},
     "settingsUpdateDateTitle": "Fecha de actualización",
-    "@settingsUpdateDateTitle": {}
+    "@settingsUpdateDateTitle": {},
+    "permissionDenied": "Permiso denegado",
+    "@permissionDenied": {},
+    "savedToGallery": "Guardado en Galería",
+    "@savedToGallery": {},
+    "errorSaving": "Error al guardar",
+    "@errorSaving": {},
+    "cancel": "Cancelar",
+    "@cancel": {},
+    "save": "Guardar",
+    "@save": {},
+    "errorLoadingPreview": "Error al cargar la vista previa",
+    "@errorLoadingPreview": {}
 }

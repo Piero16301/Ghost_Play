@@ -43,4 +43,28 @@ void main() {
       ]);
     });
   });
+
+  group('SnackBarType', () {
+    test('getters return correct values', () {
+      expect(SnackBarType.success.isSuccess, isTrue);
+      expect(SnackBarType.success.isError, isFalse);
+      expect(SnackBarType.success.isWarning, isFalse);
+      expect(SnackBarType.success.isInfo, isFalse);
+
+      expect(SnackBarType.error.isSuccess, isFalse);
+      expect(SnackBarType.error.isError, isTrue);
+      expect(SnackBarType.error.isWarning, isFalse);
+      expect(SnackBarType.error.isInfo, isFalse);
+
+      expect(SnackBarType.warning.isSuccess, isFalse);
+      expect(SnackBarType.warning.isError, isFalse);
+      expect(SnackBarType.warning.isWarning, isTrue);
+      expect(SnackBarType.warning.isInfo, isFalse);
+
+      expect(SnackBarType.info.isSuccess, isFalse);
+      expect(SnackBarType.info.isError, isFalse);
+      expect(SnackBarType.info.isWarning, isFalse);
+      expect(SnackBarType.info.isInfo, isTrue);
+    });
+  });
 }

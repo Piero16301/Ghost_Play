@@ -10,12 +10,16 @@
             }
         }
     },
-    "welcomeDescription": "To listen to your voice notes, we need access to the WhatsApp audio folder",
-    "@welcomeDescription": {},
+    "welcomeAudiosDescription": "To listen to your audios, we need access to the WhatsApp folder",
+    "@welcomeAudiosDescription": {},
+    "welcomeStatesDescription": "To view and save your states, we need access to the WhatsApp folder",
+    "@welcomeStatesDescription": {},
     "givePermissionButton": "Grant permission",
     "@givePermissionButton": {},
-    "noAudiosFound": "No audios found yet in the WhatsApp folder",
+    "noAudiosFound": "No audios found yet",
     "@noAudiosFound": {},
+    "noStatesFound": "No states found yet",
+    "@noStatesFound": {},
     "audiosFound": "{audios, plural, =1{1 audio} other{{audios} audios}}",
     "@audiosFound": {
         "placeholders": {
@@ -34,6 +38,12 @@
     },
     "weeksFilterTitle": "Filter by weeks",
     "@weeksFilterTitle": {},
+    "homeAudiosTitle": "Audios",
+    "@homeAudiosTitle": {},
+    "homeStatesTitle": "States",
+    "@homeStatesTitle": {},
+    "loadingStatesError": "An error occurred while loading the states, please restart the app",
+    "@loadingStatesError": {},
     "settingsAppBarTitle": "Settings",
     "@settingsAppBarTitle": {},
     "settingsLanguageTitle": "Language",
@@ -97,5 +107,17 @@
     "settingsVersionTitle": "Version",
     "@settingsVersionTitle": {},
     "settingsUpdateDateTitle": "Last update",
-    "@settingsUpdateDateTitle": {}
+    "@settingsUpdateDateTitle": {},
+    "permissionDenied": "Permission denied",
+    "@permissionDenied": {},
+    "savedToGallery": "Saved to gallery",
+    "@savedToGallery": {},
+    "errorSaving": "Error saving",
+    "@errorSaving": {},
+    "cancel": "Cancel",
+    "@cancel": {},
+    "save": "Save",
+    "@save": {},
+    "errorLoadingPreview": "Error loading preview",
+    "@errorLoadingPreview": {}
 }

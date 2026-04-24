@@ -10,12 +10,16 @@
             }
         }
     },
-    "welcomeDescription": "Per ascoltare i tuoi messaggi vocali, abbiamo bisogno di accedere alla cartella degli audio di WhatsApp",
-    "@welcomeDescription": {},
+    "welcomeAudiosDescription": "Per ascoltare i tuoi audio, abbiamo bisogno di accedere alla cartella di WhatsApp",
+    "@welcomeAudiosDescription": {},
+    "welcomeStatesDescription": "Per vedere e salvare i tuoi stati, abbiamo bisogno di accedere alla cartella di WhatsApp",
+    "@welcomeStatesDescription": {},
     "givePermissionButton": "Concedi permesso",
     "@givePermissionButton": {},
-    "noAudiosFound": "Non sono ancora stati trovati audios nella cartella di WhatsApp",
+    "noAudiosFound": "Nessun audio trovato",
     "@noAudiosFound": {},
+    "noStatesFound": "Nessuno stato trovato",
+    "@noStatesFound": {},
     "audiosFound": "{audios, plural, =1{1 audio} other{{audios} audios}}",
     "@audiosFound": {
         "placeholders": {
@@ -34,6 +38,12 @@
     },
     "weeksFilterTitle": "Filtra per settimane",
     "@weeksFilterTitle": {},
+    "homeAudiosTitle": "Audio",
+    "@homeAudiosTitle": {},
+    "homeStatesTitle": "Stati",
+    "@homeStatesTitle": {},
+    "loadingStatesError": "Si è verificato un errore durante il caricamento degli stati, riavvia l'app",
+    "@loadingStatesError": {},
     "settingsAppBarTitle": "Impostazioni",
     "@settingsAppBarTitle": {},
     "settingsLanguageTitle": "Lingua",
@@ -97,5 +107,17 @@
     "settingsVersionTitle": "Versione",
     "@settingsVersionTitle": {},
     "settingsUpdateDateTitle": "Data di aggiornamento",
-    "@settingsUpdateDateTitle": {}
+    "@settingsUpdateDateTitle": {},
+    "permissionDenied": "Permesso negato",
+    "@permissionDenied": {},
+    "savedToGallery": "Salvato in galleria",
+    "@savedToGallery": {},
+    "errorSaving": "Errore durante il salvataggio",
+    "@errorSaving": {},
+    "cancel": "Annulla",
+    "@cancel": {},
+    "save": "Salva",
+    "@save": {},
+    "errorLoadingPreview": "Errore durante il caricamento dell'anteprima",
+    "@errorLoadingPreview": {}
 }

@@ -20,6 +20,7 @@ dependencies:
   flutter_bloc: ^9.1.1
   flutter_localizations:
     sdk: flutter
+  gal: ^2.3.2
   get_it: ^9.2.1
   go_router: ^17.2.1
   hugeicons: ^1.1.6
@@ -28,6 +29,7 @@ dependencies:
   package_info_plus: ^10.0.0
   saf: ^1.0.4
   shared_preferences: ^2.5.5
+  video_player: ^2.11.1
 
 dev_dependencies:
   bloc_lint: ^0.4.1
@@ -38,6 +40,7 @@ dev_dependencies:
     sdk: flutter
   mocktail: ^1.0.5
   very_good_analysis: ^10.2.0
+  video_player_platform_interface: ^6.6.0
 
 flutter_launcher_icons:
   android: true

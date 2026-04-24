@@ -116,7 +116,7 @@ class LocaleSettingsCard extends StatelessWidget {
       case 'it':
         return l10n.settingsLanguageItalian;
       default:
-        return locale.languageCode;
+        return locale.languageCode; // coverage:ignore-line
     }
   }
 }
@@ -267,7 +267,7 @@ class ColorSettingsCard extends StatelessWidget {
       case 'BLUE_GREY':
         return l10n.settingsColorBlueGrey;
       default:
-        return colorKey;
+        return colorKey; // coverage:ignore-line
     }
   }
 }

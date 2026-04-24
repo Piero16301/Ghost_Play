@@ -5,12 +5,12 @@ import 'package:equatable/equatable.dart';
 import 'package:ghost_play/app/app.dart';
 import 'package:just_audio/just_audio.dart' as ja;
 
-part 'player_state.dart';
+part 'audios_home_state.dart';
 
-class PlayerCubit extends Cubit<PlayerState> {
-  PlayerCubit({ja.AudioPlayer? audioPlayer})
+class AudiosHomeCubit extends Cubit<AudiosHomeState> {
+  AudiosHomeCubit({ja.AudioPlayer? audioPlayer})
     : _audioPlayer = audioPlayer ?? ja.AudioPlayer(),
-      super(const PlayerState()) {
+      super(const AudiosHomeState()) {
     _initSubscriptions();
   }
 
@@ -44,17 +44,17 @@ class PlayerCubit extends Cubit<PlayerState> {
 
         if (processingState == ja.ProcessingState.loading ||
             processingState == ja.ProcessingState.buffering) {
-          emit(state.copyWith(status: PlayerStatus.loading));
+          emit(state.copyWith(status: AudiosHomeStatus.loading));
         } else if (processingState == ja.ProcessingState.ready) {
           if (playing) {
-            emit(state.copyWith(status: PlayerStatus.playing));
+            emit(state.copyWith(status: AudiosHomeStatus.playing));
           } else {
-            emit(state.copyWith(status: PlayerStatus.paused));
+            emit(state.copyWith(status: AudiosHomeStatus.paused));
           }
         } else if (processingState == ja.ProcessingState.completed) {
           emit(
             state.copyWith(
-              status: PlayerStatus.completed,
+              status: AudiosHomeStatus.completed,
               position: Duration.zero,
             ),
           );
@@ -66,14 +66,16 @@ class PlayerCubit extends Cubit<PlayerState> {
   Future<void> playAudio(AudioMetadata audio) async {
     if (state.currentAudio?.uri == audio.uri) return;
 
-    final trace = _performanceService.startTrace('player_cubit_play_audio');
+    final trace = _performanceService.startTrace(
+      'audio_playback_start_latency',
+    );
     try {
       _analyticsService.logEvent(name: 'play_audio');
       await _audioPlayer.stop();
 
       emit(
         state.copyWith(
-          status: PlayerStatus.loading,
+          status: AudiosHomeStatus.loading,
           isVisible: true,
           currentAudio: audio,
           position: Duration.zero,
@@ -97,7 +99,7 @@ class PlayerCubit extends Cubit<PlayerState> {
       );
       emit(
         state.copyWith(
-          status: PlayerStatus.error,
+          status: AudiosHomeStatus.error,
           errorMessage: e.toString(),
         ),
       );
@@ -114,7 +116,7 @@ class PlayerCubit extends Cubit<PlayerState> {
 
   Future<void> resume() async {
     _analyticsService.logEvent(name: 'resume_audio');
-    if (state.status == PlayerStatus.completed) {
+    if (state.status == AudiosHomeStatus.completed) {
       await _audioPlayer.seek(Duration.zero);
     }
     await _audioPlayer.play();
@@ -150,7 +152,7 @@ class PlayerCubit extends Cubit<PlayerState> {
   Future<void> closePlayer() async {
     _analyticsService.logEvent(name: 'close_player');
     await _audioPlayer.stop();
-    emit(const PlayerState());
+    emit(const AudiosHomeState());
   }
 
   @override

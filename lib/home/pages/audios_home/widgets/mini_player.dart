@@ -10,17 +10,15 @@ class MiniPlayer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<PlayerCubit, PlayerState>(
+    return BlocBuilder<AudiosHomeCubit, AudiosHomeState>(
       builder: (context, state) {
         if (!state.isVisible || state.currentAudio == null) {
           return const SizedBox.shrink();
         }
 
         final audio = state.currentAudio!;
-        final isPlaying =
-            state.status == PlayerStatus.playing ||
-            state.status == PlayerStatus.loading;
-        final isLoading = state.status == PlayerStatus.loading;
+        final isPlaying = state.status.isPlaying || state.status.isLoading;
+        final isLoading = state.status.isLoading;
 
         return Container(
           margin: const EdgeInsets.symmetric(vertical: 16),
@@ -36,8 +34,9 @@ class MiniPlayer extends StatelessWidget {
               Row(
                 children: [
                   GestureDetector(
-                    onTap: () =>
-                        unawaited(context.read<PlayerCubit>().changeSpeed()),
+                    onTap: () => unawaited(
+                      context.read<AudiosHomeCubit>().changeSpeed(),
+                    ),
                     child: Container(
                       width: 56,
                       height: 56,
@@ -48,7 +47,7 @@ class MiniPlayer extends StatelessWidget {
                       child: Center(
                         child: Text(
                           'x${state.playbackSpeed.toString().replaceAll(
-                            RegExp(r'\\.0\$'),
+                            RegExp(r'\.0$'),
                             '',
                           )}',
                           style: Theme.of(context).textTheme.titleMedium
@@ -108,9 +107,9 @@ class MiniPlayer extends StatelessWidget {
                       ),
                       onPressed: () {
                         if (isPlaying) {
-                          unawaited(context.read<PlayerCubit>().pause());
+                          unawaited(context.read<AudiosHomeCubit>().pause());
                         } else {
-                          unawaited(context.read<PlayerCubit>().resume());
+                          unawaited(context.read<AudiosHomeCubit>().resume());
                         }
                       },
                     ),
@@ -122,7 +121,8 @@ class MiniPlayer extends StatelessWidget {
                       ).colorScheme.onPrimaryContainer,
                       strokeWidth: 2,
                     ),
-                    onPressed: () => context.read<PlayerCubit>().closePlayer(),
+                    onPressed: () =>
+                        context.read<AudiosHomeCubit>().closePlayer(),
                   ),
                 ],
               ),
@@ -132,7 +132,9 @@ class MiniPlayer extends StatelessWidget {
                   position: state.position,
                   duration: state.duration,
                   onSeek: (position) {
-                    unawaited(context.read<PlayerCubit>().seek(position));
+                    unawaited(
+                      context.read<AudiosHomeCubit>().seek(position),
+                    );
                   },
                 ),
               ),

@@ -38,15 +38,15 @@ flowchart TD
     
     subgraph "State Management (Bloc/Cubit)"
       AppCubit[AppCubit<br>Global State]
-      FeatureCubits[Feature Cubits<br>Home, Settings, Player]
+      FeatureCubits[Feature Cubits<br>Home, Audios, States, Settings, Player]
     end
     
     subgraph "Services Layer (Business Logic)"
-      AppServices[Analytics, Crash, Perf, Local Storage]
+      AppServices[Analytics, Crash, Perf, Local Storage, Media Storage]
     end
 
     subgraph "Repositories Layer (Data Access)"
-      AppRepos[AnalyticsRepo, CrashRepo, PerfRepo, LocalStorageRepo]
+      AppRepos[AnalyticsRepo, CrashRepo, PerfRepo, LocalStorageRepo, StorageRepo]
     end
     
     subgraph "Dependency Injection (GetIt)"
@@ -81,11 +81,11 @@ flowchart TD
   AppRepos <-->|Telemetry Data| FirebaseTelemetry
 ```
 
-- **UI (Flutter Interface)**: Standardized presentation layer including the main dashboard and the persistent floating mini-player.
-- **State (Bloc/Cubit)**: Manages the application logic, handles the audio playback state (`PlayerCubit`), and fetching audios (`HomeCubit`).
+- **UI (Flutter Interface)**: Standardized presentation layer including the main dashboard, states viewer, and the persistent floating mini-player.
+- **State (Bloc/Cubit)**: Manages the application logic, handles audio playback state (`PlayerCubit`), fetching audios (`AudiosHomeCubit`), and managing WhatsApp statuses (`StatesHomeCubit`).
 - **Store (Local DB - SharedPreferences)**: Handles local data persistence across the device, preserving settings such as selected themes and languages.
 - **Services & Repositories**: Follows the Repository Pattern. Connects with Dependency Injection (`get_it`). Telemetry is sent via Firebase infrastructure.
-- **Native OS APIs**: Uses `MethodChannel` internally to interact with native Android APIs, fetching local `.opus` audio files effectively from device storage.
+- **Native OS APIs**: Uses `MethodChannel` internally to interact with native Android APIs, fetching local `.opus` audio files and cached statuses effectively from device storage.
 
 ---
 
@@ -125,11 +125,12 @@ Employs the Repository Pattern connected via Dependency Injection. It isolates b
 
 | Layer | Responsibility | Key Files |
 |-------|----------------|-----------|
-| **Repositories** (`lib/app/repositories/`) | Low-level hardware or OS interactions, shared preference management, and SDK API wrappers. | `analytics_repository.dart`, `crash_repository.dart`, `local_storage_repository.dart`, `performance_repository.dart` |
-| **Services** (`lib/app/services/`) | Provides high-level business flows orchestrating the repository layers, used directly by UI and Cubits. | `analytics_service.dart`, `crash_service.dart`, `local_storage_service.dart`, `performance_service.dart` |
+| **Repositories** (`lib/app/repositories/`) | Low-level hardware or OS interactions, shared preference management, and SDK API wrappers. | `analytics_repository.dart`, `crash_repository.dart`, `local_storage_repository.dart`, `performance_repository.dart`, `storage_repository.dart` |
+| **Services** (`lib/app/services/`) | Provides high-level business flows orchestrating the repository layers, used directly by UI and Cubits. | `analytics_service.dart`, `crash_service.dart`, `local_storage_service.dart`, `performance_service.dart`, `storage_service.dart` |
 
 **Key Capabilities:**
 - **Local Storage**: `LocalStorageService` to read and write application app states locally.
+- **Media Storage**: `StorageService` providing global access to the device's native media capabilities, handling files and scoped storage integrations.
 - **Infrastructure & Telemetry**: Handles Crashlytics error logging, performance tracing, and behavior analytics natively through Firebase integrations.
 
 ---
@@ -154,14 +155,14 @@ Employs the Repository Pattern connected via Dependency Injection. It isolates b
 
 ## Feature Modules
 
-### Home & Player
+### Home & Features (Audios & States)
 
-- **lib/home/***  
+- **lib/home/pages/***  
 
 **Highlights:**  
-- **Home Dashboard**: Interrogates native device capabilities to read local audio directories (specifically fetching recent `.opus` audios) via a `MethodChannel`.
-- **Mini-Player UI**: Includes an interactive persistent floating player using `just_audio` allowing manual seek, pausing functionality seamlessly overlaid inside `HomeView`.
-- Driven by states like `HomeCubit` (handling time frames for fetch algorithms, e.g., fetching 2 weeks of history) and a `PlayerCubit` taking care of audio transport layers.
+- **Audios Home (`audios_home`)**: Interrogates native device capabilities to read local audio directories (specifically fetching recent `.opus` audios) via a `MethodChannel`. Includes an interactive persistent floating player using `just_audio` seamlessly overlaid inside the view.
+- **States Home (`states_home`)**: Features a WhatsApp Status Viewer that processes cached scoped-storage files via native channels. It supports previewing media (images and dynamic video playback with proper aspect ratio handling) and saving these statuses directly to the user's photo gallery.
+- Driven by specific states like `AudiosHomeCubit` (handling audio fetch algorithms) and `StatesHomeCubit` (handling media extraction and saving workflows), coordinated alongside the playback state in `PlayerCubit`.
 
 ---
 
@@ -198,11 +199,13 @@ Employs the Repository Pattern connected via Dependency Injection. It isolates b
 ### Key Data Models
 
 - **lib/app/models/audio_metadata.dart**: Outlines structure detailing localized timestamps, durations, URIs, and descriptions for ingested `.opus` files processing directly from Android Media stores mapping seamlessly to Dart representations.
+- **lib/app/models/state_metadata.dart**: Defines the structure for WhatsApp status media files (images and videos), including properties necessary for correct rendering and aspect-ratio orientation.
 - **Settings configuration models**: Defined directly alongside `app_state.dart` handling localized preference combinations.
 
 ### Packages
 - Primary ecosystem relies heavily on `flutter_bloc` and `equatable` mapping robust state architectures.
 - Employs `just_audio` managing robust, platform agnostic media playback and playback queues.
+- Utilizes the `gal` package allowing direct, seamless saving of status media down to the local photo gallery.
 
 ---
 

@@ -37,11 +37,13 @@ void main() {
       expect(getIt.isRegistered<PerformanceService>(), isTrue);
       expect(getIt.isRegistered<AnalyticsService>(), isTrue);
       expect(getIt.isRegistered<LocalStorageService>(), isTrue);
+      expect(getIt.isRegistered<StorageService>(), isTrue);
 
       expect(getIt<CrashService>(), isA<CrashService>());
       expect(getIt<PerformanceService>(), isA<PerformanceService>());
       expect(getIt<AnalyticsService>(), isA<AnalyticsService>());
       expect(getIt<LocalStorageService>(), isA<LocalStorageService>());
+      expect(getIt<StorageService>(), isA<StorageService>());
     });
 
     test('setupServiceLocator registers prod dependencies', () {
@@ -51,6 +53,7 @@ void main() {
       expect(getIt.isRegistered<PerformanceService>(), isTrue);
       expect(getIt.isRegistered<AnalyticsService>(), isTrue);
       expect(getIt.isRegistered<LocalStorageService>(), isTrue);
+      expect(getIt.isRegistered<StorageService>(), isTrue);
 
       try {
         getIt<CrashService>();
@@ -63,6 +66,9 @@ void main() {
       } on Exception catch (_) {}
       try {
         getIt<LocalStorageService>();
+      } on Exception catch (_) {}
+      try {
+        getIt<StorageService>();
       } on Exception catch (_) {}
     });
 
@@ -89,12 +95,20 @@ void main() {
           ServiceFactory.getLocalStorageRepository(Environment.mock),
           isA<MockLocalStorageRepository>(),
         );
+        expect(
+          ServiceFactory.getStorageRepository(Environment.mock),
+          isA<MockStorageRepository>(),
+        );
       });
 
       test('prod cases (hitting lines via try-catch)', () {
         expect(
           ServiceFactory.getLocalStorageRepository(Environment.prod),
           isA<SharedPrefsLocalStorageRepository>(),
+        );
+        expect(
+          ServiceFactory.getStorageRepository(Environment.prod),
+          isA<MethodChannelStorageRepository>(),
         );
 
         try {

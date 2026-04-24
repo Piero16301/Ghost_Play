@@ -15,46 +15,61 @@ enum HomeStatus {
 
 class HomeState extends Equatable {
   const HomeState({
-    this.status = HomeStatus.initial,
+    this.selectedIndex = 0,
+    this.audiosStatus = HomeStatus.initial,
+    this.statesStatus = HomeStatus.initial,
     this.saf,
     this.hasPermission = false,
     this.savedDirectoryUri = '',
     this.audios = const <AudioMetadata>[],
-    this.weeks = 1,
+    this.audioWeeksFilter = 1,
+    this.states = const <StateMetadata>[],
   });
 
-  final HomeStatus status;
+  final int selectedIndex;
+  final HomeStatus audiosStatus;
+  final HomeStatus statesStatus;
   final Saf? saf;
   final bool hasPermission;
   final String savedDirectoryUri;
   final List<AudioMetadata> audios;
-  final int weeks;
+  final int audioWeeksFilter;
+  final List<StateMetadata> states;
 
   HomeState copyWith({
-    HomeStatus? status,
+    int? selectedIndex,
+    HomeStatus? audiosStatus,
+    HomeStatus? statesStatus,
     Saf? saf,
     bool? hasPermission,
     String? savedDirectoryUri,
     List<AudioMetadata>? audios,
-    int? weeks,
+    int? audioWeeksFilter,
+    List<StateMetadata>? states,
   }) {
     return HomeState(
-      status: status ?? this.status,
+      selectedIndex: selectedIndex ?? this.selectedIndex,
+      audiosStatus: audiosStatus ?? this.audiosStatus,
+      statesStatus: statesStatus ?? this.statesStatus,
       saf: saf ?? this.saf,
       hasPermission: hasPermission ?? this.hasPermission,
       savedDirectoryUri: savedDirectoryUri ?? this.savedDirectoryUri,
       audios: audios ?? this.audios,
-      weeks: weeks ?? this.weeks,
+      audioWeeksFilter: audioWeeksFilter ?? this.audioWeeksFilter,
+      states: states ?? this.states,
     );
   }
 
   @override
   List<Object?> get props => [
-    status,
+    selectedIndex,
+    audiosStatus,
+    statesStatus,
     saf,
     hasPermission,
     savedDirectoryUri,
     audios,
-    weeks,
+    audioWeeksFilter,
+    states,
   ];
 }

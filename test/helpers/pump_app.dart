@@ -11,7 +11,8 @@ extension PumpApp on WidgetTester {
     Widget widget, {
     AppCubit? appCubit,
     HomeCubit? homeCubit,
-    PlayerCubit? playerCubit,
+    AudiosHomeCubit? audiosHomeCubit,
+    StatesHomeCubit? statesHomeCubit,
     GoRouter? router,
     Locale? locale,
   }) {
@@ -23,7 +24,10 @@ extension PumpApp on WidgetTester {
           else
             BlocProvider(create: (_) => AppCubit()),
           if (homeCubit != null) BlocProvider.value(value: homeCubit),
-          if (playerCubit != null) BlocProvider.value(value: playerCubit),
+          if (audiosHomeCubit != null)
+            BlocProvider.value(value: audiosHomeCubit),
+          if (statesHomeCubit != null)
+            BlocProvider.value(value: statesHomeCubit),
         ],
         child: router != null
             ? MaterialApp.router(

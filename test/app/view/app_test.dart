@@ -11,6 +11,7 @@ void main() {
   late MockAnalyticsService analyticsService;
   late MockCrashService crashService;
   late MockPerformanceService performanceService;
+  late MockStorageService storageService;
 
   setUpAll(registerFallbackValues);
 
@@ -19,13 +20,15 @@ void main() {
     analyticsService = MockAnalyticsService();
     crashService = MockCrashService();
     performanceService = MockPerformanceService();
+    storageService = MockStorageService();
 
     unawaited(getIt.reset());
     getIt
       ..registerSingleton<LocalStorageService>(localStorageService)
       ..registerSingleton<AnalyticsService>(analyticsService)
       ..registerSingleton<CrashService>(crashService)
-      ..registerSingleton<PerformanceService>(performanceService);
+      ..registerSingleton<PerformanceService>(performanceService)
+      ..registerSingleton<StorageService>(storageService);
 
     when(() => localStorageService.getLanguage()).thenReturn(null);
     when(() => localStorageService.getTheme()).thenReturn(null);
@@ -54,11 +57,15 @@ void main() {
         parameters: any(named: 'parameters'),
       ),
     ).thenAnswer((_) async {});
+    when(
+      () => storageService.getPersistedPermissionDirectories(),
+    ).thenAnswer((_) async => []);
   });
 
   group('AppPage', () {
     testWidgets('renders AppView', (tester) async {
-      await tester.pumpWidget(const AppPage());
+      // ignore: prefer_const_constructors // To prevent testing framework
+      await tester.pumpWidget(AppPage());
       expect(find.byType(AppView), findsOneWidget);
     });
   });
