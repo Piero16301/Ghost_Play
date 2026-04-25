@@ -1,6 +1,6 @@
 {
     "@@locale": "es",
-    "loadingAudiosError": "Ocurrió un error al cargar los audios, por favor reinicia la app",
+    "loadingAudiosError": "Ocurrió un error al cargar las notas de voz, por favor reinicia la app",
     "@loadingAudiosError": {},
     "welcomeTitle": "¡Bienvenido a {appName}!",
     "@welcomeTitle": {
@@ -10,17 +10,17 @@
             }
         }
     },
-    "welcomeAudiosDescription": "Para escuchar tus audios, necesitamos acceso a la carpeta de WhatsApp",
+    "welcomeAudiosDescription": "Para escuchar tus notas de voz, necesitamos acceso a la carpeta de WhatsApp",
     "@welcomeAudiosDescription": {},
     "welcomeStatesDescription": "Para ver y guardar tus estados, necesitamos acceso a la carpeta de WhatsApp",
     "@welcomeStatesDescription": {},
     "givePermissionButton": "Conceder permiso",
     "@givePermissionButton": {},
-    "noAudiosFound": "Aún no se han encontrado audios",
+    "noAudiosFound": "Aún no se han encontrado notas de voz",
     "@noAudiosFound": {},
     "noStatesFound": "Aún no se han encontrado estados",
     "@noStatesFound": {},
-    "audiosFound": "{audios, plural, =1{1 audio} other{{audios} audios}}",
+    "audiosFound": "{audios, plural, =1{1 nota de voz} other{{audios} notas de voz}}",
     "@audiosFound": {
         "placeholders": {
             "audios": {
@@ -38,7 +38,7 @@
     },
     "weeksFilterTitle": "Filtrar por semanas",
     "@weeksFilterTitle": {},
-    "homeAudiosTitle": "Audios",
+    "homeAudiosTitle": "Notas de Voz",
     "@homeAudiosTitle": {},
     "homeStatesTitle": "Estados",
     "@homeStatesTitle": {},
@@ -119,5 +119,21 @@
     "save": "Guardar",
     "@save": {},
     "errorLoadingPreview": "Error al cargar la vista previa",
-    "@errorLoadingPreview": {}
+    "@errorLoadingPreview": {},
+    "loadingVideosError": "Ocurrió un error al cargar las notas de video, por favor reinicia la app",
+    "@loadingVideosError": {},
+    "homeVideosTitle": "Notas de Video",
+    "@homeVideosTitle": {},
+    "welcomeVideosDescription": "Para ver y guardar tus notas de video, necesitamos acceso a la carpeta de WhatsApp",
+    "@welcomeVideosDescription": {},
+    "noVideosFound": "Aún no se han encontrado notas de video",
+    "@noVideosFound": {},
+    "videosFound": "{videos, plural, =1{1 nota de video} other{{videos} notas de video}}",
+    "@videosFound": {
+        "placeholders": {
+            "videos": {
+                "type": "int"
+            }
+        }
+    }
 }

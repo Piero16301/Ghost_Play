@@ -7,7 +7,7 @@ class CircularLoadingAnimation extends StatefulWidget {
   const CircularLoadingAnimation({
     required this.outerCircleColor,
     required this.innerCircleColor,
-    required this.backgroundColor,
+    this.backgroundColor = Colors.transparent,
     super.key,
     this.centerWidget,
     this.size = 120.0,

@@ -1,11 +1,11 @@
 import 'package:equatable/equatable.dart';
 
-/// {@template state_metadata}
-/// A class that represents the metadata of a state file.
+/// {@template multimedia_metadata}
+/// A class that represents the metadata of a multimedia file.
 /// {@endtemplate}
-class StateMetadata extends Equatable {
-  // {@macro state_metadata}
-  const StateMetadata({
+class MultimediaMetadata extends Equatable {
+  // {@macro multimedia_metadata}
+  const MultimediaMetadata({
     required this.uri,
     required this.name,
     required this.date,
@@ -14,9 +14,9 @@ class StateMetadata extends Equatable {
     this.videoDurationMs = 0,
   });
 
-  /// Creates an instance of [StateMetadata] from a [Map]
-  factory StateMetadata.fromMap(Map<String, dynamic> map) {
-    return StateMetadata(
+  /// Creates an instance of [MultimediaMetadata] from a [Map]
+  factory MultimediaMetadata.fromMap(Map<String, dynamic> map) {
+    return MultimediaMetadata(
       uri: map['uri'] as String? ?? '',
       name: map['name'] as String? ?? '',
       date: DateTime.fromMillisecondsSinceEpoch(
@@ -28,7 +28,7 @@ class StateMetadata extends Equatable {
     );
   }
 
-  /// Creates a [Map] from an instance of [StateMetadata]
+  /// Creates a [Map] from an instance of [MultimediaMetadata]
   Map<String, dynamic> toMap() {
     return {
       'uri': uri,
@@ -40,8 +40,8 @@ class StateMetadata extends Equatable {
     };
   }
 
-  /// An empty instance of [StateMetadata]
-  static final empty = StateMetadata(
+  /// An empty instance of [MultimediaMetadata]
+  static final empty = MultimediaMetadata(
     uri: '',
     name: '',
     date: DateTime.now(),
@@ -49,7 +49,7 @@ class StateMetadata extends Equatable {
     isVideo: false,
   );
 
-  /// Get formatted duration of the state file
+  /// Get formatted duration of the multimedia file
   String get formattedDuration {
     if (isVideo) {
       final duration = Duration(milliseconds: videoDurationMs);
@@ -70,7 +70,7 @@ class StateMetadata extends Equatable {
     return '';
   }
 
-  /// Get formatted size of the state file
+  /// Get formatted size of the multimedia file
   String get formattedSize {
     if (sizeBytes < 1024) {
       return '$sizeBytes B';
@@ -83,22 +83,22 @@ class StateMetadata extends Equatable {
     }
   }
 
-  /// Uri of the state file
+  /// Uri of the multimedia file
   final String uri;
 
-  /// Name of the state file
+  /// Name of the multimedia file
   final String name;
 
-  /// Date of the state file
+  /// Date of the multimedia file
   final DateTime date;
 
-  /// Size of the state file in bytes
+  /// Size of the multimedia file in bytes
   final int sizeBytes;
 
-  /// Whether the state file is a video
+  /// Whether the multimedia file is a video
   final bool isVideo;
 
-  /// Duration of the state file in milliseconds
+  /// Duration of the multimedia file in milliseconds
   final int videoDurationMs;
 
   @override

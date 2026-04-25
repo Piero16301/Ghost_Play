@@ -99,6 +99,23 @@ void main() {
       expect(result, bytes);
     });
 
+    test('getRecentVideos calls method channel', () async {
+      TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(storageChannel, (methodCall) async {
+            if (methodCall.method == 'getRecentVideos') {
+              return [
+                {'uri': 'v'},
+              ];
+            }
+            return null;
+          });
+
+      final result = await repository.getRecentVideos(uri: 'uri1', weeks: 3);
+      expect(result, [
+        {'uri': 'v'},
+      ]);
+    });
+
     test('cacheFile calls method channel', () async {
       TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
           .setMockMethodCallHandler(storageChannel, (methodCall) async {
@@ -149,6 +166,11 @@ void main() {
         isVideo: true,
       );
       expect(result, isNull);
+    });
+
+    test('getRecentVideos returns empty list', () async {
+      final result = await repository.getRecentVideos(uri: 'uri1', weeks: 2);
+      expect(result, isEmpty);
     });
 
     test('cacheFile returns null', () async {

@@ -13,17 +13,14 @@ import '../../../../helpers/service_locator.dart';
 
 void main() {
   late HomeCubit homeCubit;
-  late StatesHomeCubit statesHomeCubit;
 
   setUpAll(registerFallbackValues);
 
   setUp(() async {
     await setupServiceLocatorMocks();
     homeCubit = MockHomeCubit();
-    statesHomeCubit = MockStatesHomeCubit();
 
     when(() => homeCubit.state).thenReturn(const HomeState());
-    when(() => statesHomeCubit.state).thenReturn(const StatesHomeState());
 
     when(() => homeCubit.loadStates()).thenAnswer((_) async {});
     when(() => homeCubit.requestPermission()).thenAnswer((_) async {});
@@ -81,7 +78,6 @@ void main() {
       await tester.pumpApp(
         const StatesHomeView(),
         homeCubit: homeCubit,
-        statesHomeCubit: statesHomeCubit,
       );
 
       expect(find.byType(CircularLoadingAnimation), findsOneWidget);
@@ -97,7 +93,6 @@ void main() {
       await tester.pumpApp(
         const StatesHomeView(),
         homeCubit: homeCubit,
-        statesHomeCubit: statesHomeCubit,
       );
 
       expect(
@@ -116,7 +111,6 @@ void main() {
       await tester.pumpApp(
         const StatesHomeView(),
         homeCubit: homeCubit,
-        statesHomeCubit: statesHomeCubit,
       );
 
       expect(find.text('Grant permission'), findsOneWidget);
@@ -135,7 +129,6 @@ void main() {
       await tester.pumpApp(
         const StatesHomeView(),
         homeCubit: homeCubit,
-        statesHomeCubit: statesHomeCubit,
       );
 
       expect(find.text('No states found yet'), findsOneWidget);
@@ -144,7 +137,7 @@ void main() {
     testWidgets('renders grid of states and opens preview on tap', (
       tester,
     ) async {
-      final stateItem = StateMetadata(
+      final stateItem = MultimediaMetadata(
         uri: 'uri',
         name: 'test.jpg',
         date: DateTime.now(),
@@ -159,7 +152,6 @@ void main() {
       await tester.pumpApp(
         const StatesHomeView(),
         homeCubit: homeCubit,
-        statesHomeCubit: statesHomeCubit,
       );
 
       expect(find.byType(GridView), findsOneWidget);
@@ -174,7 +166,7 @@ void main() {
         ),
       ).called(1);
 
-      expect(find.byType(StatePreviewDialog), findsOneWidget);
+      expect(find.byType(MultimediaPreviewDialog), findsOneWidget);
     });
 
     testWidgets('calls loadStates on refresh', (tester) async {
@@ -182,7 +174,7 @@ void main() {
         HomeState(
           hasPermission: true,
           states: [
-            StateMetadata(
+            MultimediaMetadata(
               uri: 'uri',
               name: 'test.jpg',
               date: DateTime.now(),
@@ -196,7 +188,6 @@ void main() {
       await tester.pumpApp(
         const StatesHomeView(),
         homeCubit: homeCubit,
-        statesHomeCubit: statesHomeCubit,
       );
 
       final refreshIndicator = tester.widget<RefreshIndicator>(
@@ -289,7 +280,7 @@ void main() {
         ),
       ).thenAnswer((_) async => thumbBytes);
 
-      final stateItem = StateMetadata(
+      final stateItem = MultimediaMetadata(
         uri: 'uri',
         name: 'test.jpg',
         date: DateTime.now(),
@@ -304,7 +295,6 @@ void main() {
       await tester.pumpApp(
         const StatesHomeView(),
         homeCubit: homeCubit,
-        statesHomeCubit: statesHomeCubit,
       );
 
       await tester.pump();
@@ -315,7 +305,7 @@ void main() {
     testWidgets('renders play icon overlay for video items', (
       tester,
     ) async {
-      final stateItem = StateMetadata(
+      final stateItem = MultimediaMetadata(
         uri: 'video_uri',
         name: 'test.mp4',
         date: DateTime.now(),
@@ -330,7 +320,6 @@ void main() {
       await tester.pumpApp(
         const StatesHomeView(),
         homeCubit: homeCubit,
-        statesHomeCubit: statesHomeCubit,
       );
 
       await tester.pump();

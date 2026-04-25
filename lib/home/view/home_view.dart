@@ -38,6 +38,7 @@ class _HomeViewState extends State<HomeView> {
               fontWeight: FontWeight.w600,
             ),
           ),
+          notificationPredicate: (_) => false,
           leading: IconButton(
             padding: EdgeInsets.zero,
             icon: const HugeIcon(
@@ -76,6 +77,8 @@ class _HomeViewState extends State<HomeView> {
         return const AudiosHomePage();
       case 1:
         return const StatesHomePage();
+      case 2:
+        return const VideosHomePage();
       default:
         return const SizedBox.shrink();
     }
@@ -108,6 +111,13 @@ class BottomNavigationBarHome extends StatelessWidget {
               strokeWidth: 2,
             ),
             label: l10n.homeStatesTitle,
+          ),
+          NavigationDestination(
+            icon: const HugeIcon(
+              icon: HugeIcons.strokeRoundedVideo01,
+              strokeWidth: 2,
+            ),
+            label: l10n.homeVideosTitle,
           ),
         ],
       ),

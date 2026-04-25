@@ -93,12 +93,15 @@ void main() {
         0,
         HomeStatus.initial,
         HomeStatus.initial,
+        HomeStatus.initial,
         null,
         false,
         '',
         const <AudioMetadata>[],
         1,
-        const <StateMetadata>[],
+        const <MultimediaMetadata>[],
+        const <MultimediaMetadata>[],
+        1,
       ]);
     });
   });
@@ -131,6 +134,12 @@ void main() {
           when(
             () =>
                 storageService.getRecentStates(uri: any<String>(named: 'uri')),
+          ).thenAnswer((_) async => []);
+          when(
+            () => storageService.getRecentVideos(
+              uri: any<String>(named: 'uri'),
+              weeks: any<int>(named: 'weeks'),
+            ),
           ).thenAnswer((_) async => []);
         },
         build: () => homeCubit,
@@ -172,7 +181,15 @@ void main() {
         'returns early if saf is null',
         build: () => homeCubit,
         act: (cubit) => cubit.loadAudios(),
-        expect: () => <AudioMetadata>[],
+        expect: () => <HomeState>[],
+      );
+
+      blocTest<HomeCubit, HomeState>(
+        'returns early if savedDirectoryUri is empty',
+        seed: () => HomeState(saf: mockSaf),
+        build: () => homeCubit,
+        act: (cubit) => cubit.loadAudios(),
+        expect: () => <HomeState>[],
       );
 
       blocTest<HomeCubit, HomeState>(
@@ -299,6 +316,12 @@ void main() {
             () =>
                 storageService.getRecentStates(uri: any<String>(named: 'uri')),
           ).thenAnswer((_) async => []);
+          when(
+            () => storageService.getRecentVideos(
+              uri: any<String>(named: 'uri'),
+              weeks: any<int>(named: 'weeks'),
+            ),
+          ).thenAnswer((_) async => []);
         },
         build: () => homeCubit,
         act: (cubit) => cubit.requestPermission(),
@@ -320,11 +343,38 @@ void main() {
         act: (cubit) => cubit.requestPermission(),
         expect: () => <HomeState>[],
       );
+
+      blocTest<HomeCubit, HomeState>(
+        'does nothing when isGranted is null',
+        setUp: () {
+          when(
+            () => storageService.getDirectoryPermission(any<String>()),
+          ).thenAnswer((_) async => null);
+        },
+        build: () => homeCubit,
+        act: (cubit) => cubit.requestPermission(),
+        expect: () => <HomeState>[],
+      );
+
+      blocTest<HomeCubit, HomeState>(
+        'does nothing when granted but persistedDirs is empty',
+        setUp: () {
+          when(
+            () => storageService.getDirectoryPermission(any<String>()),
+          ).thenAnswer((_) async => true);
+          when(
+            () => storageService.getPersistedPermissionDirectories(),
+          ).thenAnswer((_) async => []);
+        },
+        build: () => homeCubit,
+        act: (cubit) => cubit.requestPermission(),
+        expect: () => <HomeState>[],
+      );
     });
 
     group('setWeeks', () {
       blocTest<HomeCubit, HomeState>(
-        'emits updated weeks and loads audios',
+        'emits updated audio weeks and loads audios',
         setUp: () {
           when(
             () => storageService.getRecentAudios(
@@ -334,16 +384,40 @@ void main() {
           ).thenAnswer((_) async => []);
         },
         build: () => homeCubit,
-        act: (cubit) => cubit.setWeeks(2),
+        act: (cubit) => cubit.setAudiosWeeks(2),
         expect: () => [
           const HomeState(audioWeeksFilter: 2),
         ],
       );
 
       blocTest<HomeCubit, HomeState>(
-        'does nothing if weeks are the same',
+        'emits updated video weeks and loads videos',
+        setUp: () {
+          when(
+            () => storageService.getRecentVideos(
+              uri: any<String>(named: 'uri'),
+              weeks: any<int>(named: 'weeks'),
+            ),
+          ).thenAnswer((_) async => []);
+        },
         build: () => homeCubit,
-        act: (cubit) => cubit.setWeeks(1),
+        act: (cubit) => cubit.setVideosWeeks(2),
+        expect: () => [
+          const HomeState(videoWeeksFilter: 2),
+        ],
+      );
+
+      blocTest<HomeCubit, HomeState>(
+        'does nothing if audio weeks are the same',
+        build: () => homeCubit,
+        act: (cubit) => cubit.setAudiosWeeks(1),
+        expect: () => <HomeState>[],
+      );
+
+      blocTest<HomeCubit, HomeState>(
+        'does nothing if video weeks are the same',
+        build: () => homeCubit,
+        act: (cubit) => cubit.setVideosWeeks(1),
         expect: () => <HomeState>[],
       );
     });
@@ -382,7 +456,7 @@ void main() {
             saf: mockSaf,
             savedDirectoryUri: 'uri1',
             states: [
-              StateMetadata(
+              MultimediaMetadata(
                 uri: 'a',
                 name: 'n',
                 date: DateTime.fromMillisecondsSinceEpoch(123),
@@ -443,6 +517,138 @@ void main() {
           ),
           HomeState(
             statesStatus: HomeStatus.failure,
+            saf: mockSaf,
+            savedDirectoryUri: 'uri1',
+          ),
+        ],
+      );
+
+      blocTest<HomeCubit, HomeState>(
+        'returns early if saf is null',
+        build: () => homeCubit,
+        act: (cubit) => cubit.loadStates(),
+        expect: () => <HomeState>[],
+      );
+
+      blocTest<HomeCubit, HomeState>(
+        'returns early if savedDirectoryUri is empty',
+        seed: () => HomeState(saf: mockSaf),
+        build: () => homeCubit,
+        act: (cubit) => cubit.loadStates(),
+        expect: () => <HomeState>[],
+      );
+    });
+
+    group('loadVideos', () {
+      blocTest<HomeCubit, HomeState>(
+        'returns early if saf is null',
+        build: () => homeCubit,
+        act: (cubit) => cubit.loadVideos(),
+        expect: () => <HomeState>[],
+      );
+
+      blocTest<HomeCubit, HomeState>(
+        'returns early if savedDirectoryUri is empty',
+        seed: () => HomeState(saf: mockSaf),
+        build: () => homeCubit,
+        act: (cubit) => cubit.loadVideos(),
+        expect: () => <HomeState>[],
+      );
+
+      blocTest<HomeCubit, HomeState>(
+        'emits success with loaded videos',
+        seed: () => HomeState(
+          savedDirectoryUri: 'uri1',
+          saf: mockSaf,
+        ),
+        setUp: () {
+          when(
+            () => storageService.getRecentVideos(uri: 'uri1', weeks: 1),
+          ).thenAnswer(
+            (_) async => [
+              {
+                'uri': 'v',
+                'name': 'n',
+                'date': 123,
+                'size': 100,
+                'is_video': true,
+              },
+            ],
+          );
+        },
+        build: () => homeCubit,
+        act: (cubit) => cubit.loadVideos(),
+        expect: () => [
+          HomeState(
+            videosStatus: HomeStatus.loading,
+            saf: mockSaf,
+            savedDirectoryUri: 'uri1',
+          ),
+          HomeState(
+            videosStatus: HomeStatus.success,
+            saf: mockSaf,
+            savedDirectoryUri: 'uri1',
+            videos: [
+              MultimediaMetadata(
+                uri: 'v',
+                name: 'n',
+                date: DateTime.fromMillisecondsSinceEpoch(123),
+                sizeBytes: 100,
+                isVideo: true,
+              ),
+            ],
+          ),
+        ],
+      );
+
+      blocTest<HomeCubit, HomeState>(
+        'emits failure on PlatformException',
+        seed: () => HomeState(
+          savedDirectoryUri: 'uri1',
+          saf: mockSaf,
+        ),
+        setUp: () {
+          when(
+            () => storageService.getRecentVideos(uri: 'uri1', weeks: 1),
+          ).thenThrow(PlatformException(code: 'error'));
+        },
+        build: () => homeCubit,
+        act: (cubit) => cubit.loadVideos(),
+        expect: () => [
+          HomeState(
+            videosStatus: HomeStatus.loading,
+            saf: mockSaf,
+            savedDirectoryUri: 'uri1',
+          ),
+          HomeState(
+            videosStatus: HomeStatus.failure,
+            saf: mockSaf,
+            savedDirectoryUri: 'uri1',
+          ),
+        ],
+      );
+
+      blocTest<HomeCubit, HomeState>(
+        'emits failure on Exception',
+        seed: () => HomeState(
+          savedDirectoryUri: 'uri1',
+          saf: mockSaf,
+        ),
+        setUp: () {
+          when(
+            () => storageService.getRecentVideos(uri: 'uri1', weeks: 1),
+          ).thenThrow(Exception('error'));
+        },
+        build: () => homeCubit,
+        act: (cubit) => cubit.loadVideos(),
+        expect: () => [
+          HomeState(
+            videosStatus: HomeStatus.loading,
+            saf: mockSaf,
+            savedDirectoryUri: 'uri1',
+          ),
+          HomeState(
+            videosStatus: HomeStatus.failure,
             saf: mockSaf,
             savedDirectoryUri: 'uri1',
           ),

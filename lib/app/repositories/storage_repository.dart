@@ -10,6 +10,10 @@ abstract class StorageRepository {
   Future<List<dynamic>?> getRecentStates({
     required String uri,
   });
+  Future<List<dynamic>?> getRecentVideos({
+    required String uri,
+    required int weeks,
+  });
   Future<Uint8List?> getThumbnailBytes({
     required String uri,
     required bool isVideo,
@@ -38,6 +42,14 @@ class MockStorageRepository implements StorageRepository {
   @override
   Future<List<dynamic>?> getRecentStates({
     required String uri,
+  }) async {
+    return [];
+  }
+
+  @override
+  Future<List<dynamic>?> getRecentVideos({
+    required String uri,
+    required int weeks,
   }) async {
     return [];
   }
@@ -94,6 +106,20 @@ class MethodChannelStorageRepository implements StorageRepository {
       'getRecentStates',
       {
         'uri': uri,
+      },
+    );
+  }
+
+  @override
+  Future<List<dynamic>?> getRecentVideos({
+    required String uri,
+    required int weeks,
+  }) {
+    return _platform.invokeMethod<List<dynamic>>(
+      'getRecentVideos',
+      {
+        'uri': uri,
+        'weeks': weeks,
       },
     );
   }

@@ -121,7 +121,7 @@ void main() {
       (tester) async {
         when(
           () => homeCubit.state,
-        ).thenReturn(const HomeState(selectedIndex: 2));
+        ).thenReturn(const HomeState(selectedIndex: 3));
 
         await tester.pumpWidget(createWidgetUnderTest());
 

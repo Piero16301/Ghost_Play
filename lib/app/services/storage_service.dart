@@ -30,6 +30,16 @@ class StorageService {
     );
   }
 
+  Future<List<dynamic>?> getRecentVideos({
+    required String uri,
+    required int weeks,
+  }) {
+    return _storageRepository.getRecentVideos(
+      uri: uri,
+      weeks: weeks,
+    );
+  }
+
   Future<Uint8List?> getThumbnailBytes({
     required String uri,
     required bool isVideo,

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:ghost_play/home/pages/states_home/states_home.dart';
 
 class StatesHomePage extends StatelessWidget {
@@ -7,9 +6,6 @@ class StatesHomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => StatesHomeCubit(),
-      child: const StatesHomeView(),
-    );
+    return const StatesHomeView();
   }
 }

@@ -14,6 +14,7 @@ class StatesHomeView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    final darkTheme = Theme.of(context).brightness == Brightness.dark;
 
     return BlocBuilder<HomeCubit, HomeState>(
       builder: (context, state) {
@@ -22,13 +23,21 @@ class StatesHomeView extends StatelessWidget {
             child: SizedBox.square(
               dimension: 120,
               child: CircularLoadingAnimation(
-                outerCircleColor: const Color(0xFF0DE4F9),
-                innerCircleColor: Colors.white,
-                backgroundColor: const Color(0xFF0F1B33),
-                centerWidget: Image.asset(
-                  'assets/images/logo-no-bg.png',
-                  width: 40,
-                  height: 40,
+                outerCircleColor: darkTheme
+                    ? const Color(0xFF0DE4F9)
+                    : const Color(0xFF0F1B33),
+                innerCircleColor: darkTheme
+                    ? Colors.white
+                    : const Color(0xFF0DE4F9),
+                centerWidget: Padding(
+                  padding: const EdgeInsets.all(8),
+                  child: Image.asset(
+                    darkTheme
+                        ? AppVariables.logoNoBgDark
+                        : AppVariables.logoNoBgLight,
+                    width: 40,
+                    height: 40,
+                  ),
                 ),
               ),
             ),
@@ -49,19 +58,12 @@ class StatesHomeView extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Container(
+                Image.asset(
+                  darkTheme
+                      ? AppVariables.logoNoBgDark
+                      : AppVariables.logoNoBgLight,
                   width: 150,
                   height: 150,
-                  decoration: const BoxDecoration(
-                    color: Color(0xFF0F1B33),
-                    borderRadius: BorderRadius.all(Radius.circular(20)),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(8),
-                    child: Image.asset(
-                      'assets/images/logo-no-bg.png',
-                    ),
-                  ),
                 ),
                 const SizedBox(height: 24),
                 Text(
@@ -117,7 +119,10 @@ class StatesHomeView extends StatelessWidget {
                   unawaited(
                     showDialog<void>(
                       context: context,
-                      builder: (context) => StatePreviewDialog(item: item),
+                      builder: (context) => MultimediaPreviewDialog(
+                        item: item,
+                        defaultAspectRatio: 3 / 4,
+                      ),
                     ),
                   );
                 },

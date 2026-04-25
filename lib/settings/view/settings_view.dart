@@ -24,6 +24,7 @@ class SettingsView extends StatelessWidget {
                 fontWeight: FontWeight.w600,
               ),
             ),
+            notificationPredicate: (_) => false,
             leading: IconButton(
               onPressed: () => context.pop(),
               icon: const HugeIcon(

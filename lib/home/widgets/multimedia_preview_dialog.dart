@@ -8,19 +8,22 @@ import 'package:ghost_play/l10n/l10n.dart';
 import 'package:hugeicons/hugeicons.dart';
 import 'package:video_player/video_player.dart';
 
-class StatePreviewDialog extends StatefulWidget {
-  const StatePreviewDialog({
+class MultimediaPreviewDialog extends StatefulWidget {
+  const MultimediaPreviewDialog({
     required this.item,
+    required this.defaultAspectRatio,
     super.key,
   });
 
-  final StateMetadata item;
+  final MultimediaMetadata item;
+  final double defaultAspectRatio;
 
   @override
-  State<StatePreviewDialog> createState() => _StatePreviewDialogState();
+  State<MultimediaPreviewDialog> createState() =>
+      _MultimediaPreviewDialogState();
 }
 
-class _StatePreviewDialogState extends State<StatePreviewDialog> {
+class _MultimediaPreviewDialogState extends State<MultimediaPreviewDialog> {
   String? _cachedFilePath;
   bool _isLoading = true;
   String? _error;
@@ -34,11 +37,11 @@ class _StatePreviewDialogState extends State<StatePreviewDialog> {
 
   Future<void> _cacheAndInit() async {
     final trace = getIt<PerformanceService>().startTrace(
-      'state_preview_cache_init',
+      'multimedia_preview_cache_init',
     );
     try {
       getIt<CrashService>().log(
-        'Start caching state preview: ${widget.item.uri}',
+        'Start caching multimedia preview: ${widget.item.uri}',
       );
       final path = await getIt<StorageService>().cacheFile(
         uri: widget.item.uri,
@@ -59,7 +62,7 @@ class _StatePreviewDialogState extends State<StatePreviewDialog> {
       }
 
       getIt<CrashService>().log(
-        'Successfully cached state preview: ${widget.item.uri}',
+        'Successfully cached multimedia preview: ${widget.item.uri}',
       );
       if (mounted) {
         setState(() {
@@ -70,7 +73,7 @@ class _StatePreviewDialogState extends State<StatePreviewDialog> {
       getIt<CrashService>().recordError(
         e,
         stackTrace,
-        reason: 'Error caching and init state preview',
+        reason: 'Error caching and init multimedia preview',
       );
       if (mounted) {
         setState(() {
@@ -93,7 +96,7 @@ class _StatePreviewDialogState extends State<StatePreviewDialog> {
     if (_cachedFilePath == null) return;
 
     final trace = getIt<PerformanceService>().startTrace(
-      'state_save_to_gallery',
+      'multimedia_save_to_gallery',
     );
     try {
       getIt<CrashService>().log(
@@ -121,7 +124,7 @@ class _StatePreviewDialogState extends State<StatePreviewDialog> {
       }
 
       getIt<CrashService>().log(
-        'Successfully saved state to gallery: ${widget.item.uri}',
+        'Successfully saved multimedia to gallery: ${widget.item.uri}',
       );
 
       getIt<AnalyticsService>().logEvent(
@@ -144,7 +147,7 @@ class _StatePreviewDialogState extends State<StatePreviewDialog> {
       getIt<CrashService>().recordError(
         e,
         StackTrace.current,
-        reason: 'Error saving state to gallery',
+        reason: 'Error saving multimedia to gallery',
       );
       if (mounted) {
         AppFunctions.showSnackBar(
@@ -282,7 +285,7 @@ class _StatePreviewDialogState extends State<StatePreviewDialog> {
       }
 
       if (aspectRatio == 1.0) {
-        aspectRatio = 9 / 16;
+        aspectRatio = widget.defaultAspectRatio;
       }
 
       return AspectRatio(

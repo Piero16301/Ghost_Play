@@ -1,6 +1,6 @@
 {
     "@@locale": "it",
-    "loadingAudiosError": "Si è verificato un errore durante il caricamento degli audio, riavvia l'app",
+    "loadingAudiosError": "Si è verificato un errore durante il caricamento delle note vocali, riavvia l'app",
     "@loadingAudiosError": {},
     "welcomeTitle": "Benvenuto in {appName}!",
     "@welcomeTitle": {
@@ -10,17 +10,17 @@
             }
         }
     },
-    "welcomeAudiosDescription": "Per ascoltare i tuoi audio, abbiamo bisogno di accedere alla cartella di WhatsApp",
+    "welcomeAudiosDescription": "Per ascoltare le tue note vocali, abbiamo bisogno di accedere alla cartella di WhatsApp",
     "@welcomeAudiosDescription": {},
     "welcomeStatesDescription": "Per vedere e salvare i tuoi stati, abbiamo bisogno di accedere alla cartella di WhatsApp",
     "@welcomeStatesDescription": {},
     "givePermissionButton": "Concedi permesso",
     "@givePermissionButton": {},
-    "noAudiosFound": "Nessun audio trovato",
+    "noAudiosFound": "Nessuna nota vocale trovata",
     "@noAudiosFound": {},
     "noStatesFound": "Nessuno stato trovato",
     "@noStatesFound": {},
-    "audiosFound": "{audios, plural, =1{1 audio} other{{audios} audios}}",
+    "audiosFound": "{audios, plural, =1{1 nota vocale} other{{audios} note vocali}}",
     "@audiosFound": {
         "placeholders": {
             "audios": {
@@ -38,7 +38,7 @@
     },
     "weeksFilterTitle": "Filtra per settimane",
     "@weeksFilterTitle": {},
-    "homeAudiosTitle": "Audio",
+    "homeAudiosTitle": "Note Vocali",
     "@homeAudiosTitle": {},
     "homeStatesTitle": "Stati",
     "@homeStatesTitle": {},
@@ -119,5 +119,21 @@
     "save": "Salva",
     "@save": {},
     "errorLoadingPreview": "Errore durante il caricamento dell'anteprima",
-    "@errorLoadingPreview": {}
+    "@errorLoadingPreview": {},
+    "loadingVideosError": "Si è verificato un errore durante il caricamento delle note video, riavvia l'app",
+    "@loadingVideosError": {},
+    "homeVideosTitle": "Video Note",
+    "@homeVideosTitle": {},
+    "welcomeVideosDescription": "Per vedere e salvare le tue note video, abbiamo bisogno di accedere alla cartella di WhatsApp",
+    "@welcomeVideosDescription": {},
+    "noVideosFound": "Nessuna nota video trovata",
+    "@noVideosFound": {},
+    "videosFound": "{videos, plural, =1{1 nota video} other{{videos} note video}}",
+    "@videosFound": {
+        "placeholders": {
+            "videos": {
+                "type": "int"
+            }
+        }
+    }
 }

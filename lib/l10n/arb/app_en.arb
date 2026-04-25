@@ -1,6 +1,6 @@
 {
     "@@locale": "en",
-    "loadingAudiosError": "An error occurred while loading the audios, please restart the app",
+    "loadingAudiosError": "An error occurred while loading the voice notes, please restart the app",
     "@loadingAudiosError": {},
     "welcomeTitle": "Welcome to {appName}!",
     "@welcomeTitle": {
@@ -10,17 +10,17 @@
             }
         }
     },
-    "welcomeAudiosDescription": "To listen to your audios, we need access to the WhatsApp folder",
+    "welcomeAudiosDescription": "To listen to your voice notes, we need access to the WhatsApp folder",
     "@welcomeAudiosDescription": {},
     "welcomeStatesDescription": "To view and save your states, we need access to the WhatsApp folder",
     "@welcomeStatesDescription": {},
     "givePermissionButton": "Grant permission",
     "@givePermissionButton": {},
-    "noAudiosFound": "No audios found yet",
+    "noAudiosFound": "No voice notes found yet",
     "@noAudiosFound": {},
     "noStatesFound": "No states found yet",
     "@noStatesFound": {},
-    "audiosFound": "{audios, plural, =1{1 audio} other{{audios} audios}}",
+    "audiosFound": "{audios, plural, =1{1 voice note} other{{audios} voice notes}}",
     "@audiosFound": {
         "placeholders": {
             "audios": {
@@ -38,7 +38,7 @@
     },
     "weeksFilterTitle": "Filter by weeks",
     "@weeksFilterTitle": {},
-    "homeAudiosTitle": "Audios",
+    "homeAudiosTitle": "Voice Notes",
     "@homeAudiosTitle": {},
     "homeStatesTitle": "States",
     "@homeStatesTitle": {},
@@ -119,5 +119,21 @@
     "save": "Save",
     "@save": {},
     "errorLoadingPreview": "Error loading preview",
-    "@errorLoadingPreview": {}
+    "@errorLoadingPreview": {},
+    "loadingVideosError": "An error occurred while loading the video notes, please restart the app",
+    "@loadingVideosError": {},
+    "homeVideosTitle": "Video Notes",
+    "@homeVideosTitle": {},
+    "welcomeVideosDescription": "To view and save your video notes, we need access to the WhatsApp folder",
+    "@welcomeVideosDescription": {},
+    "noVideosFound": "No video notes found yet",
+    "@noVideosFound": {},
+    "videosFound": "{videos, plural, =1{1 video note} other{{videos} video notes}}",
+    "@videosFound": {
+        "placeholders": {
+            "videos": {
+                "type": "int"
+            }
+        }
+    }
 }

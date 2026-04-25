@@ -24,7 +24,8 @@ void main() {
 
     when(() => homeCubit.loadAudios()).thenAnswer((_) async {});
     when(() => homeCubit.requestPermission()).thenAnswer((_) async {});
-    when(() => homeCubit.setWeeks(any<int>())).thenAnswer((_) async {});
+    when(() => homeCubit.setAudiosWeeks(any<int>())).thenAnswer((_) async {});
+    when(() => homeCubit.setVideosWeeks(any<int>())).thenAnswer((_) async {});
     when(
       () => audiosHomeCubit.playAudio(any<AudioMetadata>()),
     ).thenAnswer((_) async {});
@@ -59,7 +60,7 @@ void main() {
         locale: const Locale('en'),
       );
       expect(
-        find.textContaining('An error occurred while loading the audios'),
+        find.textContaining('An error occurred while loading the voice notes'),
         findsOneWidget,
       );
     });
@@ -95,7 +96,7 @@ void main() {
         audiosHomeCubit: audiosHomeCubit,
         locale: const Locale('en'),
       );
-      expect(find.text('No audios found yet'), findsOneWidget);
+      expect(find.text('No voice notes found yet'), findsOneWidget);
     });
 
     testWidgets('renders list of audios and calls playAudio on tap', (
@@ -131,7 +132,7 @@ void main() {
       verify(() => audiosHomeCubit.playAudio(audio)).called(1);
     });
 
-    testWidgets('shows weeks menu and calls setWeeks', (tester) async {
+    testWidgets('shows weeks menu and calls setAudiosWeeks', (tester) async {
       tester.view.physicalSize = const Size(400, 800);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(tester.view.resetPhysicalSize);
@@ -164,7 +165,7 @@ void main() {
       await tester.tap(find.textContaining('2').last);
       await tester.pumpAndSettle();
 
-      verify(() => homeCubit.setWeeks(2)).called(1);
+      verify(() => homeCubit.setAudiosWeeks(2)).called(1);
     });
   });
 }

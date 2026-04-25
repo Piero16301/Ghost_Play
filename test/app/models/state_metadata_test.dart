@@ -1,10 +1,10 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:ghost_play/app/models/state_metadata.dart';
+import 'package:ghost_play/app/models/multimedia_metadata.dart';
 
 void main() {
-  group('StateMetadata', () {
+  group('MultimediaMetadata', () {
     final date = DateTime(2023, 10, 27, 10, 30);
-    final state = StateMetadata(
+    final state = MultimediaMetadata(
       uri: 'uri1',
       name: 'name1',
       date: date,
@@ -14,7 +14,7 @@ void main() {
     );
 
     test('supports value equality', () {
-      final state2 = StateMetadata(
+      final state2 = MultimediaMetadata(
         uri: 'uri1',
         name: 'name1',
         date: date,
@@ -34,12 +34,12 @@ void main() {
         'is_video': true,
         'duration': 125000,
       };
-      final fromMap = StateMetadata.fromMap(map);
+      final fromMap = MultimediaMetadata.fromMap(map);
       expect(fromMap, equals(state));
     });
 
     test('fromMap use defaults for empty map', () {
-      final fromMap = StateMetadata.fromMap(const {});
+      final fromMap = MultimediaMetadata.fromMap(const {});
       expect(fromMap.uri, '');
       expect(fromMap.name, '');
       expect(fromMap.sizeBytes, 0);
@@ -59,7 +59,7 @@ void main() {
     });
 
     test('empty static instance is valid', () {
-      final empty = StateMetadata.empty;
+      final empty = MultimediaMetadata.empty;
       expect(empty.uri, '');
       expect(empty.name, '');
       expect(empty.sizeBytes, 0);
@@ -69,7 +69,7 @@ void main() {
 
     group('formattedDuration', () {
       test('returns empty string if not video', () {
-        final nonVideo = StateMetadata(
+        final nonVideo = MultimediaMetadata(
           uri: '',
           name: '',
           date: DateTime.now(),
@@ -80,7 +80,7 @@ void main() {
       });
 
       test('returns mm:ss for short video', () {
-        final video = StateMetadata(
+        final video = MultimediaMetadata(
           uri: '',
           name: '',
           date: DateTime.now(),
@@ -92,7 +92,7 @@ void main() {
       });
 
       test('returns hh:mm:ss for long video', () {
-        final video = StateMetadata(
+        final video = MultimediaMetadata(
           uri: '',
           name: '',
           date: DateTime.now(),
@@ -106,7 +106,7 @@ void main() {
 
     group('formattedSize', () {
       test('returns bytes', () {
-        final s = StateMetadata(
+        final s = MultimediaMetadata(
           uri: '',
           name: '',
           date: DateTime.now(),
@@ -117,7 +117,7 @@ void main() {
       });
 
       test('returns KB', () {
-        final s = StateMetadata(
+        final s = MultimediaMetadata(
           uri: '',
           name: '',
           date: DateTime.now(),
@@ -128,7 +128,7 @@ void main() {
       });
 
       test('returns MB', () {
-        final s = StateMetadata(
+        final s = MultimediaMetadata(
           uri: '',
           name: '',
           date: DateTime.now(),
@@ -139,7 +139,7 @@ void main() {
       });
 
       test('returns GB', () {
-        final s = StateMetadata(
+        final s = MultimediaMetadata(
           uri: '',
           name: '',
           date: DateTime.now(),

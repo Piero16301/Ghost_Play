@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ghost_play/home/home.dart';
 import 'package:mocktail/mocktail.dart';
@@ -27,9 +26,6 @@ void main() {
       );
 
       expect(find.byType(StatesHomeView), findsOneWidget);
-
-      final context = tester.element(find.byType(StatesHomeView));
-      expect(context.read<StatesHomeCubit>(), isA<StatesHomeCubit>());
     });
   });
 }

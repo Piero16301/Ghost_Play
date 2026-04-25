@@ -49,6 +49,7 @@ class HomeCubit extends Cubit<HomeState> {
         await Future.wait([
           loadAudios(),
           loadStates(),
+          loadVideos(),
         ]);
       } else {
         _crashService
@@ -69,6 +70,39 @@ class HomeCubit extends Cubit<HomeState> {
       emit(state.copyWith(hasPermission: false));
     } finally {
       _performanceService.stopTrace(trace);
+    }
+  }
+
+  Future<void> requestPermission() async {
+    _analyticsService.logEvent(name: 'request_permission_action');
+    final isGranted = await _storageService.getDirectoryPermission(
+      AppVariables.waVoiceNotesPath,
+    );
+
+    _crashService.setCustomKey('permission_granted', isGranted ?? false);
+
+    if (isGranted == true) {
+      final persistedDirs = await _storageService
+          .getPersistedPermissionDirectories();
+      if (persistedDirs != null && persistedDirs.isNotEmpty) {
+        final saf = Saf(persistedDirs.first);
+        _crashService.log('Permission granted by user.');
+        emit(
+          state.copyWith(
+            saf: saf,
+            hasPermission: true,
+            savedDirectoryUri: persistedDirs.first,
+          ),
+        );
+
+        await Future.wait([
+          loadAudios(),
+          loadStates(),
+          loadVideos(),
+        ]);
+      }
+    } else {
+      _crashService.log('Permission explicitly denied by user.');
     }
   }
 
@@ -125,45 +159,13 @@ class HomeCubit extends Cubit<HomeState> {
     }
   }
 
-  Future<void> requestPermission() async {
-    _analyticsService.logEvent(name: 'request_permission_action');
-    final isGranted = await _storageService.getDirectoryPermission(
-      AppVariables.waVoiceNotesPath,
-    );
-
-    _crashService.setCustomKey('permission_granted', isGranted ?? false);
-
-    if (isGranted == true) {
-      final persistedDirs = await _storageService
-          .getPersistedPermissionDirectories();
-      if (persistedDirs != null && persistedDirs.isNotEmpty) {
-        final saf = Saf(persistedDirs.first);
-        _crashService.log('Permission granted by user.');
-        emit(
-          state.copyWith(
-            saf: saf,
-            hasPermission: true,
-            savedDirectoryUri: persistedDirs.first,
-          ),
-        );
-
-        await Future.wait([
-          loadAudios(),
-          loadStates(),
-        ]);
-      }
-    } else {
-      _crashService.log('Permission explicitly denied by user.');
-    }
-  }
-
-  Future<void> setWeeks(int weeks) async {
+  Future<void> setAudiosWeeks(int weeks) async {
     _analyticsService.logEvent(
-      name: 'change_weeks_filter_action',
+      name: 'change_audios_weeks_filter_action',
       parameters: {'weeks': weeks},
     );
     if (weeks == state.audioWeeksFilter) return;
-    _crashService.setCustomKey('filter_weeks', weeks);
+    _crashService.setCustomKey('audios_filter_weeks', weeks);
     emit(state.copyWith(audioWeeksFilter: weeks));
     await loadAudios();
   }
@@ -188,8 +190,9 @@ class HomeCubit extends Cubit<HomeState> {
       if (result != null) {
         final loadedStates = result
             .map(
-              (data) =>
-                  StateMetadata.fromMap(Map<String, dynamic>.from(data as Map)),
+              (data) => MultimediaMetadata.fromMap(
+                Map<String, dynamic>.from(data as Map),
+              ),
             )
             .toList();
 
@@ -218,5 +221,70 @@ class HomeCubit extends Cubit<HomeState> {
     } finally {
       _performanceService.stopTrace(trace);
     }
+  }
+
+  Future<void> loadVideos() async {
+    if (state.saf == null) {
+      return;
+    }
+
+    if (state.savedDirectoryUri.isEmpty) {
+      return;
+    }
+
+    emit(state.copyWith(videosStatus: HomeStatus.loading));
+
+    final trace = _performanceService.startTrace('videos_list_load_latency');
+    try {
+      final result = await _storageService.getRecentVideos(
+        uri: state.savedDirectoryUri,
+        weeks: state.videoWeeksFilter,
+      );
+
+      if (result != null) {
+        final loadedVideos = result
+            .map(
+              (data) => MultimediaMetadata.fromMap(
+                Map<String, dynamic>.from(data as Map),
+              ),
+            )
+            .toList();
+
+        _crashService.log('Successfully loaded ${loadedVideos.length} videos.');
+        emit(
+          state.copyWith(
+            videosStatus: HomeStatus.success,
+            videos: loadedVideos,
+          ),
+        );
+      }
+    } on PlatformException catch (e, stackTrace) {
+      _crashService.recordError(
+        e,
+        stackTrace,
+        reason: 'PlatformException loading videos',
+      );
+      emit(state.copyWith(videosStatus: HomeStatus.failure));
+    } on Exception catch (e, stackTrace) {
+      _crashService.recordError(
+        e,
+        stackTrace,
+        reason: 'Exception loading videos',
+      );
+      emit(state.copyWith(videosStatus: HomeStatus.failure));
+    } finally {
+      _performanceService.stopTrace(trace);
+    }
+  }
+
+  Future<void> setVideosWeeks(int weeks) async {
+    _analyticsService.logEvent(
+      name: 'change_videos_weeks_filter_action',
+      parameters: {'weeks': weeks},
+    );
+    if (weeks == state.videoWeeksFilter) return;
+    _crashService.setCustomKey('videos_filter_weeks', weeks);
+    emit(state.copyWith(videoWeeksFilter: weeks));
+    await loadVideos();
   }
 }

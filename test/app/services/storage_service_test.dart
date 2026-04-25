@@ -74,6 +74,19 @@ void main() {
       ).called(1);
     });
 
+    test('getRecentVideos delegates to repository', () async {
+      when(() => repository.getRecentVideos(uri: 'uri1', weeks: 3)).thenAnswer(
+        (_) async => [
+          {'v': 'w'},
+        ],
+      );
+      final result = await service.getRecentVideos(uri: 'uri1', weeks: 3);
+      expect(result, [
+        {'v': 'w'},
+      ]);
+      verify(() => repository.getRecentVideos(uri: 'uri1', weeks: 3)).called(1);
+    });
+
     test('cacheFile delegates to repository', () async {
       when(
         () => repository.cacheFile(uri: 'uri1', fileName: 'file.mp3'),

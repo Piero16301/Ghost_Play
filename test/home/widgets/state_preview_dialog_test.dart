@@ -10,9 +10,9 @@ import 'package:mocktail/mocktail.dart';
 import 'package:video_player/video_player.dart';
 import 'package:video_player_platform_interface/video_player_platform_interface.dart';
 
-import '../../../../helpers/mocks.dart';
-import '../../../../helpers/pump_app.dart';
-import '../../../../helpers/service_locator.dart';
+import '../../helpers/mocks.dart';
+import '../../helpers/pump_app.dart';
+import '../../helpers/service_locator.dart';
 
 const _kValidPng = <int>[
   0x89,
@@ -88,7 +88,6 @@ const _kValidPng = <int>[
 
 void main() {
   late HomeCubit homeCubit;
-  late StatesHomeCubit statesHomeCubit;
   late VideoPlayerPlatform originalVideoPlayerPlatform;
 
   setUpAll(registerFallbackValues);
@@ -96,10 +95,8 @@ void main() {
   setUp(() async {
     await setupServiceLocatorMocks();
     homeCubit = MockHomeCubit();
-    statesHomeCubit = MockStatesHomeCubit();
 
     when(() => homeCubit.state).thenReturn(const HomeState());
-    when(() => statesHomeCubit.state).thenReturn(const StatesHomeState());
     when(() => homeCubit.loadStates()).thenAnswer((_) async {});
 
     final mockTrace = MockTrace();
@@ -142,7 +139,7 @@ void main() {
     VideoPlayerPlatform.instance = originalVideoPlayerPlatform;
   });
 
-  StateMetadata makeItem({bool isVideo = false}) => StateMetadata(
+  MultimediaMetadata makeItem({bool isVideo = false}) => MultimediaMetadata(
     uri: 'content://test/uri',
     name: 'test_file.jpg',
     date: DateTime(2024),
@@ -158,20 +155,22 @@ void main() {
 
   Future<void> pumpDialog(
     WidgetTester tester,
-    StateMetadata item,
+    MultimediaMetadata item,
   ) async {
     await tester.pumpApp(
       Builder(
         builder: (context) => TextButton(
           onPressed: () => showDialog<void>(
             context: context,
-            builder: (_) => StatePreviewDialog(item: item),
+            builder: (_) => MultimediaPreviewDialog(
+              item: item,
+              defaultAspectRatio: 9 / 16,
+            ),
           ),
           child: const Text('Open'),
         ),
       ),
       homeCubit: homeCubit,
-      statesHomeCubit: statesHomeCubit,
     );
     await tester.tap(find.text('Open'));
     await tester.pump();
@@ -252,13 +251,14 @@ void main() {
         () => getIt<CrashService>().recordError(
           any<Object>(),
           any<StackTrace>(),
-          reason: 'Error caching and init state preview',
+          reason: 'Error caching and init multimedia preview',
         ),
       ).called(1);
 
       verify(
-        () =>
-            getIt<PerformanceService>().startTrace('state_preview_cache_init'),
+        () => getIt<PerformanceService>().startTrace(
+          'multimedia_preview_cache_init',
+        ),
       ).called(1);
       verify(() => getIt<PerformanceService>().stopTrace(any())).called(1);
     });
@@ -284,7 +284,7 @@ void main() {
         () => getIt<CrashService>().recordError(
           any<Object>(),
           any<StackTrace>(),
-          reason: 'Error caching and init state preview',
+          reason: 'Error caching and init multimedia preview',
         ),
       ).called(1);
     });
@@ -300,10 +300,10 @@ void main() {
       await pumpDialog(tester, makeItem());
       await tester.pumpAndSettle();
 
-      expect(find.byType(StatePreviewDialog), findsOneWidget);
+      expect(find.byType(MultimediaPreviewDialog), findsOneWidget);
       await tester.tap(find.text('Cancel'));
       await tester.pumpAndSettle();
-      expect(find.byType(StatePreviewDialog), findsNothing);
+      expect(find.byType(MultimediaPreviewDialog), findsNothing);
     });
 
     testWidgets('shows title, Save and Cancel after successful image cache', (
@@ -340,7 +340,7 @@ void main() {
 
       await tester.tap(find.text('Cancel'));
       await tester.pumpAndSettle();
-      expect(find.byType(StatePreviewDialog), findsNothing);
+      expect(find.byType(MultimediaPreviewDialog), findsNothing);
 
       File(path).deleteSync();
     });
@@ -363,10 +363,12 @@ void main() {
       await tester.tap(find.text('Save'));
       await tester.pumpAndSettle();
 
-      expect(find.byType(StatePreviewDialog), findsNothing);
+      expect(find.byType(MultimediaPreviewDialog), findsNothing);
 
       verify(
-        () => getIt<PerformanceService>().startTrace('state_save_to_gallery'),
+        () => getIt<PerformanceService>().startTrace(
+          'multimedia_save_to_gallery',
+        ),
       ).called(1);
       verify(() => getIt<PerformanceService>().stopTrace(any())).called(2);
 
@@ -393,7 +395,7 @@ void main() {
         await tester.tap(find.text('Save'));
         await tester.pumpAndSettle();
 
-        expect(find.byType(StatePreviewDialog), findsNothing);
+        expect(find.byType(MultimediaPreviewDialog), findsNothing);
 
         File(path).deleteSync();
       },
@@ -417,7 +419,7 @@ void main() {
       await tester.tap(find.text('Save'));
       await tester.pumpAndSettle();
 
-      expect(find.byType(StatePreviewDialog), findsOneWidget);
+      expect(find.byType(MultimediaPreviewDialog), findsOneWidget);
       expect(find.text('Permission denied'), findsOneWidget);
 
       File(path).deleteSync();
@@ -448,7 +450,7 @@ void main() {
         ),
       ).called(1);
 
-      expect(find.byType(StatePreviewDialog), findsNothing);
+      expect(find.byType(MultimediaPreviewDialog), findsNothing);
 
       File(path).deleteSync();
     });
@@ -471,14 +473,14 @@ void main() {
       await tester.tap(find.text('Save'));
       await tester.pumpAndSettle();
 
-      expect(find.byType(StatePreviewDialog), findsOneWidget);
+      expect(find.byType(MultimediaPreviewDialog), findsOneWidget);
       expect(find.text('Error saving'), findsOneWidget);
 
       verify(
         () => getIt<CrashService>().recordError(
           any<Object>(),
           any<StackTrace>(),
-          reason: 'Error saving state to gallery',
+          reason: 'Error saving multimedia to gallery',
         ),
       ).called(1);
 
@@ -509,7 +511,7 @@ void main() {
       await tester.pump(const Duration(milliseconds: 300));
       await tester.pump(const Duration(milliseconds: 300));
 
-      expect(find.byType(StatePreviewDialog), findsNothing);
+      expect(find.byType(MultimediaPreviewDialog), findsNothing);
       expect(calls.where((method) => method == 'putVideo').length, 1);
       expect(calls.where((method) => method == 'putImage'), isEmpty);
 
