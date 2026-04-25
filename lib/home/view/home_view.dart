@@ -29,27 +29,33 @@ class _HomeViewState extends State<HomeView> {
 
   @override
   Widget build(BuildContext context) {
+    final darkTheme = Theme.of(context).brightness == Brightness.dark;
+
     return BlocBuilder<HomeCubit, HomeState>(
       builder: (context, state) => Scaffold(
         appBar: AppBar(
-          title: Text(
-            AppVariables.appName,
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-              fontWeight: FontWeight.w600,
-            ),
+          title: Image.asset(
+            darkTheme ? AppVariables.logoNoBgDark : AppVariables.logoNoBgLight,
+            width: 40,
+            height: 40,
           ),
           notificationPredicate: (_) => false,
-          leading: IconButton(
-            padding: EdgeInsets.zero,
-            icon: const HugeIcon(
-              icon: HugeIcons.strokeRoundedSettings02,
-              strokeWidth: 2,
+          actions: [
+            IconButton(
+              padding: EdgeInsets.zero,
+              icon: const HugeIcon(
+                icon: HugeIcons.strokeRoundedSettings02,
+                strokeWidth: 2,
+              ),
+              onPressed: () {
+                getIt<AnalyticsService>().logEvent(
+                  name: 'open_settings_action',
+                );
+                unawaited(context.pushNamed(AppRoute.settings.name));
+              },
             ),
-            onPressed: () {
-              getIt<AnalyticsService>().logEvent(name: 'open_settings_action');
-              unawaited(context.pushNamed(AppRoute.settings.name));
-            },
-          ),
+            const SizedBox(width: 6),
+          ],
         ),
         body: Padding(
           padding: const EdgeInsets.all(16),
