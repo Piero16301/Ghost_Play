@@ -81,11 +81,11 @@ flowchart TD
   AppRepos <-->|Telemetry Data| FirebaseTelemetry
 ```
 
-- **UI (Flutter Interface)**: Standardized presentation layer including the main dashboard, states viewer, and the persistent floating mini-player.
-- **State (Bloc/Cubit)**: Manages the application logic, handles audio playback state (`PlayerCubit`), fetching audios (`AudiosHomeCubit`), and managing WhatsApp statuses (`StatesHomeCubit`).
+- **UI (Flutter Interface)**: Standardized presentation layer including the main dashboard, states viewer, video notes gallery, and the persistent floating mini-player.
+- **State (Bloc/Cubit)**: Manages the application logic, handles audio playback state (`PlayerCubit`), fetching audios (`AudiosHomeCubit`), managing WhatsApp statuses (`StatesHomeCubit`), and handling WhatsApp video notes (`HomeCubit`).
 - **Store (Local DB - SharedPreferences)**: Handles local data persistence across the device, preserving settings such as selected themes and languages.
 - **Services & Repositories**: Follows the Repository Pattern. Connects with Dependency Injection (`get_it`). Telemetry is sent via Firebase infrastructure.
-- **Native OS APIs**: Uses `MethodChannel` internally to interact with native Android APIs, fetching local `.opus` audio files and cached statuses effectively from device storage.
+- **Native OS APIs**: Uses `MethodChannel` internally to interact with native Android APIs, fetching local `.opus` audio files, cached statuses, and video notes effectively from device storage.
 
 ---
 
@@ -155,14 +155,15 @@ Employs the Repository Pattern connected via Dependency Injection. It isolates b
 
 ## Feature Modules
 
-### Home & Features (Audios & States)
+### Home & Features (Audios, States & Videos)
 
 - **lib/home/pages/***  
 
 **Highlights:**  
 - **Audios Home (`audios_home`)**: Interrogates native device capabilities to read local audio directories (specifically fetching recent `.opus` audios) via a `MethodChannel`. Includes an interactive persistent floating player using `just_audio` seamlessly overlaid inside the view.
 - **States Home (`states_home`)**: Features a WhatsApp Status Viewer that processes cached scoped-storage files via native channels. It supports previewing media (images and dynamic video playback with proper aspect ratio handling) and saving these statuses directly to the user's photo gallery.
-- Driven by specific states like `AudiosHomeCubit` (handling audio fetch algorithms) and `StatesHomeCubit` (handling media extraction and saving workflows), coordinated alongside the playback state in `PlayerCubit`.
+- **Videos Home (`videos_home`)**: Features a WhatsApp Video Notes viewer that allows users to browse recent video notes retrieved from device storage. Users can filter videos by recency (e.g., number of weeks), preview them in a custom dialog, and download/save them directly to the gallery.
+- Driven by specific states like `AudiosHomeCubit` (handling audio fetch algorithms), `StatesHomeCubit` (handling media extraction and saving workflows), and `HomeCubit` (managing the video notes state and filtering), coordinated alongside the playback state in `PlayerCubit`.
 
 ---
 
