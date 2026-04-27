@@ -97,10 +97,10 @@ jobs:
         id: build_name
         run: |
           RUN=${{ github.run_number }}
-          MAJOR=${RUN:0:${#RUN}-2}
-          MAJOR="${MAJOR:-0}"
-          MINOR=${RUN: -2:1}
-          PATCH=${RUN: -1:1}
+          PADDED=$(printf "%03d" $RUN)
+          MAJOR=${PADDED:0:${#PADDED}-2}
+          MINOR=${PADDED: -2:1}
+          PATCH=${PADDED: -1:1}
           echo "value=${MAJOR}.${MINOR}.${PATCH}" >> $GITHUB_OUTPUT
 
       - name: 🛠️ Build the application (AAB)
