@@ -79,7 +79,15 @@ void main() {
     ) async {
       await tester.pumpWidget(createWidgetUnderTest());
       expect(find.byType(HomeView), findsOneWidget);
-      expect(find.text(AppVariables.appName), findsOneWidget);
+      final appBar = tester.widget<AppBar>(find.byType(AppBar));
+      expect(appBar.title, isA<Image>());
+      final logoImage = appBar.title! as Image;
+      expect(logoImage.width, 40);
+      expect(logoImage.height, 40);
+      expect(
+        (logoImage.image as AssetImage).assetName,
+        AppVariables.logoNoBgLight,
+      );
       verify(() => homeCubit.initStorage()).called(1);
     });
 

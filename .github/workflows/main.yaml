@@ -2,7 +2,7 @@ name: CI
 # CI workflow for Ghost Play application.
 # This workflow checks the commit author, runs semantic checks, spell checks,
 # executes tests, builds the application, and deploys it to the Play Store
-# on the 'main' branch. The application is deployed to the beta track.
+# on the 'main' branch. The application is deployed to the production track.
 
 concurrency:
   group: main-$-$
@@ -14,6 +14,29 @@ on:
       - main
 
 jobs:
+  check-commit-type:
+    name: "🔍 Check Commit Type"
+    runs-on: ubuntu-latest
+    outputs:
+      is_dev_merge: ${{ steps.check_commit.outputs.is_dev_merge }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 2
+      - name: Check if commit is merge from dev
+        id: check_commit
+        run: |
+          COMMIT_MSG=$(git log -1 --pretty=format:'%s')
+          echo "Commit message: $COMMIT_MSG"
+          if [[ "$COMMIT_MSG" == "Merge pull request"* && "$COMMIT_MSG" == *"from Piero16301/dev" ]]; then
+            echo "is_dev_merge=true" >> $GITHUB_OUTPUT
+            echo "Commit is a merge from dev branch, continuing with workflow"
+          else
+            echo "is_dev_merge=false" >> $GITHUB_OUTPUT
+            echo "Commit is not a merge from dev branch, skipping workflow"
+          fi
+
   semantic-pull-request:
     name: "📝 Semantic"
     uses: VeryGoodOpenSource/very_good_workflows/.github/workflows/semantic_pull_request.yml@v1
@@ -46,8 +69,6 @@ jobs:
       - name: 📦 Install Dependencies
         run: |
           flutter pub get
-      - name: 📄 Create dummy .env file
-        run: touch .env
       - name: ✨ Format Check
         run: |
           dart format --set-exit-if-changed .
@@ -66,3 +87,23 @@ jobs:
         uses: codecov/codecov-action@v6
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
+
+  promote:
+    name: "📈 Promote to Production"
+    needs: quality
+    runs-on: ubuntu-latest
+    env:
+      APP_PACKAGE_NAME: com.pmorales.ghost.play
+      SERVICE_ACCOUNT_PATH: service-account.json
+    steps:
+      - name: 📚 Git Checkout
+        uses: actions/checkout@v6
+      - name: 🔑 Decode Service Account
+        run: echo "${{ secrets.ANDROID_RELEASE_SERVICE_ACCOUNT }}" | base64 --decode > ${{ env.SERVICE_ACCOUNT_PATH }}
+      - name: 🚀 Promote to Production
+        uses: kevin-david/promote-play-release@v1.2.0
+        with:
+          service-account-json-file: ${{ env.SERVICE_ACCOUNT_PATH }}
+          package-name: ${{ env.APP_PACKAGE_NAME }}
+          from-track: 'beta'
+          to-track: 'production'
