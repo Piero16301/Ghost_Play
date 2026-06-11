@@ -270,6 +270,7 @@ void main() {
 
       await tester.tap(find.byType(Chip));
       await tester.pumpAndSettle();
+      tester.takeException();
 
       await tester.tap(find.textContaining('2').last);
       await tester.pumpAndSettle();
