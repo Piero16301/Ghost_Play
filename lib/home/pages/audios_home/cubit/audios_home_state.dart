@@ -6,8 +6,7 @@ enum AudiosHomeStatus {
   playing,
   paused,
   completed,
-  error
-  ;
+  error;
 
   bool get isInitial => this == initial;
   bool get isLoading => this == loading;

@@ -46,8 +46,7 @@ enum SnackBarType {
   success,
   error,
   warning,
-  info
-  ;
+  info;
 
   bool get isSuccess => this == SnackBarType.success;
   bool get isError => this == SnackBarType.error;
