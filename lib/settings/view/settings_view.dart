@@ -21,7 +21,12 @@ class SettingsView extends StatelessWidget {
             title: Text(
               l10n.settingsAppBarTitle,
               style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.w600,
+                fontVariations: [
+                  ...(Theme.of(context).textTheme.titleLarge?.fontVariations ??
+                          const <FontVariation>[])
+                      .where((v) => v.axis != 'wght'),
+                  const FontVariation('wght', 700),
+                ],
               ),
             ),
             notificationPredicate: (_) => false,
@@ -116,8 +121,14 @@ class LocaleSettingsCard extends StatelessWidget {
         return l10n.settingsLanguageSpanish;
       case 'it':
         return l10n.settingsLanguageItalian;
+      case 'fr':
+        return l10n.settingsLanguageFrench;
+      case 'de':
+        return l10n.settingsLanguageGerman;
+      case 'pt':
+        return l10n.settingsLanguagePortuguese;
       default:
-        return locale.languageCode; // coverage:ignore-line
+        return locale.languageCode;
     }
   }
 }

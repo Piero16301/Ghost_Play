@@ -68,7 +68,14 @@ class AudiosHomeView extends StatelessWidget {
                 Text(
                   l10n.welcomeTitle(AppVariables.appName),
                   style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.w600,
+                    fontVariations: [
+                      ...(Theme.of(
+                                context,
+                              ).textTheme.titleLarge?.fontVariations ??
+                              const <FontVariation>[])
+                          .where((v) => v.axis != 'wght'),
+                      const FontVariation('wght', 700),
+                    ],
                   ),
                 ),
                 const SizedBox(height: 12),
@@ -165,14 +172,30 @@ class AudiosHomeView extends StatelessWidget {
                             ),
                             style: Theme.of(context).textTheme.bodySmall
                                 ?.copyWith(
-                                  fontWeight: FontWeight.w600,
+                                  fontVariations: [
+                                    ...(Theme.of(context)
+                                                .textTheme
+                                                .bodySmall
+                                                ?.fontVariations ??
+                                            const <FontVariation>[])
+                                        .where((v) => v.axis != 'wght'),
+                                    const FontVariation('wght', 700),
+                                  ],
                                 ),
                           ),
                           trailing: Text(
                             audio.formattedDuration,
                             style: Theme.of(context).textTheme.bodySmall
                                 ?.copyWith(
-                                  fontWeight: FontWeight.w600,
+                                  fontVariations: [
+                                    ...(Theme.of(context)
+                                                .textTheme
+                                                .bodySmall
+                                                ?.fontVariations ??
+                                            const <FontVariation>[])
+                                        .where((v) => v.axis != 'wght'),
+                                    const FontVariation('wght', 700),
+                                  ],
                                 ),
                           ),
                           onTap: () =>

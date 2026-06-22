@@ -34,8 +34,15 @@ class AppFunctions {
             Expanded(
               child: Text(
                 message ?? '',
-                style: const TextStyle(
-                  fontWeight: FontWeight.w600,
+                style: TextStyle(
+                  fontVariations: [
+                    ...(Theme.of(
+                              context,
+                            ).textTheme.titleMedium?.fontVariations ??
+                            const <FontVariation>[])
+                        .where((v) => v.axis != 'wght'),
+                    const FontVariation('wght', 700),
+                  ],
                   color: Colors.white,
                 ),
               ),

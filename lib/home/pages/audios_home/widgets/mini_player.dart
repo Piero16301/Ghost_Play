@@ -68,7 +68,15 @@ class MiniPlayer extends StatelessWidget {
                           audio.name.split('.').first,
                           style: Theme.of(context).textTheme.bodyLarge
                               ?.copyWith(
-                                fontWeight: FontWeight.w600,
+                                fontVariations: [
+                                  ...(Theme.of(context)
+                                              .textTheme
+                                              .bodyLarge
+                                              ?.fontVariations ??
+                                          const <FontVariation>[])
+                                      .where((v) => v.axis != 'wght'),
+                                  const FontVariation('wght', 700),
+                                ],
                               ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
