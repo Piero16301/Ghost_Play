@@ -7,7 +7,7 @@ void main() {
     test('constants are correct', () {
       expect(AppVariables.appName, 'Ghost Play');
       expect(AppVariables.defaultBaseColor, isA<Color>());
-      expect(AppVariables.defaultFontFamily, 'Poppins');
+      expect(AppVariables.defaultFontFamily, 'GoogleSansFlex');
       expect(AppVariables.tabletMaxWidth, 500.0);
       expect(AppVariables.tabletMaxHeight, 400.0);
       expect(AppVariables.waVoiceNotesPath, isNotNull);
@@ -27,7 +27,7 @@ void main() {
     test('availableFonts is initialized and has many entries', () {
       expect(AppVariables.availableFonts, isNotEmpty);
       expect(AppVariables.availableFonts.length, greaterThan(5));
-      expect(AppVariables.availableFonts['Poppins'], 'Poppins');
+      expect(AppVariables.availableFonts['Google Sans Flex'], 'GoogleSansFlex');
     });
 
     test('getAvailableFonts returns the same map content', () {
@@ -40,6 +40,9 @@ void main() {
         const Locale('en', 'US'),
         const Locale('es', 'ES'),
         const Locale('it', 'IT'),
+        const Locale('fr', 'FR'),
+        const Locale('de', 'DE'),
+        const Locale('pt', 'PT'),
       ]);
     });
   });

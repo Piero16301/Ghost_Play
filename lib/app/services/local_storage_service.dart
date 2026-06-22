@@ -2,8 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:ghost_play/app/app.dart';
 
 class LocalStorageService {
-  LocalStorageService({required LocalStorageRepository localStorageRepository})
-    : _localStorageRepository = localStorageRepository;
+  LocalStorageService({required this._localStorageRepository});
 
   final LocalStorageRepository _localStorageRepository;
 

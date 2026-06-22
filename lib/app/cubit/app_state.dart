@@ -5,7 +5,7 @@ class AppState extends Equatable {
     this.language = const Locale('en', 'US'),
     this.theme = ThemeMode.system,
     this.baseColor = Colors.green,
-    this.fontFamily = 'Poppins',
+    this.fontFamily = 'GoogleSansFlex',
   });
 
   final Locale language;

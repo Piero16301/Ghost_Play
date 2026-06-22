@@ -69,7 +69,14 @@ class StatesHomeView extends StatelessWidget {
                 Text(
                   l10n.welcomeTitle(AppVariables.appName),
                   style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.w600,
+                    fontVariations: [
+                      ...(Theme.of(
+                                context,
+                              ).textTheme.titleLarge?.fontVariations ??
+                              const <FontVariation>[])
+                          .where((v) => v.axis != 'wght'),
+                      const FontVariation('wght', 700),
+                    ],
                   ),
                 ),
                 const SizedBox(height: 12),

@@ -4,7 +4,7 @@ import 'package:intl/intl.dart';
 class AppVariables {
   static const String appName = 'Ghost Play';
   static const Color defaultBaseColor = Colors.green;
-  static const String defaultFontFamily = 'Poppins';
+  static const String defaultFontFamily = 'GoogleSansFlex';
 
   static const tabletMaxWidth = 500.0;
   static const tabletMaxHeight = 400.0;
@@ -22,16 +22,15 @@ class AppVariables {
 
   static Map<String, String> getAvailableFonts() {
     return {
+      'Google Sans Flex': 'GoogleSansFlex',
       'Merriweather': 'Merriweather',
       'Montserrat': 'Montserrat',
       'Nunito': 'Nunito',
-      'Open Sans': 'Open Sans',
+      'Open Sans': 'OpenSans',
       'Orbitron': 'Orbitron',
-      'Pacifico': 'Pacifico',
-      'Playfair Display': 'Playfair Display',
-      'Poppins': 'Poppins',
+      'Playfair Display': 'PlayfairDisplay',
       'Roboto': 'Roboto',
-      'Source Code Pro': 'Source Code Pro',
+      'Source Code Pro': 'SourceCodePro',
     };
   }
 
@@ -39,6 +38,9 @@ class AppVariables {
     Locale('en', 'US'),
     Locale('es', 'ES'),
     Locale('it', 'IT'),
+    Locale('fr', 'FR'),
+    Locale('de', 'DE'),
+    Locale('pt', 'PT'),
   ];
 }
 

@@ -37,7 +37,14 @@ class SettingsAppSpecs extends StatelessWidget {
                     Text(
                       '$version ($buildNumber)',
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        fontWeight: FontWeight.w600,
+                        fontVariations: [
+                          ...(Theme.of(
+                                    context,
+                                  ).textTheme.bodyMedium?.fontVariations ??
+                                  const <FontVariation>[])
+                              .where((v) => v.axis != 'wght'),
+                          const FontVariation('wght', 700),
+                        ],
                       ),
                     ),
                   ],
@@ -53,7 +60,14 @@ class SettingsAppSpecs extends StatelessWidget {
                     Text(
                       DateFormat('dd/MM/yyyy').format(updateDate),
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        fontWeight: FontWeight.w600,
+                        fontVariations: [
+                          ...(Theme.of(
+                                    context,
+                                  ).textTheme.bodyMedium?.fontVariations ??
+                                  const <FontVariation>[])
+                              .where((v) => v.axis != 'wght'),
+                          const FontVariation('wght', 700),
+                        ],
                       ),
                     ),
                   ],

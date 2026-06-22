@@ -3,8 +3,7 @@ import 'dart:typed_data';
 import 'package:ghost_play/app/app.dart';
 
 class StorageService {
-  StorageService({required StorageRepository storageRepository})
-    : _storageRepository = storageRepository;
+  StorageService({required this._storageRepository});
 
   final StorageRepository _storageRepository;
 

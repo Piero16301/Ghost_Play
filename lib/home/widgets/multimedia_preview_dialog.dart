@@ -381,29 +381,44 @@ class _MultimediaPreviewDialogState extends State<MultimediaPreviewDialog> {
 
     if (_error != null) {
       return [
-        AppOutlinedButton(
-          onPressed: () => Navigator.of(context).pop(),
-          icon: HugeIcons.strokeRoundedCancel01,
-          label: l10n.cancel,
+        Row(
+          children: [
+            Expanded(
+              child: AppOutlinedButton(
+                onPressed: () => Navigator.of(context).pop(),
+                icon: HugeIcons.strokeRoundedCancel01,
+                label: l10n.cancel,
+              ),
+            ),
+          ],
         ),
       ];
     }
 
     return [
-      AppOutlinedButton(
-        onPressed: () => Navigator.of(context).pop(),
-        icon: HugeIcons.strokeRoundedCancel01,
-        label: l10n.cancel,
-      ),
-      AppFilledButton(
-        onPressed: _isLoading || _error != null
-            ? null
-            : () => _saveToGallery(l10n),
-        icon: const HugeIcon(
-          icon: HugeIcons.strokeRoundedSave,
-          strokeWidth: 2,
-        ),
-        label: l10n.save,
+      Row(
+        spacing: 10,
+        children: [
+          Expanded(
+            child: AppOutlinedButton(
+              onPressed: () => Navigator.of(context).pop(),
+              icon: HugeIcons.strokeRoundedCancel01,
+              label: l10n.cancel,
+            ),
+          ),
+          Expanded(
+            child: AppFilledButton(
+              onPressed: _isLoading || _error != null
+                  ? null
+                  : () => _saveToGallery(l10n),
+              icon: const HugeIcon(
+                icon: HugeIcons.strokeRoundedSave,
+                strokeWidth: 2,
+              ),
+              label: l10n.save,
+            ),
+          ),
+        ],
       ),
     ];
   }
