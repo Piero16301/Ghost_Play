@@ -27,7 +27,7 @@ dependencies:
   intl: ^0.20.2
   just_audio: ^0.10.5
   package_info_plus: ^10.1.0
-  saf: ^1.0.4
+  saf: ^2.1.0
   shared_preferences: ^2.5.5
   video_player: ^2.11.1
 
