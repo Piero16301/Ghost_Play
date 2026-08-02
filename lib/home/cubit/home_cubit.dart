@@ -37,7 +37,7 @@ class HomeCubit extends Cubit<HomeState> {
             'Persisted directories found, loading audios and states.',
           )
           ..setCustomKey('permission_granted', true);
-        final saf = Saf(persistedDirs.first);
+        final saf = Saf();
         emit(
           state.copyWith(
             saf: saf,
@@ -85,7 +85,7 @@ class HomeCubit extends Cubit<HomeState> {
       final persistedDirs = await _storageService
           .getPersistedPermissionDirectories();
       if (persistedDirs != null && persistedDirs.isNotEmpty) {
-        final saf = Saf(persistedDirs.first);
+        final saf = Saf();
         _crashService.log('Permission granted by user.');
         emit(
           state.copyWith(
