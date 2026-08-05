@@ -10,26 +10,26 @@ environment:
 dependencies:
   bloc: ^9.2.1
   country_flags: ^4.1.2
-  equatable: ^2.0.8
-  firebase_analytics: ^12.4.3
-  firebase_core: ^4.11.0
-  firebase_crashlytics: ^5.2.4
+  equatable: ^2.1.0
+  firebase_analytics: ^12.4.6
+  firebase_core: ^4.13.0
+  firebase_crashlytics: ^5.2.7
   firebase_performance: ^0.11.4+3
   flutter:
     sdk: flutter
   flutter_bloc: ^9.1.1
   flutter_localizations:
     sdk: flutter
-  gal: ^2.3.2
+  gal: ^2.3.3
   get_it: ^9.2.1
-  go_router: ^17.3.0
+  go_router: ^17.4.0
   hugeicons: ^1.1.7
   intl: ^0.20.2
-  just_audio: ^0.10.5
-  package_info_plus: ^10.1.0
-  saf: ^1.0.4
+  just_audio: ^0.10.6
+  package_info_plus: ^10.2.1
+  saf: ^2.1.0
   shared_preferences: ^2.5.5
-  video_player: ^2.11.1
+  video_player: ^2.13.0
 
 dev_dependencies:
   bloc_lint: ^0.4.1
@@ -40,7 +40,7 @@ dev_dependencies:
     sdk: flutter
   mocktail: ^1.0.5
   very_good_analysis: ^10.3.0
-  video_player_platform_interface: ^6.7.0
+  video_player_platform_interface: ^6.9.0
 
 flutter_launcher_icons:
   android: true

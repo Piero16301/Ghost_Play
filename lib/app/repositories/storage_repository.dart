@@ -80,8 +80,9 @@ class MethodChannelStorageRepository implements StorageRepository {
   static const _platform = MethodChannel('ghostplay/storage');
 
   @override
-  Future<List<String>?> getPersistedPermissionDirectories() {
-    return Saf.getPersistedPermissionDirectories();
+  Future<List<String>?> getPersistedPermissionDirectories() async {
+    final permissions = await Saf().persistedPermissions();
+    return permissions.map((p) => p.uri).toList();
   }
 
   @override
@@ -153,8 +154,11 @@ class MethodChannelStorageRepository implements StorageRepository {
   }
 
   @override
-  Future<bool?> getDirectoryPermission(String path) {
-    final saf = Saf(path);
-    return saf.getDirectoryPermission(grantWritePermission: false);
+  Future<bool?> getDirectoryPermission(String path) async {
+    final picked = await Saf().pickDirectory(
+      initialUri: path,
+      writePermission: false,
+    );
+    return picked != null;
   }
 }

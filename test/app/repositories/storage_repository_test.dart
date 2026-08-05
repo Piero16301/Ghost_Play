@@ -8,7 +8,7 @@ void main() {
   group('MethodChannelStorageRepository', () {
     late MethodChannelStorageRepository repository;
     const storageChannel = MethodChannel('ghostplay/storage');
-    const safChannel = MethodChannel('com.ivehement.plugins/saf/documentfile');
+    const safChannel = MethodChannel('com.ivehement.plugins/saf/v2');
 
     setUp(() {
       repository = MethodChannelStorageRepository();
@@ -25,8 +25,11 @@ void main() {
 
       TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
           .setMockMethodCallHandler(safChannel, (methodCall) async {
-            if (methodCall.method == 'persistedUriPermissions') {
+            if (methodCall.method == 'persistedPermissions') {
               return <Map<String, dynamic>>[];
+            }
+            if (methodCall.method == 'pickDirectory') {
+              return null;
             }
             return null;
           });
