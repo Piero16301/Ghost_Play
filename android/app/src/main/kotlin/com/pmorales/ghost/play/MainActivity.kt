@@ -40,7 +40,9 @@ class MainActivity : FlutterActivity() {
                                                                                                                 .toString()
                                                                                                 )
                                                                                         decoded.contains(
-                                                                                                uriString
+                                                                                                Uri.decode(
+                                                                                                        uriString
+                                                                                                )
                                                                                         )
                                                                                 }
                                                                                 ?.uri
@@ -416,7 +418,9 @@ class MainActivity : FlutterActivity() {
                                                                                                                 .toString()
                                                                                                 )
                                                                                         decoded.contains(
-                                                                                                uriString
+                                                                                                Uri.decode(
+                                                                                                        uriString
+                                                                                                )
                                                                                         )
                                                                                 }
                                                                                 ?.uri
@@ -930,7 +934,9 @@ class MainActivity : FlutterActivity() {
                                                                                                                 .toString()
                                                                                                 )
                                                                                         decoded.contains(
-                                                                                                uriString
+                                                                                                Uri.decode(
+                                                                                                        uriString
+                                                                                                )
                                                                                         )
                                                                                 }
                                                                                 ?.uri
