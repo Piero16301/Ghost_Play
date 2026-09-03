@@ -1,8 +1,8 @@
 import 'package:firebase_core/firebase_core.dart';
-import 'package:flutter/material.dart';
 import 'package:ghost_play/app/app.dart';
 import 'package:ghost_play/bootstrap.dart';
 import 'package:ghost_play/firebase_options.dart';
+import 'package:material_ui/material_ui.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();

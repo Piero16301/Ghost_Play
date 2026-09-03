@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:ghost_play/app/app.dart';
+import 'package:material_ui/material_ui.dart';
 
 class LocalStorageService {
   LocalStorageService({required this._localStorageRepository});

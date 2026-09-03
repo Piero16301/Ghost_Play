@@ -1,10 +1,10 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ghost_play/app/app.dart';
 import 'package:ghost_play/home/home.dart';
 import 'package:ghost_play/l10n/l10n.dart';
 import 'package:go_router/go_router.dart';
+import 'package:material_ui/material_ui.dart';
 
 extension PumpApp on WidgetTester {
   Future<void> pumpApp(

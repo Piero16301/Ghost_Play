@@ -1,11 +1,11 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:flutter/material.dart';
 import 'package:gal/gal.dart';
 import 'package:ghost_play/app/app.dart';
 import 'package:ghost_play/l10n/l10n.dart';
 import 'package:hugeicons/hugeicons.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:video_player/video_player.dart';
 
 class MultimediaPreviewDialog extends StatefulWidget {
