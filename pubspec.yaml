@@ -40,7 +40,7 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   mocktail: ^1.0.5
-  very_good_analysis: ^10.3.0
+  very_good_analysis: ^11.0.0
   video_player_platform_interface: ^6.9.0
 
 flutter_launcher_icons:
