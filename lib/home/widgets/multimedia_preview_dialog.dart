@@ -246,9 +246,7 @@ class _MultimediaPreviewDialogState extends State<MultimediaPreviewDialog> {
     if (_isLoading) {
       return const AspectRatio(
         aspectRatio: 3 / 4,
-        child: Center(
-          child: CircularProgressIndicator(),
-        ),
+        child: Center(child: CircularProgressIndicator()),
       );
     }
 
@@ -294,10 +292,7 @@ class _MultimediaPreviewDialogState extends State<MultimediaPreviewDialog> {
       );
     }
 
-    return Image.file(
-      File(_cachedFilePath!),
-      fit: BoxFit.contain,
-    );
+    return Image.file(File(_cachedFilePath!), fit: BoxFit.contain);
   }
 
   Widget _buildVideoControls() {
@@ -336,9 +331,7 @@ class _MultimediaPreviewDialogState extends State<MultimediaPreviewDialog> {
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 8),
-                child: _VideoProgressBar(
-                  controller: _videoPlayerController!,
-                ),
+                child: _VideoProgressBar(controller: _videoPlayerController!),
               ),
             ),
             Text(
@@ -354,9 +347,8 @@ class _MultimediaPreviewDialogState extends State<MultimediaPreviewDialog> {
                 strokeWidth: 2,
                 color: Theme.of(context).colorScheme.onSurface,
               ),
-              onPressed: () => _videoPlayerController!.setVolume(
-                value.volume == 0 ? 1 : 0,
-              ),
+              onPressed: () =>
+                  _videoPlayerController!.setVolume(value.volume == 0 ? 1 : 0),
             ),
           ],
         );
@@ -425,9 +417,7 @@ class _MultimediaPreviewDialogState extends State<MultimediaPreviewDialog> {
 }
 
 class _VideoProgressBar extends StatefulWidget {
-  const _VideoProgressBar({
-    required this.controller,
-  });
+  const _VideoProgressBar({required this.controller});
 
   final VideoPlayerController controller;
 

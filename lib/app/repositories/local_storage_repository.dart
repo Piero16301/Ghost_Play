@@ -129,10 +129,7 @@ class SharedPrefsLocalStorageRepository implements LocalStorageRepository {
   @override
   void saveFontFamily({required String fontFamily}) {
     _prefs
-        ?.setString(
-          LocalStorageRepository.kUserFontFamily,
-          fontFamily,
-        )
+        ?.setString(LocalStorageRepository.kUserFontFamily, fontFamily)
         .ignore();
   }
 

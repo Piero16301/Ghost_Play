@@ -83,11 +83,5 @@ class AudioMetadata extends Equatable {
   final int durationMs;
 
   @override
-  List<Object?> get props => [
-    uri,
-    name,
-    date,
-    sizeBytes,
-    durationMs,
-  ];
+  List<Object?> get props => [uri, name, date, sizeBytes, durationMs];
 }

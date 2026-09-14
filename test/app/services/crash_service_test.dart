@@ -37,12 +37,7 @@ void main() {
 
       service.recordError(ex, st, reason: 'r');
       verify(
-        () => repository.recordError(
-          ex,
-          st,
-          reason: 'r',
-          fatal: false,
-        ),
+        () => repository.recordError(ex, st, reason: 'r', fatal: false),
       ).called(1);
     });
 

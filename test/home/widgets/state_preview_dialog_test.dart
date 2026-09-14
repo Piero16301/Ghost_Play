@@ -107,9 +107,7 @@ void main() {
       () => getIt<PerformanceService>().stopTrace(any()),
     ).thenAnswer((_) async {});
 
-    when(
-      () => getIt<CrashService>().log(any<String>()),
-    ).thenAnswer((_) {});
+    when(() => getIt<CrashService>().log(any<String>())).thenAnswer((_) {});
     when(
       () => getIt<CrashService>().recordError(
         any<Object>(),
@@ -153,19 +151,14 @@ void main() {
     return file.path;
   }
 
-  Future<void> pumpDialog(
-    WidgetTester tester,
-    MultimediaMetadata item,
-  ) async {
+  Future<void> pumpDialog(WidgetTester tester, MultimediaMetadata item) async {
     await tester.pumpApp(
       Builder(
         builder: (context) => TextButton(
           onPressed: () => showDialog<void>(
             context: context,
-            builder: (_) => MultimediaPreviewDialog(
-              item: item,
-              defaultAspectRatio: 9 / 16,
-            ),
+            builder: (_) =>
+                MultimediaPreviewDialog(item: item, defaultAspectRatio: 9 / 16),
           ),
           child: const Text('Open'),
         ),
@@ -183,30 +176,27 @@ void main() {
     List<String>? calls,
   }) {
     TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
-        .setMockMethodCallHandler(
-          const MethodChannel('gal'),
-          (call) async {
-            calls?.add(call.method);
-            switch (call.method) {
-              case 'hasAccess':
-                return hasAccess;
-              case 'requestAccess':
-                return requestAccess;
-              case 'putImage':
-                if (throwOnPutImage) {
-                  throw PlatformException(
-                    code: 'save_failed',
-                    message: 'save failed',
-                  );
-                }
-                return null;
-              case 'putVideo':
-                return null;
-              default:
-                return null;
-            }
-          },
-        );
+        .setMockMethodCallHandler(const MethodChannel('gal'), (call) async {
+          calls?.add(call.method);
+          switch (call.method) {
+            case 'hasAccess':
+              return hasAccess;
+            case 'requestAccess':
+              return requestAccess;
+            case 'putImage':
+              if (throwOnPutImage) {
+                throw PlatformException(
+                  code: 'save_failed',
+                  message: 'save failed',
+                );
+              }
+              return null;
+            case 'putVideo':
+              return null;
+            default:
+              return null;
+          }
+        });
   }
 
   group('StatePreviewDialog', () {
@@ -377,9 +367,7 @@ void main() {
 
     testWidgets(
       'Save requests access and saves when initially denied then granted',
-      (
-        tester,
-      ) async {
+      (tester) async {
         mockGalChannel(hasAccess: false);
         final path = createTmpPng('dialog_save_request.png');
         when(
@@ -487,9 +475,7 @@ void main() {
       File(path).deleteSync();
     });
 
-    testWidgets('video item save uses putVideo', (
-      tester,
-    ) async {
+    testWidgets('video item save uses putVideo', (tester) async {
       VideoPlayerPlatform.instance = _FakeVideoPlayerPlatform(
         duration: const Duration(hours: 1, minutes: 1, seconds: 1),
       );
@@ -591,9 +577,7 @@ void main() {
     testWidgets('video controls handle pause, replay from end and volume', (
       tester,
     ) async {
-      final fakePlatform = _FakeVideoPlayerPlatform(
-        duration: Duration.zero,
-      );
+      final fakePlatform = _FakeVideoPlayerPlatform(duration: Duration.zero);
       VideoPlayerPlatform.instance = fakePlatform;
       final path = createTmpPng('dialog_video_controls.mp4');
       when(

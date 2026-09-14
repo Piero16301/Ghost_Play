@@ -7,9 +7,7 @@ abstract class StorageRepository {
     required String uri,
     required int weeks,
   });
-  Future<List<dynamic>?> getRecentStates({
-    required String uri,
-  });
+  Future<List<dynamic>?> getRecentStates({required String uri});
   Future<List<dynamic>?> getRecentVideos({
     required String uri,
     required int weeks,
@@ -18,10 +16,7 @@ abstract class StorageRepository {
     required String uri,
     required bool isVideo,
   });
-  Future<String?> cacheFile({
-    required String uri,
-    required String fileName,
-  });
+  Future<String?> cacheFile({required String uri, required String fileName});
   Future<bool?> getDirectoryPermission(String path);
 }
 
@@ -40,9 +35,7 @@ class MockStorageRepository implements StorageRepository {
   }
 
   @override
-  Future<List<dynamic>?> getRecentStates({
-    required String uri,
-  }) async {
+  Future<List<dynamic>?> getRecentStates({required String uri}) async {
     return [];
   }
 
@@ -90,25 +83,17 @@ class MethodChannelStorageRepository implements StorageRepository {
     required String uri,
     required int weeks,
   }) {
-    return _platform.invokeMethod<List<dynamic>>(
-      'getRecentAudios',
-      {
-        'uri': uri,
-        'weeks': weeks,
-      },
-    );
+    return _platform.invokeMethod<List<dynamic>>('getRecentAudios', {
+      'uri': uri,
+      'weeks': weeks,
+    });
   }
 
   @override
-  Future<List<dynamic>?> getRecentStates({
-    required String uri,
-  }) {
-    return _platform.invokeMethod<List<dynamic>>(
-      'getRecentStates',
-      {
-        'uri': uri,
-      },
-    );
+  Future<List<dynamic>?> getRecentStates({required String uri}) {
+    return _platform.invokeMethod<List<dynamic>>('getRecentStates', {
+      'uri': uri,
+    });
   }
 
   @override
@@ -116,13 +101,10 @@ class MethodChannelStorageRepository implements StorageRepository {
     required String uri,
     required int weeks,
   }) {
-    return _platform.invokeMethod<List<dynamic>>(
-      'getRecentVideos',
-      {
-        'uri': uri,
-        'weeks': weeks,
-      },
-    );
+    return _platform.invokeMethod<List<dynamic>>('getRecentVideos', {
+      'uri': uri,
+      'weeks': weeks,
+    });
   }
 
   @override
@@ -130,27 +112,18 @@ class MethodChannelStorageRepository implements StorageRepository {
     required String uri,
     required bool isVideo,
   }) {
-    return _platform.invokeMethod<Uint8List>(
-      'getThumbnailBytes',
-      {
-        'uri': uri,
-        'isVideo': isVideo,
-      },
-    );
+    return _platform.invokeMethod<Uint8List>('getThumbnailBytes', {
+      'uri': uri,
+      'isVideo': isVideo,
+    });
   }
 
   @override
-  Future<String?> cacheFile({
-    required String uri,
-    required String fileName,
-  }) {
-    return _platform.invokeMethod<String>(
-      'cacheFile',
-      {
-        'uri': uri,
-        'fileName': fileName,
-      },
-    );
+  Future<String?> cacheFile({required String uri, required String fileName}) {
+    return _platform.invokeMethod<String>('cacheFile', {
+      'uri': uri,
+      'fileName': fileName,
+    });
   }
 
   @override

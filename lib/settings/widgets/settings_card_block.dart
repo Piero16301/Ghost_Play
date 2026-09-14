@@ -30,10 +30,7 @@ class SettingsCardBlock<T> extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              title,
-              style: Theme.of(context).textTheme.titleSmall,
-            ),
+            Text(title, style: Theme.of(context).textTheme.titleSmall),
             const SizedBox(height: 12),
             Container(
               decoration: BoxDecoration(

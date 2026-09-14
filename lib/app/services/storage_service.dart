@@ -15,48 +15,29 @@ class StorageService {
     required String uri,
     required int weeks,
   }) {
-    return _storageRepository.getRecentAudios(
-      uri: uri,
-      weeks: weeks,
-    );
+    return _storageRepository.getRecentAudios(uri: uri, weeks: weeks);
   }
 
-  Future<List<dynamic>?> getRecentStates({
-    required String uri,
-  }) {
-    return _storageRepository.getRecentStates(
-      uri: uri,
-    );
+  Future<List<dynamic>?> getRecentStates({required String uri}) {
+    return _storageRepository.getRecentStates(uri: uri);
   }
 
   Future<List<dynamic>?> getRecentVideos({
     required String uri,
     required int weeks,
   }) {
-    return _storageRepository.getRecentVideos(
-      uri: uri,
-      weeks: weeks,
-    );
+    return _storageRepository.getRecentVideos(uri: uri, weeks: weeks);
   }
 
   Future<Uint8List?> getThumbnailBytes({
     required String uri,
     required bool isVideo,
   }) {
-    return _storageRepository.getThumbnailBytes(
-      uri: uri,
-      isVideo: isVideo,
-    );
+    return _storageRepository.getThumbnailBytes(uri: uri, isVideo: isVideo);
   }
 
-  Future<String?> cacheFile({
-    required String uri,
-    required String fileName,
-  }) {
-    return _storageRepository.cacheFile(
-      uri: uri,
-      fileName: fileName,
-    );
+  Future<String?> cacheFile({required String uri, required String fileName}) {
+    return _storageRepository.cacheFile(uri: uri, fileName: fileName);
   }
 
   Future<bool?> getDirectoryPermission(String path) {

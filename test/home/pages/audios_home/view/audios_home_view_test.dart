@@ -66,9 +66,7 @@ void main() {
     });
 
     testWidgets('renders permission screen when no permission', (tester) async {
-      when(
-        () => homeCubit.state,
-      ).thenReturn(const HomeState());
+      when(() => homeCubit.state).thenReturn(const HomeState());
       await tester.pumpApp(
         const AudiosHomeView(),
         homeCubit: homeCubit,
@@ -85,10 +83,7 @@ void main() {
       tester,
     ) async {
       when(() => homeCubit.state).thenReturn(
-        const HomeState(
-          hasPermission: true,
-          audiosStatus: HomeStatus.success,
-        ),
+        const HomeState(hasPermission: true, audiosStatus: HomeStatus.success),
       );
       await tester.pumpApp(
         const AudiosHomeView(),

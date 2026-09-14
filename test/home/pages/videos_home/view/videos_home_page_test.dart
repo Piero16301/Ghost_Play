@@ -18,10 +18,7 @@ void main() {
   });
 
   testWidgets('renders VideosHomeView', (tester) async {
-    await tester.pumpApp(
-      const VideosHomePage(),
-      homeCubit: homeCubit,
-    );
+    await tester.pumpApp(const VideosHomePage(), homeCubit: homeCubit);
     expect(find.byType(VideosHomeView), findsOneWidget);
   });
 }

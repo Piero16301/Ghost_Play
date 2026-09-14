@@ -26,9 +26,7 @@ void main() {
 
   group('MiniPlayer', () {
     testWidgets('renders nothing when isVisible is false', (tester) async {
-      when(
-        () => audiosHomeCubit.state,
-      ).thenReturn(const AudiosHomeState());
+      when(() => audiosHomeCubit.state).thenReturn(const AudiosHomeState());
       await tester.pumpApp(
         const MiniPlayer(),
         audiosHomeCubit: audiosHomeCubit,
@@ -170,9 +168,9 @@ void main() {
         sizeBytes: 0,
         durationMs: 0,
       );
-      when(() => audiosHomeCubit.state).thenReturn(
-        AudiosHomeState(isVisible: true, currentAudio: audio),
-      );
+      when(
+        () => audiosHomeCubit.state,
+      ).thenReturn(AudiosHomeState(isVisible: true, currentAudio: audio));
 
       await tester.pumpApp(
         const MiniPlayer(),

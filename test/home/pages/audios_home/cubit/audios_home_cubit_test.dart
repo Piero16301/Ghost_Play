@@ -223,7 +223,7 @@ void main() {
           () => audioPlayer.setAudioSource(any<ja.AudioSource>()),
         ).thenThrow(Exception('error'));
       },
-      act: (cubit) async => cubit.playAudio(
+      act: (cubit) async => await cubit.playAudio(
         AudioMetadata(
           uri: 'uri',
           name: 'name',
@@ -258,7 +258,7 @@ void main() {
     blocTest<AudiosHomeCubit, AudiosHomeState>(
       'pause calls audioPlayer.pause',
       build: () => audiosHomeCubit,
-      act: (cubit) async => cubit.pause(),
+      act: (cubit) async => await cubit.pause(),
       verify: (_) {
         verify(() => audioPlayer.pause()).called(1);
         verify(() => analyticsService.logEvent(name: 'pause_audio')).called(1);
@@ -269,7 +269,7 @@ void main() {
       'resume calls audioPlayer.play and seeks if completed',
       build: () => audiosHomeCubit,
       seed: () => const AudiosHomeState(status: AudiosHomeStatus.completed),
-      act: (cubit) async => cubit.resume(),
+      act: (cubit) async => await cubit.resume(),
       verify: (_) {
         verify(() => audioPlayer.seek(Duration.zero)).called(1);
         verify(() => audioPlayer.play()).called(1);
@@ -280,7 +280,7 @@ void main() {
     blocTest<AudiosHomeCubit, AudiosHomeState>(
       'seek calls audioPlayer.seek',
       build: () => audiosHomeCubit,
-      act: (cubit) async => cubit.seek(const Duration(seconds: 2)),
+      act: (cubit) async => await cubit.seek(const Duration(seconds: 2)),
       verify: (_) {
         verify(() => audioPlayer.seek(const Duration(seconds: 2))).called(1);
         verify(
@@ -314,10 +314,8 @@ void main() {
         isVisible: true,
         status: AudiosHomeStatus.playing,
       ),
-      act: (cubit) async => cubit.closePlayer(),
-      expect: () => [
-        const AudiosHomeState(),
-      ],
+      act: (cubit) async => await cubit.closePlayer(),
+      expect: () => [const AudiosHomeState()],
       verify: (_) {
         verify(() => audioPlayer.stop()).called(1);
       },

@@ -46,9 +46,7 @@ void main() {
       ),
     ).thenAnswer((_) {});
 
-    when(
-      () => getIt<CrashService>().log(any()),
-    ).thenAnswer((_) {});
+    when(() => getIt<CrashService>().log(any())).thenAnswer((_) {});
 
     when(
       () => getIt<CrashService>().recordError(
@@ -71,14 +69,11 @@ void main() {
     testWidgets('renders CircularLoadingAnimation when loading', (
       tester,
     ) async {
-      when(() => homeCubit.state).thenReturn(
-        const HomeState(statesStatus: HomeStatus.loading),
-      );
+      when(
+        () => homeCubit.state,
+      ).thenReturn(const HomeState(statesStatus: HomeStatus.loading));
 
-      await tester.pumpApp(
-        const StatesHomeView(),
-        homeCubit: homeCubit,
-      );
+      await tester.pumpApp(const StatesHomeView(), homeCubit: homeCubit);
 
       expect(find.byType(CircularLoadingAnimation), findsOneWidget);
     });
@@ -86,14 +81,11 @@ void main() {
     testWidgets('renders failure message when status is failure', (
       tester,
     ) async {
-      when(() => homeCubit.state).thenReturn(
-        const HomeState(statesStatus: HomeStatus.failure),
-      );
+      when(
+        () => homeCubit.state,
+      ).thenReturn(const HomeState(statesStatus: HomeStatus.failure));
 
-      await tester.pumpApp(
-        const StatesHomeView(),
-        homeCubit: homeCubit,
-      );
+      await tester.pumpApp(const StatesHomeView(), homeCubit: homeCubit);
 
       expect(
         find.text(
@@ -104,14 +96,9 @@ void main() {
     });
 
     testWidgets('renders permission screen when no permission', (tester) async {
-      when(() => homeCubit.state).thenReturn(
-        const HomeState(),
-      );
+      when(() => homeCubit.state).thenReturn(const HomeState());
 
-      await tester.pumpApp(
-        const StatesHomeView(),
-        homeCubit: homeCubit,
-      );
+      await tester.pumpApp(const StatesHomeView(), homeCubit: homeCubit);
 
       expect(find.text('Grant permission'), findsOneWidget);
 
@@ -122,14 +109,11 @@ void main() {
     testWidgets('renders no states found message when list is empty', (
       tester,
     ) async {
-      when(() => homeCubit.state).thenReturn(
-        const HomeState(hasPermission: true),
-      );
+      when(
+        () => homeCubit.state,
+      ).thenReturn(const HomeState(hasPermission: true));
 
-      await tester.pumpApp(
-        const StatesHomeView(),
-        homeCubit: homeCubit,
-      );
+      await tester.pumpApp(const StatesHomeView(), homeCubit: homeCubit);
 
       expect(find.text('No states found yet'), findsOneWidget);
     });
@@ -145,14 +129,11 @@ void main() {
         sizeBytes: 1024,
       );
 
-      when(() => homeCubit.state).thenReturn(
-        HomeState(hasPermission: true, states: [stateItem]),
-      );
+      when(
+        () => homeCubit.state,
+      ).thenReturn(HomeState(hasPermission: true, states: [stateItem]));
 
-      await tester.pumpApp(
-        const StatesHomeView(),
-        homeCubit: homeCubit,
-      );
+      await tester.pumpApp(const StatesHomeView(), homeCubit: homeCubit);
 
       expect(find.byType(GridView), findsOneWidget);
 
@@ -185,10 +166,7 @@ void main() {
         ),
       );
 
-      await tester.pumpApp(
-        const StatesHomeView(),
-        homeCubit: homeCubit,
-      );
+      await tester.pumpApp(const StatesHomeView(), homeCubit: homeCubit);
 
       final refreshIndicator = tester.widget<RefreshIndicator>(
         find.byType(RefreshIndicator),
@@ -288,23 +266,18 @@ void main() {
         sizeBytes: 1024,
       );
 
-      when(() => homeCubit.state).thenReturn(
-        HomeState(hasPermission: true, states: [stateItem]),
-      );
+      when(
+        () => homeCubit.state,
+      ).thenReturn(HomeState(hasPermission: true, states: [stateItem]));
 
-      await tester.pumpApp(
-        const StatesHomeView(),
-        homeCubit: homeCubit,
-      );
+      await tester.pumpApp(const StatesHomeView(), homeCubit: homeCubit);
 
       await tester.pump();
 
       expect(find.byType(Image), findsOneWidget);
     });
 
-    testWidgets('renders play icon overlay for video items', (
-      tester,
-    ) async {
+    testWidgets('renders play icon overlay for video items', (tester) async {
       final stateItem = MultimediaMetadata(
         uri: 'video_uri',
         name: 'test.mp4',
@@ -313,14 +286,11 @@ void main() {
         sizeBytes: 2048,
       );
 
-      when(() => homeCubit.state).thenReturn(
-        HomeState(hasPermission: true, states: [stateItem]),
-      );
+      when(
+        () => homeCubit.state,
+      ).thenReturn(HomeState(hasPermission: true, states: [stateItem]));
 
-      await tester.pumpApp(
-        const StatesHomeView(),
-        homeCubit: homeCubit,
-      );
+      await tester.pumpApp(const StatesHomeView(), homeCubit: homeCubit);
 
       await tester.pump();
 
