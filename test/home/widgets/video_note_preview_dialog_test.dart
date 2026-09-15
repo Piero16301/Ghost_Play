@@ -255,6 +255,52 @@ void main() {
       File(path).deleteSync();
     });
 
+    testWidgets(
+      'dialog does not expand to full screen height on large screens',
+      (tester) async {
+        VideoPlayerPlatform.instance = _FakeVideoPlayerPlatform(
+          duration: const Duration(seconds: 30),
+        );
+        final path = createTmpMp4('video_note_height.mp4');
+        when(
+          () => getIt<StorageService>().cacheFile(
+            uri: any(named: 'uri'),
+            fileName: any(named: 'fileName'),
+          ),
+        ).thenAnswer((_) async => path);
+
+        tester.view.physicalSize = const Size(800, 1200);
+        tester.view.devicePixelRatio = 1.0;
+        addTearDown(() {
+          tester.view.resetPhysicalSize();
+          tester.view.resetDevicePixelRatio();
+        });
+
+        await pumpDialog(tester, makeItem());
+        await tester.pump(const Duration(milliseconds: 300));
+        await tester.pump(const Duration(milliseconds: 300));
+
+        expect(find.byType(VideoNotePreviewDialog), findsOneWidget);
+
+        // Verify the inner content container height is compact (~385)
+        // and dialog doesn't take the full screen height (1200)
+        final contentContainerFinder = find.byWidgetPredicate(
+          (widget) =>
+              widget is Container &&
+              widget.constraints?.maxWidth == 500 &&
+              widget.child is Column,
+        );
+        expect(contentContainerFinder, findsOneWidget);
+        final contentSize = tester.getSize(contentContainerFinder);
+        expect(contentSize.height, lessThan(450));
+
+        await tester.tap(find.text('Cancel'));
+        await tester.pumpAndSettle();
+
+        File(path).deleteSync();
+      },
+    );
+
     testWidgets('plays and pauses when tapping play/pause button', (
       tester,
     ) async {
@@ -458,14 +504,12 @@ void main() {
       final customPaintFinder = find.byWidgetPredicate(
         (widget) => widget is CustomPaint && widget.size.width > 0,
       );
-      final center = tester.getCenter(customPaintFinder.first);
-
-      final customPaintWidget = tester.widget<CustomPaint>(
-        customPaintFinder.first,
-      );
-      final radius = customPaintWidget.size.width / 2;
+      final playerRect = tester.getRect(customPaintFinder.first);
+      final radius = playerRect.width / 2;
       // Tap on the edge (perimeter) of the circle
-      await tester.tapAt(Offset(center.dx + radius - 2, center.dy));
+      await tester.tapAt(
+        Offset(playerRect.center.dx + radius - 2, playerRect.center.dy),
+      );
       await tester.pump(const Duration(milliseconds: 100));
 
       expect(fakePlatform.seekCalls.isNotEmpty, isTrue);

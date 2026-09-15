@@ -169,7 +169,12 @@ class _VideoNotePreviewDialogState extends State<VideoNotePreviewDialog> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Flexible(child: _buildContent(l10n)),
+            Flexible(
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                child: _buildContent(l10n),
+              ),
+            ),
             if (_videoPlayerController != null && !_isLoading && _error == null)
               _buildBottomControls(),
           ],
@@ -198,23 +203,26 @@ class _VideoNotePreviewDialogState extends State<VideoNotePreviewDialog> {
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
         ),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const HugeIcon(icon: HugeIcons.strokeRoundedCalendar01, size: 16),
-            const SizedBox(width: 4),
-            Text(
-              AppVariables.formatDateTime.format(widget.item.date),
-              style: Theme.of(context).textTheme.bodySmall,
-            ),
-            const SizedBox(width: 16),
-            const HugeIcon(icon: HugeIcons.strokeRoundedSave, size: 16),
-            const SizedBox(width: 4),
-            Text(
-              widget.item.formattedSize,
-              style: Theme.of(context).textTheme.bodySmall,
-            ),
-          ],
+        FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const HugeIcon(icon: HugeIcons.strokeRoundedCalendar01, size: 16),
+              const SizedBox(width: 4),
+              Text(
+                AppVariables.formatDateTime.format(widget.item.date),
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+              const SizedBox(width: 16),
+              const HugeIcon(icon: HugeIcons.strokeRoundedSave, size: 16),
+              const SizedBox(width: 4),
+              Text(
+                widget.item.formattedSize,
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+            ],
+          ),
         ),
       ],
     );
@@ -253,21 +261,13 @@ class _VideoNotePreviewDialogState extends State<VideoNotePreviewDialog> {
     }
 
     if (_videoPlayerController != null) {
-      const playerSize = 285.0;
+      const playerSize = 330.0;
 
-      return Center(
-        child: FittedBox(
-          fit: BoxFit.scaleDown,
-          child: Padding(
-            padding: const EdgeInsets.all(8),
-            child: SizedBox.square(
-              dimension: playerSize,
-              child: _CircularVideoPlayer(
-                controller: _videoPlayerController!,
-                size: playerSize,
-              ),
-            ),
-          ),
+      return SizedBox.square(
+        dimension: playerSize,
+        child: _CircularVideoPlayer(
+          controller: _videoPlayerController!,
+          size: playerSize,
         ),
       );
     }
