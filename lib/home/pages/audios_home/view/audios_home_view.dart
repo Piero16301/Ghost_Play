@@ -45,10 +45,7 @@ class AudiosHomeView extends StatelessWidget {
 
         if (state.audiosStatus.isFailure) {
           return Center(
-            child: Text(
-              l10n.loadingAudiosError,
-              textAlign: TextAlign.center,
-            ),
+            child: Text(l10n.loadingAudiosError, textAlign: TextAlign.center),
           );
         }
 
@@ -96,10 +93,7 @@ class AudiosHomeView extends StatelessWidget {
 
         if (state.audios.isEmpty) {
           return Center(
-            child: Text(
-              l10n.noAudiosFound,
-              textAlign: TextAlign.center,
-            ),
+            child: Text(l10n.noAudiosFound, textAlign: TextAlign.center),
           );
         }
 
@@ -167,9 +161,7 @@ class AudiosHomeView extends StatelessWidget {
                             style: Theme.of(context).textTheme.bodyLarge,
                           ),
                           subtitle: Text(
-                            AppVariables.formatDateTime.format(
-                              audio.date,
-                            ),
+                            AppVariables.formatDateTime.format(audio.date),
                             style: Theme.of(context).textTheme.bodySmall
                                 ?.copyWith(
                                   fontVariations: [

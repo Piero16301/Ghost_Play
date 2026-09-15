@@ -31,11 +31,7 @@ void main() {
     testWidgets('renders without icon when icon is null', (tester) async {
       await tester.pumpWidget(
         const MaterialApp(
-          home: Scaffold(
-            body: AppOutlinedButton(
-              label: 'Only Text',
-            ),
-          ),
+          home: Scaffold(body: AppOutlinedButton(label: 'Only Text')),
         ),
       );
 
@@ -67,11 +63,7 @@ void main() {
 
     testWidgets('handles null label correctly', (tester) async {
       await tester.pumpWidget(
-        const MaterialApp(
-          home: Scaffold(
-            body: AppOutlinedButton(),
-          ),
-        ),
+        const MaterialApp(home: Scaffold(body: AppOutlinedButton())),
       );
 
       expect(find.text(''), findsOneWidget);

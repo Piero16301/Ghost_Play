@@ -243,10 +243,7 @@ void main() {
 
       blocTest<HomeCubit, HomeState>(
         'emits failure on PlatformException',
-        seed: () => HomeState(
-          savedDirectoryUri: 'uri1',
-          saf: mockSaf,
-        ),
+        seed: () => HomeState(savedDirectoryUri: 'uri1', saf: mockSaf),
         setUp: () {
           when(
             () => storageService.getRecentAudios(uri: 'uri1', weeks: 1),
@@ -270,10 +267,7 @@ void main() {
 
       blocTest<HomeCubit, HomeState>(
         'emits failure on Exception',
-        seed: () => HomeState(
-          savedDirectoryUri: 'uri1',
-          saf: mockSaf,
-        ),
+        seed: () => HomeState(savedDirectoryUri: 'uri1', saf: mockSaf),
         setUp: () {
           when(
             () => storageService.getRecentAudios(uri: 'uri1', weeks: 1),
@@ -385,9 +379,7 @@ void main() {
         },
         build: () => homeCubit,
         act: (cubit) => cubit.setAudiosWeeks(2),
-        expect: () => [
-          const HomeState(audioWeeksFilter: 2),
-        ],
+        expect: () => [const HomeState(audioWeeksFilter: 2)],
       );
 
       blocTest<HomeCubit, HomeState>(
@@ -402,9 +394,7 @@ void main() {
         },
         build: () => homeCubit,
         act: (cubit) => cubit.setVideosWeeks(2),
-        expect: () => [
-          const HomeState(videoWeeksFilter: 2),
-        ],
+        expect: () => [const HomeState(videoWeeksFilter: 2)],
       );
 
       blocTest<HomeCubit, HomeState>(
@@ -425,10 +415,7 @@ void main() {
     group('loadStates', () {
       blocTest<HomeCubit, HomeState>(
         'emits success with loaded states',
-        seed: () => HomeState(
-          savedDirectoryUri: 'uri1',
-          saf: mockSaf,
-        ),
+        seed: () => HomeState(savedDirectoryUri: 'uri1', saf: mockSaf),
         setUp: () {
           when(() => storageService.getRecentStates(uri: 'uri1')).thenAnswer(
             (_) async => [
@@ -471,10 +458,7 @@ void main() {
 
       blocTest<HomeCubit, HomeState>(
         'emits failure on PlatformException',
-        seed: () => HomeState(
-          savedDirectoryUri: 'uri1',
-          saf: mockSaf,
-        ),
+        seed: () => HomeState(savedDirectoryUri: 'uri1', saf: mockSaf),
         setUp: () {
           when(
             () => storageService.getRecentStates(uri: 'uri1'),
@@ -498,10 +482,7 @@ void main() {
 
       blocTest<HomeCubit, HomeState>(
         'emits failure on Exception',
-        seed: () => HomeState(
-          savedDirectoryUri: 'uri1',
-          saf: mockSaf,
-        ),
+        seed: () => HomeState(savedDirectoryUri: 'uri1', saf: mockSaf),
         setUp: () {
           when(
             () => storageService.getRecentStates(uri: 'uri1'),
@@ -557,10 +538,7 @@ void main() {
 
       blocTest<HomeCubit, HomeState>(
         'emits success with loaded videos',
-        seed: () => HomeState(
-          savedDirectoryUri: 'uri1',
-          saf: mockSaf,
-        ),
+        seed: () => HomeState(savedDirectoryUri: 'uri1', saf: mockSaf),
         setUp: () {
           when(
             () => storageService.getRecentVideos(uri: 'uri1', weeks: 1),
@@ -603,10 +581,7 @@ void main() {
 
       blocTest<HomeCubit, HomeState>(
         'emits failure on PlatformException',
-        seed: () => HomeState(
-          savedDirectoryUri: 'uri1',
-          saf: mockSaf,
-        ),
+        seed: () => HomeState(savedDirectoryUri: 'uri1', saf: mockSaf),
         setUp: () {
           when(
             () => storageService.getRecentVideos(uri: 'uri1', weeks: 1),
@@ -630,10 +605,7 @@ void main() {
 
       blocTest<HomeCubit, HomeState>(
         'emits failure on Exception',
-        seed: () => HomeState(
-          savedDirectoryUri: 'uri1',
-          saf: mockSaf,
-        ),
+        seed: () => HomeState(savedDirectoryUri: 'uri1', saf: mockSaf),
         setUp: () {
           when(
             () => storageService.getRecentVideos(uri: 'uri1', weeks: 1),

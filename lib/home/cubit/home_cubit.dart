@@ -7,10 +7,9 @@ import 'package:saf/saf.dart';
 part 'home_state.dart';
 
 class HomeCubit extends Cubit<HomeState> {
-  HomeCubit({
-    StorageService? storageService,
-  }) : _storageService = storageService ?? getIt<StorageService>(),
-       super(const HomeState());
+  HomeCubit({StorageService? storageService})
+    : _storageService = storageService ?? getIt<StorageService>(),
+      super(const HomeState());
 
   final StorageService _storageService;
   final AnalyticsService _analyticsService = getIt<AnalyticsService>();
@@ -33,9 +32,7 @@ class HomeCubit extends Cubit<HomeState> {
 
       if (persistedDirs != null && persistedDirs.isNotEmpty) {
         _crashService
-          ..log(
-            'Persisted directories found, loading audios and states.',
-          )
+          ..log('Persisted directories found, loading audios and states.')
           ..setCustomKey('permission_granted', true);
         final saf = Saf();
         emit(
@@ -46,20 +43,12 @@ class HomeCubit extends Cubit<HomeState> {
           ),
         );
 
-        await Future.wait([
-          loadAudios(),
-          loadStates(),
-          loadVideos(),
-        ]);
+        await Future.wait([loadAudios(), loadStates(), loadVideos()]);
       } else {
         _crashService
           ..log('No persisted directories, need permission.')
           ..setCustomKey('permission_granted', false);
-        emit(
-          state.copyWith(
-            hasPermission: false,
-          ),
-        );
+        emit(state.copyWith(hasPermission: false));
       }
     } on Exception catch (e, stackTrace) {
       _crashService.recordError(
@@ -95,11 +84,7 @@ class HomeCubit extends Cubit<HomeState> {
           ),
         );
 
-        await Future.wait([
-          loadAudios(),
-          loadStates(),
-          loadVideos(),
-        ]);
+        await Future.wait([loadAudios(), loadStates(), loadVideos()]);
       }
     } else {
       _crashService.log('Permission explicitly denied by user.');

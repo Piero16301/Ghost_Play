@@ -165,9 +165,7 @@ void main() {
               body: Builder(
                 builder: (context) {
                   return ElevatedButton(
-                    onPressed: () => AppFunctions.showSnackBar(
-                      context,
-                    ),
+                    onPressed: () => AppFunctions.showSnackBar(context),
                     child: const Text('Show'),
                   );
                 },

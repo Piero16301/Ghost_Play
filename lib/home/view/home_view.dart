@@ -16,14 +16,21 @@ class HomeView extends StatefulWidget {
 }
 
 class _HomeViewState extends State<HomeView> {
+  late final PageController _pageController;
+
   @override
   void initState() {
     super.initState();
+    final initialIndex = context.read<HomeCubit>().state.selectedIndex;
+    _pageController = PageController(
+      initialPage: (initialIndex >= 0 && initialIndex < 3) ? initialIndex : 0,
+    );
     unawaited(context.read<HomeCubit>().initStorage());
   }
 
   @override
   void dispose() {
+    _pageController.dispose();
     super.dispose();
   }
 
@@ -31,7 +38,21 @@ class _HomeViewState extends State<HomeView> {
   Widget build(BuildContext context) {
     final darkTheme = Theme.of(context).brightness == Brightness.dark;
 
-    return BlocBuilder<HomeCubit, HomeState>(
+    return BlocConsumer<HomeCubit, HomeState>(
+      listenWhen: (previous, current) =>
+          previous.selectedIndex != current.selectedIndex,
+      listener: (context, state) {
+        if (_pageController.hasClients &&
+            state.selectedIndex >= 0 &&
+            state.selectedIndex < 3 &&
+            _pageController.page?.round() != state.selectedIndex) {
+          _pageController.animateToPage(
+            state.selectedIndex,
+            duration: AppVariables.animationDuration,
+            curve: Curves.easeInOutCubic,
+          );
+        }
+      },
       builder: (context, state) => Scaffold(
         appBar: AppBar(
           title: Image.asset(
@@ -59,35 +80,48 @@ class _HomeViewState extends State<HomeView> {
         ),
         body: Padding(
           padding: const EdgeInsets.all(16),
-          child: AnimatedSwitcher(
-            duration: AppVariables.animationDuration,
-            transitionBuilder: (child, animation) => FadeTransition(
-              opacity: animation,
-              child: child,
-            ),
-            child: _getSelectedBody(
-              state.selectedIndex,
-            ),
-          ),
+          child: _getSelectedBody(state.selectedIndex),
         ),
         bottomNavigationBar: const BottomNavigationBarHome(),
       ),
     );
   }
 
-  Widget _getSelectedBody(
-    int selectedIndex,
-  ) {
-    switch (selectedIndex) {
-      case 0:
-        return const AudiosHomePage();
-      case 1:
-        return const StatesHomePage();
-      case 2:
-        return const VideosHomePage();
-      default:
-        return const SizedBox.shrink();
+  Widget _getSelectedBody(int selectedIndex) {
+    if (selectedIndex < 0 || selectedIndex >= 3) {
+      return const SizedBox.shrink();
     }
+
+    return PageView(
+      controller: _pageController,
+      physics: const NeverScrollableScrollPhysics(),
+      children: const [
+        _KeepAliveTab(child: AudiosHomePage()),
+        _KeepAliveTab(child: StatesHomePage()),
+        _KeepAliveTab(child: VideosHomePage()),
+      ],
+    );
+  }
+}
+
+class _KeepAliveTab extends StatefulWidget {
+  const _KeepAliveTab({required this.child});
+
+  final Widget child;
+
+  @override
+  State<_KeepAliveTab> createState() => _KeepAliveTabState();
+}
+
+class _KeepAliveTabState extends State<_KeepAliveTab>
+    with AutomaticKeepAliveClientMixin {
+  @override
+  bool get wantKeepAlive => true;
+
+  @override
+  Widget build(BuildContext context) {
+    super.build(context);
+    return widget.child;
   }
 }
 

@@ -25,10 +25,7 @@ void main() {
       repository.logEvent(name: 'test_event', parameters: {'p1': 'v1'});
 
       verify(
-        () => analytics.logEvent(
-          name: 'test_event',
-          parameters: {'p1': 'v1'},
-        ),
+        () => analytics.logEvent(name: 'test_event', parameters: {'p1': 'v1'}),
       ).called(1);
     });
 

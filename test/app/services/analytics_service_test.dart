@@ -27,10 +27,7 @@ void main() {
       service.logEvent(name: 'test_event', parameters: {'p': 'v'});
 
       verify(
-        () => repository.logEvent(
-          name: 'test_event',
-          parameters: {'p': 'v'},
-        ),
+        () => repository.logEvent(name: 'test_event', parameters: {'p': 'v'}),
       ).called(1);
     });
 

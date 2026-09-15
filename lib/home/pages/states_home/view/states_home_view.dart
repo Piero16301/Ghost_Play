@@ -46,10 +46,7 @@ class StatesHomeView extends StatelessWidget {
 
         if (state.statesStatus.isFailure) {
           return Center(
-            child: Text(
-              l10n.loadingStatesError,
-              textAlign: TextAlign.center,
-            ),
+            child: Text(l10n.loadingStatesError, textAlign: TextAlign.center),
           );
         }
 
@@ -97,10 +94,7 @@ class StatesHomeView extends StatelessWidget {
 
         if (state.states.isEmpty) {
           return Center(
-            child: Text(
-              l10n.noStatesFound,
-              textAlign: TextAlign.center,
-            ),
+            child: Text(l10n.noStatesFound, textAlign: TextAlign.center),
           );
         }
 
@@ -135,9 +129,7 @@ class StatesHomeView extends StatelessWidget {
                 },
                 borderRadius: const BorderRadius.all(Radius.circular(12)),
                 child: ClipRRect(
-                  borderRadius: const BorderRadius.all(
-                    Radius.circular(12),
-                  ),
+                  borderRadius: const BorderRadius.all(Radius.circular(12)),
                   child: Stack(
                     fit: StackFit.expand,
                     children: [

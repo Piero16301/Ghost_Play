@@ -11,10 +11,10 @@ dependencies:
   bloc: ^9.2.1
   country_flags: ^4.1.2
   equatable: ^2.1.0
-  firebase_analytics: ^12.5.0
-  firebase_core: ^4.14.0
-  firebase_crashlytics: ^5.3.0
-  firebase_performance: ^0.11.5
+  firebase_analytics: ^12.6.0
+  firebase_core: ^4.15.0
+  firebase_crashlytics: ^5.4.0
+  firebase_performance: ^0.11.6
   flutter:
     sdk: flutter
   flutter_bloc: ^9.1.1
@@ -26,7 +26,7 @@ dependencies:
   hugeicons: ^1.1.7
   intl: ^0.20.3
   just_audio: ^0.10.6
-  material_ui: ^1.1.1
+  material_ui: ^1.2.0
   package_info_plus: ^10.2.1
   saf: ^2.1.2
   shared_preferences: ^2.5.5
@@ -40,7 +40,7 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   mocktail: ^1.0.5
-  very_good_analysis: ^10.3.0
+  very_good_analysis: ^11.0.0
   video_player_platform_interface: ^6.9.0
 
 flutter_launcher_icons:

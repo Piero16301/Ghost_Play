@@ -46,10 +46,7 @@ class VideosHomeView extends StatelessWidget {
 
         if (state.videosStatus.isFailure) {
           return Center(
-            child: Text(
-              l10n.loadingVideosError,
-              textAlign: TextAlign.center,
-            ),
+            child: Text(l10n.loadingVideosError, textAlign: TextAlign.center),
           );
         }
 
@@ -97,10 +94,7 @@ class VideosHomeView extends StatelessWidget {
 
         if (state.videos.isEmpty) {
           return Center(
-            child: Text(
-              l10n.noVideosFound,
-              textAlign: TextAlign.center,
-            ),
+            child: Text(l10n.noVideosFound, textAlign: TextAlign.center),
           );
         }
 
@@ -129,16 +123,12 @@ class VideosHomeView extends StatelessWidget {
                       context,
                     ).colorScheme.secondaryContainer,
                     side: BorderSide(
-                      color: Theme.of(
-                        context,
-                      ).colorScheme.secondaryContainer,
+                      color: Theme.of(context).colorScheme.secondaryContainer,
                     ),
                     label: Row(
                       spacing: 4,
                       children: [
-                        const HugeIcon(
-                          icon: HugeIcons.strokeRoundedCalendar02,
-                        ),
+                        const HugeIcon(icon: HugeIcons.strokeRoundedCalendar02),
                         Text(l10n.weeksFilter(state.videoWeeksFilter)),
                       ],
                     ),
@@ -168,10 +158,8 @@ class VideosHomeView extends StatelessWidget {
                         unawaited(
                           showDialog<void>(
                             context: context,
-                            builder: (context) => MultimediaPreviewDialog(
-                              item: item,
-                              defaultAspectRatio: 1,
-                            ),
+                            builder: (context) =>
+                                VideoNotePreviewDialog(item: item),
                           ),
                         );
                       },

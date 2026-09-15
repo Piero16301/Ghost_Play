@@ -136,9 +136,7 @@ void main() {
       },
       build: AppCubit.new,
       act: (cubit) => cubit.initialize(),
-      expect: () => [
-        const AppState(),
-      ],
+      expect: () => [const AppState()],
       verify: (_) {
         verify(
           () => localStorageService.saveFontFamily(
@@ -175,9 +173,7 @@ void main() {
         build: AppCubit.new,
         act: (cubit) =>
             cubit.changeLanguage(language: const Locale('es', 'ES')),
-        expect: () => [
-          const AppState(language: Locale('es', 'ES')),
-        ],
+        expect: () => [const AppState(language: Locale('es', 'ES'))],
         verify: (_) {
           verify(
             () => localStorageService.saveLanguage(
@@ -198,9 +194,7 @@ void main() {
         'changeTheme saves and emits new theme',
         build: AppCubit.new,
         act: (cubit) => cubit.changeTheme(theme: ThemeMode.dark),
-        expect: () => [
-          const AppState(theme: ThemeMode.dark),
-        ],
+        expect: () => [const AppState(theme: ThemeMode.dark)],
         verify: (_) {
           verify(
             () => localStorageService.saveTheme(theme: ThemeMode.dark),
@@ -219,9 +213,7 @@ void main() {
         'changeBaseColor saves and emits new base color',
         build: AppCubit.new,
         act: (cubit) => cubit.changeBaseColor(baseColor: Colors.blue),
-        expect: () => [
-          const AppState(baseColor: Colors.blue),
-        ],
+        expect: () => [const AppState(baseColor: Colors.blue)],
         verify: (_) {
           verify(
             () => localStorageService.saveBaseColor(baseColor: Colors.blue),
@@ -239,9 +231,7 @@ void main() {
         'changeFontFamily saves and emits new font family',
         build: AppCubit.new,
         act: (cubit) => cubit.changeFontFamily(fontFamily: 'Montserrat'),
-        expect: () => [
-          const AppState(fontFamily: 'Montserrat'),
-        ],
+        expect: () => [const AppState(fontFamily: 'Montserrat')],
         verify: (_) {
           verify(
             () => localStorageService.saveFontFamily(fontFamily: 'Montserrat'),

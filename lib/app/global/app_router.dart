@@ -30,8 +30,7 @@ class AppRouter {
 
 enum AppRoute {
   home('/', 'home'),
-  settings('/settings', 'settings'),
-  ;
+  settings('/settings', 'settings');
 
   const AppRoute(this.path, this.name);
   final String path;

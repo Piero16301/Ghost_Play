@@ -19,6 +19,7 @@ class MiniPlayer extends StatelessWidget {
         final audio = state.currentAudio!;
         final isPlaying = state.status.isPlaying || state.status.isLoading;
         final isLoading = state.status.isLoading;
+        final speedString = state.playbackSpeed.toString();
 
         return Container(
           margin: const EdgeInsets.symmetric(vertical: 16),
@@ -46,10 +47,7 @@ class MiniPlayer extends StatelessWidget {
                       ),
                       child: Center(
                         child: Text(
-                          'x${state.playbackSpeed.toString().replaceAll(
-                            RegExp(r'\.0$'),
-                            '',
-                          )}',
+                          'x${speedString.replaceAll(RegExp(r'\.0$'), '')}',
                           style: Theme.of(context).textTheme.titleMedium
                               ?.copyWith(
                                 color: Theme.of(context).colorScheme.onPrimary,
@@ -108,9 +106,7 @@ class MiniPlayer extends StatelessWidget {
                         icon: isPlaying
                             ? HugeIcons.strokeRoundedPause
                             : HugeIcons.strokeRoundedPlay,
-                        color: Theme.of(
-                          context,
-                        ).colorScheme.onPrimaryContainer,
+                        color: Theme.of(context).colorScheme.onPrimaryContainer,
                         strokeWidth: 2,
                       ),
                       onPressed: () {
@@ -124,9 +120,7 @@ class MiniPlayer extends StatelessWidget {
                   IconButton(
                     icon: HugeIcon(
                       icon: HugeIcons.strokeRoundedCancel01,
-                      color: Theme.of(
-                        context,
-                      ).colorScheme.onPrimaryContainer,
+                      color: Theme.of(context).colorScheme.onPrimaryContainer,
                       strokeWidth: 2,
                     ),
                     onPressed: () =>
@@ -140,9 +134,7 @@ class MiniPlayer extends StatelessWidget {
                   position: state.position,
                   duration: state.duration,
                   onSeek: (position) {
-                    unawaited(
-                      context.read<AudiosHomeCubit>().seek(position),
-                    );
+                    unawaited(context.read<AudiosHomeCubit>().seek(position));
                   },
                 ),
               ),

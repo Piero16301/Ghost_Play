@@ -7,9 +7,8 @@ void setupServiceLocator(Environment env) {
   getIt
     // 1. Infraestructura y Telemetría (Base de todo)
     ..registerLazySingleton<CrashService>(
-      () => CrashService(
-        crashRepository: ServiceFactory.getCrashRepository(env),
-      ),
+      () =>
+          CrashService(crashRepository: ServiceFactory.getCrashRepository(env)),
     )
     ..registerLazySingleton<PerformanceService>(
       () => PerformanceService(

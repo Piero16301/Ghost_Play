@@ -13,6 +13,7 @@ import '../../helpers/mocks.dart';
 
 void main() {
   late MockHomeCubit homeCubit;
+  late StreamController<HomeState> homeStateController;
   late MockAnalyticsService analyticsService;
   late MockCrashService crashService;
   late MockPerformanceService performanceService;
@@ -22,6 +23,7 @@ void main() {
 
   setUp(() {
     homeCubit = MockHomeCubit();
+    homeStateController = StreamController<HomeState>.broadcast();
     analyticsService = MockAnalyticsService();
     crashService = MockCrashService();
     performanceService = MockPerformanceService();
@@ -35,6 +37,7 @@ void main() {
       ..registerSingleton<StorageService>(storageService);
 
     when(() => homeCubit.state).thenReturn(const HomeState());
+    when(() => homeCubit.stream).thenAnswer((_) => homeStateController.stream);
     when(() => homeCubit.initStorage()).thenAnswer((_) async {});
     when(() => homeCubit.close()).thenAnswer((_) async {});
     when(() => homeCubit.toggleSelectedIndex(any<int>())).thenReturn(null);
@@ -45,7 +48,14 @@ void main() {
     when(() => crashService.log(any<String>())).thenReturn(null);
   });
 
-  Widget createWidgetUnderTest({GoRouter? router}) {
+  tearDown(() async {
+    await homeStateController.close();
+  });
+
+  Widget createWidgetUnderTest({
+    GoRouter? router,
+    Brightness brightness = Brightness.light,
+  }) {
     final effectiveRouter =
         router ??
         GoRouter(
@@ -67,6 +77,7 @@ void main() {
         );
 
     return MaterialApp.router(
+      theme: ThemeData(brightness: brightness),
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppVariables.supportedLocales,
       routerConfig: effectiveRouter,
@@ -91,6 +102,20 @@ void main() {
       verify(() => homeCubit.initStorage()).called(1);
     });
 
+    testWidgets('renders dark logo when brightness is dark', (tester) async {
+      await tester.pumpWidget(
+        createWidgetUnderTest(brightness: Brightness.dark),
+      );
+      expect(find.byType(HomeView), findsOneWidget);
+      final appBar = tester.widget<AppBar>(find.byType(AppBar));
+      expect(appBar.title, isA<Image>());
+      final logoImage = appBar.title! as Image;
+      expect(
+        (logoImage.image as AssetImage).assetName,
+        AppVariables.logoNoBgDark,
+      );
+    });
+
     testWidgets('navigates to settings when settings button is pressed', (
       tester,
     ) async {
@@ -101,6 +126,9 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Settings'), findsOneWidget);
+      verify(
+        () => analyticsService.logEvent(name: 'open_settings_action'),
+      ).called(1);
     });
 
     testWidgets('switches to StatesHomePage when index is 1', (tester) async {
@@ -112,15 +140,67 @@ void main() {
       expect(find.byType(StatesHomePage), findsOneWidget);
     });
 
+    testWidgets('switches to VideosHomePage when index is 2', (tester) async {
+      when(() => homeCubit.state).thenReturn(const HomeState(selectedIndex: 2));
+
+      await tester.pumpWidget(createWidgetUnderTest());
+      await tester.pump();
+
+      expect(find.byType(VideosHomePage), findsOneWidget);
+    });
+
     testWidgets(
-      'calls toggleSelectedIndex on NavigationBar destination selection',
+      'animates PageController when selectedIndex changes via BlocConsumer '
+      'listener',
+      (tester) async {
+        await tester.pumpWidget(createWidgetUnderTest());
+        expect(find.byType(AudiosHomePage), findsOneWidget);
+
+        // Change index to 1 -> animates to StatesHomePage
+        homeStateController.add(const HomeState(selectedIndex: 1));
+        await tester.pump();
+        await tester.pump(AppVariables.animationDuration);
+        await tester.pumpAndSettle();
+        expect(find.byType(StatesHomePage), findsOneWidget);
+
+        // Change index to 2 -> animates to VideosHomePage
+        homeStateController.add(const HomeState(selectedIndex: 2));
+        await tester.pump();
+        await tester.pump(AppVariables.animationDuration);
+        await tester.pumpAndSettle();
+        expect(find.byType(VideosHomePage), findsOneWidget);
+
+        // Change index back to 0 -> animates to AudiosHomePage
+        homeStateController.add(const HomeState());
+        await tester.pump();
+        await tester.pump(AppVariables.animationDuration);
+        await tester.pumpAndSettle();
+        expect(find.byType(AudiosHomePage), findsOneWidget);
+
+        // Same index -> listenWhen is false, listener does not animate
+        homeStateController.add(const HomeState());
+        await tester.pump();
+      },
+    );
+
+    testWidgets(
+      'calls toggleSelectedIndex on NavigationBar destination selections',
       (tester) async {
         await tester.pumpWidget(createWidgetUnderTest());
 
-        await tester.tap(find.text('States'));
-        await tester.pump();
+        final destinations = find.byType(NavigationDestination);
 
+        await tester.tap(destinations.at(1));
+        await tester.pump();
         verify(() => homeCubit.toggleSelectedIndex(1)).called(1);
+
+        await tester.tap(destinations.at(0));
+        await tester.pump();
+        verify(() => homeCubit.toggleSelectedIndex(0)).called(1);
+
+        await tester.tap(destinations.at(2));
+        await tester.pump();
+        verify(() => homeCubit.toggleSelectedIndex(2)).called(1);
       },
     );
 
