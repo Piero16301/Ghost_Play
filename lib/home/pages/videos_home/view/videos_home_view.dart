@@ -155,12 +155,11 @@ class VideosHomeView extends StatelessWidget {
                           name: 'preview_video_action',
                           parameters: {'uri': item.uri},
                         );
-                        unawaited(
-                          showDialog<void>(
-                            context: context,
-                            builder: (context) =>
-                                VideoNotePreviewDialog(item: item),
-                          ),
+
+                        showDialog<void>(
+                          context: context,
+                          builder: (context) =>
+                              VideoNotePreviewDialog(item: item),
                         );
                       },
                       borderRadius: const BorderRadius.all(
@@ -224,68 +223,64 @@ class VideosHomeView extends StatelessWidget {
   void _showWeeksMenu(BuildContext context, int currentWeeks) {
     final l10n = AppLocalizations.of(context);
 
-    unawaited(
-      showModalBottomSheet<void>(
-        context: context,
-        isScrollControlled: true,
-        builder: (modalContext) => DraggableScrollableSheet(
-          initialChildSize: 0.4,
-          minChildSize: 0.3,
-          maxChildSize: 0.9,
-          expand: false,
-          builder: (dragContext, scrollController) => Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Theme.of(context).scaffoldBackgroundColor,
-              borderRadius: const BorderRadius.vertical(
-                top: Radius.circular(24),
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      builder: (modalContext) => DraggableScrollableSheet(
+        initialChildSize: 0.4,
+        minChildSize: 0.3,
+        maxChildSize: 0.9,
+        expand: false,
+        builder: (dragContext, scrollController) => Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Theme.of(context).scaffoldBackgroundColor,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+          ),
+          child: Column(
+            children: [
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).buttonTheme.colorScheme!.primary,
+                    borderRadius: const BorderRadius.all(Radius.circular(2)),
+                  ),
+                ),
               ),
-            ),
-            child: Column(
-              children: [
-                Center(
-                  child: Container(
-                    width: 40,
-                    height: 4,
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).buttonTheme.colorScheme!.primary,
-                      borderRadius: const BorderRadius.all(Radius.circular(2)),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  l10n.weeksFilterTitle,
-                  style: Theme.of(context).textTheme.titleLarge,
-                ),
-                const SizedBox(height: 16),
-                Expanded(
-                  child: SingleChildScrollView(
-                    controller: scrollController,
-                    child: RadioGroup<int?>(
-                      groupValue: currentWeeks,
-                      onChanged: (value) {
-                        unawaited(
-                          context.read<HomeCubit>().setVideosWeeks(value ?? 1),
+              const SizedBox(height: 16),
+              Text(
+                l10n.weeksFilterTitle,
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
+              const SizedBox(height: 16),
+              Expanded(
+                child: SingleChildScrollView(
+                  controller: scrollController,
+                  child: RadioGroup<int?>(
+                    groupValue: currentWeeks,
+                    onChanged: (value) {
+                      unawaited(
+                        context.read<HomeCubit>().setVideosWeeks(value ?? 1),
+                      );
+                      Navigator.pop(context);
+                    },
+                    child: Column(
+                      children: AppVariables.weeksOptions.map((weeks) {
+                        return RadioListTile<int?>(
+                          title: Text(l10n.weeksFilter(weeks)),
+                          value: weeks,
+                          contentPadding: EdgeInsets.zero,
                         );
-                        Navigator.pop(context);
-                      },
-                      child: Column(
-                        children: AppVariables.weeksOptions.map((weeks) {
-                          return RadioListTile<int?>(
-                            title: Text(l10n.weeksFilter(weeks)),
-                            value: weeks,
-                            contentPadding: EdgeInsets.zero,
-                          );
-                        }).toList(),
-                      ),
+                      }).toList(),
                     ),
                   ),
                 ),
-                const SizedBox(height: 20),
-              ],
-            ),
+              ),
+              const SizedBox(height: 20),
+            ],
           ),
         ),
       ),

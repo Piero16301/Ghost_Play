@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'dart:typed_data';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -117,13 +116,12 @@ class StatesHomeView extends StatelessWidget {
                     name: 'preview_state_action',
                     parameters: {'uri': item.uri},
                   );
-                  unawaited(
-                    showDialog<void>(
-                      context: context,
-                      builder: (context) => MultimediaPreviewDialog(
-                        item: item,
-                        defaultAspectRatio: 3 / 4,
-                      ),
+
+                  showDialog<void>(
+                    context: context,
+                    builder: (context) => MultimediaPreviewDialog(
+                      item: item,
+                      defaultAspectRatio: 3 / 4,
                     ),
                   );
                 },
