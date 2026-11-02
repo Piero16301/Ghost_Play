@@ -1,3 +1,4 @@
+import 'package:expressive_kit/expressive_kit.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:ghost_play/app/app.dart';
 import 'package:ghost_play/l10n/l10n.dart';
@@ -39,14 +40,15 @@ class _AppViewState extends State<AppView> {
           localizationsDelegates: const [
             AppLocalizations.delegate,
             ...GlobalMaterialLocalizations.delegates,
+            ...ExpressiveLocalizations.localizationsDelegates,
           ],
-          supportedLocales: AppVariables.supportedLocales,
+          supportedLocales: ExpressiveLanguages.supportedLocales,
           locale: state.language,
-          theme: AppThemes.lightTheme(
+          theme: ExpressiveTheme.light(
             baseColor: state.baseColor,
             fontFamily: state.fontFamily,
           ),
-          darkTheme: AppThemes.darkTheme(
+          darkTheme: ExpressiveTheme.dark(
             baseColor: state.baseColor,
             fontFamily: state.fontFamily,
           ),

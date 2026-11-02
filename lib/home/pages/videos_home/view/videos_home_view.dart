@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:typed_data';
 
+import 'package:expressive_kit/expressive_kit.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:ghost_play/app/app.dart';
 import 'package:ghost_play/home/home.dart';
@@ -19,27 +20,10 @@ class VideosHomeView extends StatelessWidget {
     return BlocBuilder<HomeCubit, HomeState>(
       builder: (context, state) {
         if (state.videosStatus.isLoading) {
-          return Center(
+          return const Center(
             child: SizedBox.square(
               dimension: 120,
-              child: CircularLoadingAnimation(
-                outerCircleColor: darkTheme
-                    ? const Color(0xFF0DE4F9)
-                    : const Color(0xFF0F1B33),
-                innerCircleColor: darkTheme
-                    ? Colors.white
-                    : const Color(0xFF0DE4F9),
-                centerWidget: Padding(
-                  padding: const EdgeInsets.all(8),
-                  child: Image.asset(
-                    darkTheme
-                        ? AppVariables.logoNoBgDark
-                        : AppVariables.logoNoBgLight,
-                    width: 40,
-                    height: 40,
-                  ),
-                ),
-              ),
+              child: ExpressiveCircularProgressIndicator(),
             ),
           );
         }
@@ -82,10 +66,14 @@ class VideosHomeView extends StatelessWidget {
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 32),
-                AppFilledButton(
+                ExpressiveButton.filled(
                   onPressed: () =>
                       context.read<HomeCubit>().requestPermission(),
                   label: l10n.givePermissionButton,
+                  icon: const HugeIcon(
+                    icon: HugeIcons.strokeRoundedShield01,
+                    size: 20,
+                  ),
                 ),
               ],
             ),
@@ -116,20 +104,39 @@ class VideosHomeView extends StatelessWidget {
                 ),
                 InkWell(
                   onTap: () => _showWeeksMenu(context, state.videoWeeksFilter),
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(100),
                   child: Chip(
-                    padding: const EdgeInsets.all(4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(100),
+                    ),
                     backgroundColor: Theme.of(
                       context,
                     ).colorScheme.secondaryContainer,
-                    side: BorderSide(
-                      color: Theme.of(context).colorScheme.secondaryContainer,
-                    ),
+                    side: BorderSide.none,
                     label: Row(
                       spacing: 4,
                       children: [
-                        const HugeIcon(icon: HugeIcons.strokeRoundedCalendar02),
-                        Text(l10n.weeksFilter(state.videoWeeksFilter)),
+                        HugeIcon(
+                          icon: HugeIcons.strokeRoundedCalendar02,
+                          size: 18,
+                          color: Theme.of(
+                            context,
+                          ).colorScheme.onSecondaryContainer,
+                        ),
+                        Text(
+                          l10n.weeksFilter(state.videoWeeksFilter),
+                          style: Theme.of(context).textTheme.labelMedium
+                              ?.copyWith(
+                                fontWeight: FontWeight.w600,
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.onSecondaryContainer,
+                              ),
+                        ),
                       ],
                     ),
                   ),
@@ -181,7 +188,10 @@ class VideosHomeView extends StatelessWidget {
                                 if (snapshot.connectionState ==
                                     ConnectionState.waiting) {
                                   return const Center(
-                                    child: CircularProgressIndicator(),
+                                    child: ExpressiveCircularProgressIndicator(
+                                      size: 32,
+                                      strokeWidth: 4,
+                                    ),
                                   );
                                 }
                                 if (snapshot.hasData && snapshot.data != null) {
@@ -231,56 +241,57 @@ class VideosHomeView extends StatelessWidget {
         minChildSize: 0.3,
         maxChildSize: 0.9,
         expand: false,
-        builder: (dragContext, scrollController) => Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: Theme.of(context).scaffoldBackgroundColor,
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-          ),
-          child: Column(
-            children: [
-              Center(
-                child: Container(
-                  width: 40,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).buttonTheme.colorScheme!.primary,
-                    borderRadius: const BorderRadius.all(Radius.circular(2)),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-              Text(
-                l10n.weeksFilterTitle,
-                style: Theme.of(context).textTheme.titleLarge,
-              ),
-              const SizedBox(height: 16),
-              Expanded(
-                child: SingleChildScrollView(
-                  controller: scrollController,
-                  child: RadioGroup<int?>(
-                    groupValue: currentWeeks,
-                    onChanged: (value) {
-                      unawaited(
-                        context.read<HomeCubit>().setVideosWeeks(value ?? 1),
-                      );
-                      Navigator.pop(context);
-                    },
-                    child: Column(
-                      children: AppVariables.weeksOptions.map((weeks) {
-                        return RadioListTile<int?>(
-                          title: Text(l10n.weeksFilter(weeks)),
-                          value: weeks,
-                          contentPadding: EdgeInsets.zero,
-                        );
-                      }).toList(),
+        builder: (dragContext, scrollController) => Material(
+          color: Theme.of(context).scaffoldBackgroundColor,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+          clipBehavior: Clip.antiAlias,
+          child: Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              children: [
+                Center(
+                  child: Container(
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).buttonTheme.colorScheme!.primary,
+                      borderRadius: BorderRadius.circular(100),
                     ),
                   ),
                 ),
-              ),
-              const SizedBox(height: 20),
-            ],
+                const SizedBox(height: 16),
+                Text(
+                  l10n.weeksFilterTitle,
+                  style: Theme.of(context).textTheme.titleLarge,
+                ),
+                const SizedBox(height: 16),
+                Expanded(
+                  child: SingleChildScrollView(
+                    controller: scrollController,
+                    child: RadioGroup<int?>(
+                      groupValue: currentWeeks,
+                      onChanged: (value) {
+                        unawaited(
+                          context.read<HomeCubit>().setVideosWeeks(value ?? 1),
+                        );
+                        Navigator.pop(context);
+                      },
+                      child: Column(
+                        children: AppVariables.weeksOptions.map((weeks) {
+                          return RadioListTile<int?>(
+                            title: Text(l10n.weeksFilter(weeks)),
+                            value: weeks,
+                            contentPadding: EdgeInsets.zero,
+                          );
+                        }).toList(),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20),
+              ],
+            ),
           ),
         ),
       ),

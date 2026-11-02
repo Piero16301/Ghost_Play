@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:expressive_kit/expressive_kit.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ghost_play/app/app.dart';
 import 'package:ghost_play/settings/settings.dart';
@@ -44,14 +45,23 @@ void main() {
   });
 
   group('SettingsView', () {
-    testWidgets('renders all settings cards', (tester) async {
+    testWidgets('renders all settings sections and cards', (tester) async {
       await tester.pumpApp(const SettingsView(), appCubit: appCubit);
       await tester.pumpAndSettle();
 
-      expect(find.byType(LocaleSettingsCard), findsOneWidget);
-      expect(find.byType(ThemeSettingsCard), findsOneWidget);
-      expect(find.byType(ColorSettingsCard), findsOneWidget);
-      expect(find.byType(FontSettingsCard), findsOneWidget);
+      expect(find.byType(ExpressiveTopAppBar), findsOneWidget);
+      expect(find.byType(ExpressiveCardGroup), findsNWidgets(3));
+      expect(find.byType(ExpressiveListTile), findsNWidgets(6));
+      expect(find.widgetWithText(ExpressiveListTile, 'Theme'), findsOneWidget);
+      expect(
+        find.widgetWithText(ExpressiveListTile, 'Base color'),
+        findsOneWidget,
+      );
+      expect(find.widgetWithText(ExpressiveListTile, 'Font'), findsOneWidget);
+      expect(
+        find.widgetWithText(ExpressiveListTile, 'Language'),
+        findsOneWidget,
+      );
       expect(find.byType(SettingsAppSpecs), findsOneWidget);
     });
 
@@ -61,10 +71,10 @@ void main() {
       await tester.pumpApp(const SettingsView(), appCubit: appCubit);
       await tester.pumpAndSettle();
 
-      final dropdown = find.byType(DropdownButton<Locale>);
-      await tester.tap(dropdown);
+      await tester.tap(find.widgetWithText(ExpressiveListTile, 'Language'));
       await tester.pumpAndSettle();
 
+      expect(find.text('Select language'), findsOneWidget);
       await tester.tap(find.text('Spanish').last);
       await tester.pumpAndSettle();
 
@@ -73,30 +83,13 @@ void main() {
       ).called(1);
     });
 
-    testWidgets('onChanged for language does nothing if value is null', (
-      tester,
-    ) async {
-      await tester.pumpApp(const SettingsView(), appCubit: appCubit);
-      await tester.pumpAndSettle();
-
-      final dropdown = tester.widget<DropdownButton<Locale>>(
-        find.byType(DropdownButton<Locale>),
-      );
-      dropdown.onChanged!(null);
-
-      verifyNever(
-        () => appCubit.changeLanguage(language: any(named: 'language')),
-      );
-    });
-
     testWidgets('calls changeTheme when a new theme is selected', (
       tester,
     ) async {
       await tester.pumpApp(const SettingsView(), appCubit: appCubit);
       await tester.pumpAndSettle();
 
-      final dropdown = find.byType(DropdownButton<ThemeMode>);
-      await tester.tap(dropdown);
+      await tester.tap(find.widgetWithText(ExpressiveListTile, 'Theme'));
       await tester.pumpAndSettle();
 
       await tester.tap(find.text('Dark').last);
@@ -105,28 +98,13 @@ void main() {
       verify(() => appCubit.changeTheme(theme: ThemeMode.dark)).called(1);
     });
 
-    testWidgets('onChanged for theme does nothing if value is null', (
-      tester,
-    ) async {
-      await tester.pumpApp(const SettingsView(), appCubit: appCubit);
-      await tester.pumpAndSettle();
-
-      final dropdown = tester.widget<DropdownButton<ThemeMode>>(
-        find.byType(DropdownButton<ThemeMode>),
-      );
-      dropdown.onChanged!(null);
-
-      verifyNever(() => appCubit.changeTheme(theme: any(named: 'theme')));
-    });
-
     testWidgets('calls changeBaseColor when a new color is selected', (
       tester,
     ) async {
       await tester.pumpApp(const SettingsView(), appCubit: appCubit);
       await tester.pumpAndSettle();
 
-      final dropdown = find.byType(DropdownButton<Color>);
-      await tester.tap(dropdown);
+      await tester.tap(find.widgetWithText(ExpressiveListTile, 'Base color'));
       await tester.pumpAndSettle();
 
       await tester.tap(find.text('Blue').last);
@@ -135,52 +113,22 @@ void main() {
       verify(() => appCubit.changeBaseColor(baseColor: Colors.blue)).called(1);
     });
 
-    testWidgets('onChanged for color does nothing if value is null', (
-      tester,
-    ) async {
-      await tester.pumpApp(const SettingsView(), appCubit: appCubit);
-      await tester.pumpAndSettle();
-
-      final dropdown = tester.widget<DropdownButton<Color>>(
-        find.byType(DropdownButton<Color>),
-      );
-      dropdown.onChanged!(null);
-
-      verifyNever(
-        () => appCubit.changeBaseColor(baseColor: any(named: 'baseColor')),
-      );
-    });
-
     testWidgets('calls changeFontFamily when a new font is selected', (
       tester,
     ) async {
       await tester.pumpApp(const SettingsView(), appCubit: appCubit);
       await tester.pumpAndSettle();
 
-      final dropdown = find.byType(DropdownButton<String>);
-      await tester.tap(dropdown);
+      await tester.tap(find.widgetWithText(ExpressiveListTile, 'Font'));
       await tester.pumpAndSettle();
 
-      await tester.tap(find.text('Roboto').last);
+      await tester.tap(find.text('Merriweather').last);
       await tester.pumpAndSettle();
 
-      verify(() => appCubit.changeFontFamily(fontFamily: 'Roboto')).called(1);
-    });
-
-    testWidgets('onChanged for font does nothing if value is null', (
-      tester,
-    ) async {
-      await tester.pumpApp(const SettingsView(), appCubit: appCubit);
-      await tester.pumpAndSettle();
-
-      final dropdown = tester.widget<DropdownButton<String>>(
-        find.byType(DropdownButton<String>),
-      );
-      dropdown.onChanged!(null);
-
-      verifyNever(
-        () => appCubit.changeFontFamily(fontFamily: any(named: 'fontFamily')),
-      );
+      verify(
+        () =>
+            appCubit.changeFontFamily(fontFamily: ExpressiveFonts.merriweather),
+      ).called(1);
     });
 
     testWidgets('font fallback logic works when state has unknown font', (
@@ -193,7 +141,7 @@ void main() {
       await tester.pumpApp(const SettingsView(), appCubit: appCubit);
       await tester.pumpAndSettle();
 
-      expect(find.byType(FontSettingsCard), findsOneWidget);
+      expect(find.text('UnknownFont'), findsOneWidget);
     });
 
     testWidgets('pops when back button is pressed', (tester) async {
@@ -218,7 +166,7 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.byType(SettingsView), findsOneWidget);
 
-      await tester.tap(find.byType(IconButton).first);
+      await tester.tap(find.byType(ExpressiveIconButton));
       await tester.pumpAndSettle();
 
       expect(find.byType(SettingsView), findsNothing);
