@@ -1,5 +1,6 @@
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
+import 'package:expressive_kit/expressive_kit.dart';
 import 'package:ghost_play/app/app.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -18,33 +19,34 @@ class AppCubit extends Cubit<AppState> {
     try {
       var language = _localStorage.getLanguage();
       if (language == null) {
-        language = AppVariables.supportedLocales.first;
+        language = ExpressiveLanguages.defaultLocale;
         _localStorage.saveLanguage(language: language);
       }
 
       var theme = _localStorage.getTheme();
       if (theme == null) {
-        theme = ThemeMode.system;
+        theme = ExpressiveTheme.defaultTheme;
         _localStorage.saveTheme(theme: theme);
       }
 
       var baseColor = _localStorage.getBaseColor();
       if (baseColor == null) {
-        baseColor = AppVariables.defaultBaseColor;
+        baseColor = ExpressiveColors.defaultColor;
         _localStorage.saveBaseColor(baseColor: baseColor);
       }
 
       var fontFamily = _localStorage.getFontFamily();
       final isFontSupported =
           fontFamily != null &&
-          AppVariables.availableFonts.containsValue(fontFamily);
+          (ExpressiveFonts.availableFonts.containsValue(fontFamily) ||
+              ExpressiveFonts.availableFonts.containsKey(fontFamily));
 
       if (!isFontSupported) {
-        final defaultFont =
-            AppVariables.availableFonts[AppVariables.defaultFontFamily] ??
-            AppVariables.defaultFontFamily;
+        const defaultFont = ExpressiveFonts.defaultFont;
         _localStorage.saveFontFamily(fontFamily: defaultFont);
         fontFamily = defaultFont;
+      } else if (ExpressiveFonts.availableFonts.containsKey(fontFamily)) {
+        fontFamily = ExpressiveFonts.availableFonts[fontFamily]!;
       }
 
       // Update CrashService with finalized values
@@ -91,7 +93,7 @@ class AppCubit extends Cubit<AppState> {
     _localStorage.saveBaseColor(baseColor: baseColor);
     _analyticsService.logEvent(
       name: 'change_base_color',
-      parameters: {'color_value': ColorHelper.getColorName(baseColor)},
+      parameters: {'color_value': ExpressiveColors.toKey(baseColor)},
     );
     emit(state.copyWith(baseColor: baseColor));
   }

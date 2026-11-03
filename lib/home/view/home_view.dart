@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:expressive_kit/expressive_kit.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:ghost_play/app/app.dart';
 import 'package:ghost_play/home/home.dart';
@@ -54,28 +55,30 @@ class _HomeViewState extends State<HomeView> {
         }
       },
       builder: (context, state) => Scaffold(
-        appBar: AppBar(
+        appBar: ExpressiveTopAppBar(
+          showBackButton: false,
+          centerTitle: false,
           title: Image.asset(
             darkTheme ? AppVariables.logoNoBgDark : AppVariables.logoNoBgLight,
             width: 40,
             height: 40,
           ),
-          notificationPredicate: (_) => false,
           actions: [
-            IconButton(
-              padding: EdgeInsets.zero,
-              icon: const HugeIcon(
-                icon: HugeIcons.strokeRoundedSettings02,
-                strokeWidth: 2,
+            Padding(
+              padding: const EdgeInsets.only(right: 8),
+              child: ExpressiveIconButton.circle(
+                icon: const HugeIcon(
+                  icon: HugeIcons.strokeRoundedSettings02,
+                  strokeWidth: 2,
+                ),
+                onPressed: () {
+                  getIt<AnalyticsService>().logEvent(
+                    name: 'open_settings_action',
+                  );
+                  unawaited(context.pushNamed(AppRoute.settings.name));
+                },
               ),
-              onPressed: () {
-                getIt<AnalyticsService>().logEvent(
-                  name: 'open_settings_action',
-                );
-                unawaited(context.pushNamed(AppRoute.settings.name));
-              },
             ),
-            const SizedBox(width: 6),
           ],
         ),
         body: Padding(
@@ -133,26 +136,26 @@ class BottomNavigationBarHome extends StatelessWidget {
     final l10n = AppLocalizations.of(context);
 
     return BlocBuilder<HomeCubit, HomeState>(
-      builder: (context, state) => NavigationBar(
+      builder: (context, state) => ExpressiveNavigationBar(
         selectedIndex: state.selectedIndex,
         onDestinationSelected: (index) =>
             context.read<HomeCubit>().toggleSelectedIndex(index),
         destinations: [
-          NavigationDestination(
+          ExpressiveNavigationDestination(
             icon: const HugeIcon(
               icon: HugeIcons.strokeRoundedAudioWave02,
               strokeWidth: 2,
             ),
             label: l10n.homeAudiosTitle,
           ),
-          NavigationDestination(
+          ExpressiveNavigationDestination(
             icon: const HugeIcon(
               icon: HugeIcons.strokeRoundedVideo02,
               strokeWidth: 2,
             ),
             label: l10n.homeStatesTitle,
           ),
-          NavigationDestination(
+          ExpressiveNavigationDestination(
             icon: const HugeIcon(
               icon: HugeIcons.strokeRoundedVideo01,
               strokeWidth: 2,

@@ -1,4 +1,4 @@
-import 'package:ghost_play/app/app.dart';
+import 'package:expressive_kit/expressive_kit.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -82,8 +82,7 @@ class SharedPrefsLocalStorageRepository implements LocalStorageRepository {
     if (languageString == null) {
       return null;
     }
-    final languageParts = languageString.split('_');
-    return Locale(languageParts.first, languageParts.last);
+    return ExpressiveLanguages.fromLanguageCode(languageString);
   }
 
   @override
@@ -91,7 +90,7 @@ class SharedPrefsLocalStorageRepository implements LocalStorageRepository {
     _prefs
         ?.setString(
           LocalStorageRepository.kUserTheme,
-          ThemeHelper.getThemeName(theme),
+          ExpressiveTheme.toKey(theme),
         )
         .ignore();
   }
@@ -102,7 +101,7 @@ class SharedPrefsLocalStorageRepository implements LocalStorageRepository {
     if (themeString == null) {
       return null;
     }
-    return ThemeHelper.getThemeByName(themeString);
+    return ExpressiveTheme.fromKey(themeString);
   }
 
   @override
@@ -110,7 +109,7 @@ class SharedPrefsLocalStorageRepository implements LocalStorageRepository {
     _prefs
         ?.setString(
           LocalStorageRepository.kUserBaseColor,
-          ColorHelper.getColorName(baseColor),
+          ExpressiveColors.toKey(baseColor),
         )
         .ignore();
   }
@@ -123,7 +122,7 @@ class SharedPrefsLocalStorageRepository implements LocalStorageRepository {
     if (baseColorString == null) {
       return null;
     }
-    return ColorHelper.getColorByName(baseColorString);
+    return ExpressiveColors.fromKey(baseColorString);
   }
 
   @override

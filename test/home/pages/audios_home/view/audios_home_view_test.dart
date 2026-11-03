@@ -1,3 +1,4 @@
+import 'package:expressive_kit/expressive_kit.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ghost_play/app/app.dart';
 import 'package:ghost_play/home/home.dart';
@@ -44,7 +45,7 @@ void main() {
         audiosHomeCubit: audiosHomeCubit,
         locale: const Locale('en'),
       );
-      expect(find.byType(CircularLoadingAnimation), findsOneWidget);
+      expect(find.byType(ExpressiveCircularProgressIndicator), findsOneWidget);
     });
 
     testWidgets('renders failure message when status is failure', (
@@ -123,7 +124,7 @@ void main() {
       expect(find.byType(ListView), findsOneWidget);
       expect(find.text('name'), findsOneWidget);
 
-      await tester.tap(find.byType(ListTile));
+      await tester.tap(find.byType(ExpressiveListTile));
       verify(() => audiosHomeCubit.playAudio(audio)).called(1);
     });
 

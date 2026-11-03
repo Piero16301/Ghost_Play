@@ -1,4 +1,5 @@
 import 'package:bloc_test/bloc_test.dart';
+import 'package:expressive_kit/expressive_kit.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ghost_play/app/app.dart';
 import 'package:material_ui/material_ui.dart';
@@ -50,7 +51,9 @@ void main() {
         ).thenReturn(const Locale('es', 'ES'));
         when(() => localStorageService.getTheme()).thenReturn(ThemeMode.dark);
         when(() => localStorageService.getBaseColor()).thenReturn(Colors.red);
-        when(() => localStorageService.getFontFamily()).thenReturn('Roboto');
+        when(
+          () => localStorageService.getFontFamily(),
+        ).thenReturn(ExpressiveFonts.roboto);
       },
       build: AppCubit.new,
       act: (cubit) => cubit.initialize(),
@@ -59,7 +62,7 @@ void main() {
           language: Locale('es', 'ES'),
           theme: ThemeMode.dark,
           baseColor: Colors.red,
-          fontFamily: 'Roboto',
+          fontFamily: ExpressiveFonts.roboto,
         ),
       ],
     );
@@ -97,20 +100,22 @@ void main() {
       verify: (_) {
         verify(
           () => localStorageService.saveLanguage(
-            language: AppVariables.supportedLocales.first,
+            language: ExpressiveLanguages.defaultLocale,
           ),
         ).called(1);
         verify(
-          () => localStorageService.saveTheme(theme: ThemeMode.system),
+          () => localStorageService.saveTheme(
+            theme: ExpressiveTheme.defaultTheme,
+          ),
         ).called(1);
         verify(
           () => localStorageService.saveBaseColor(
-            baseColor: AppVariables.defaultBaseColor,
+            baseColor: ExpressiveColors.defaultColor,
           ),
         ).called(1);
         verify(
           () => localStorageService.saveFontFamily(
-            fontFamily: AppVariables.defaultFontFamily,
+            fontFamily: ExpressiveFonts.defaultFont,
           ),
         ).called(1);
       },
@@ -123,7 +128,9 @@ void main() {
           () => localStorageService.getLanguage(),
         ).thenReturn(const Locale('en', 'US'));
         when(() => localStorageService.getTheme()).thenReturn(ThemeMode.system);
-        when(() => localStorageService.getBaseColor()).thenReturn(Colors.green);
+        when(
+          () => localStorageService.getBaseColor(),
+        ).thenReturn(ExpressiveColors.defaultColor);
         when(
           () => localStorageService.getFontFamily(),
         ).thenReturn('InvalidFont');
@@ -140,7 +147,7 @@ void main() {
       verify: (_) {
         verify(
           () => localStorageService.saveFontFamily(
-            fontFamily: AppVariables.defaultFontFamily,
+            fontFamily: ExpressiveFonts.defaultFont,
           ),
         ).called(1);
       },

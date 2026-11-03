@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 
+import 'package:expressive_kit/expressive_kit.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:ghost_play/app/app.dart';
 import 'package:ghost_play/home/home.dart';
@@ -18,27 +19,10 @@ class StatesHomeView extends StatelessWidget {
     return BlocBuilder<HomeCubit, HomeState>(
       builder: (context, state) {
         if (state.statesStatus.isLoading) {
-          return Center(
+          return const Center(
             child: SizedBox.square(
               dimension: 120,
-              child: CircularLoadingAnimation(
-                outerCircleColor: darkTheme
-                    ? const Color(0xFF0DE4F9)
-                    : const Color(0xFF0F1B33),
-                innerCircleColor: darkTheme
-                    ? Colors.white
-                    : const Color(0xFF0DE4F9),
-                centerWidget: Padding(
-                  padding: const EdgeInsets.all(8),
-                  child: Image.asset(
-                    darkTheme
-                        ? AppVariables.logoNoBgDark
-                        : AppVariables.logoNoBgLight,
-                    width: 40,
-                    height: 40,
-                  ),
-                ),
-              ),
+              child: ExpressiveCircularProgressIndicator(),
             ),
           );
         }
@@ -81,10 +65,14 @@ class StatesHomeView extends StatelessWidget {
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 32),
-                AppFilledButton(
+                ExpressiveButton.filled(
                   onPressed: () =>
                       context.read<HomeCubit>().requestPermission(),
                   label: l10n.givePermissionButton,
+                  icon: const HugeIcon(
+                    icon: HugeIcons.strokeRoundedShield01,
+                    size: 20,
+                  ),
                 ),
               ],
             ),
@@ -125,9 +113,9 @@ class StatesHomeView extends StatelessWidget {
                     ),
                   );
                 },
-                borderRadius: const BorderRadius.all(Radius.circular(12)),
+                borderRadius: const BorderRadius.all(Radius.circular(24)),
                 child: ClipRRect(
-                  borderRadius: const BorderRadius.all(Radius.circular(12)),
+                  borderRadius: const BorderRadius.all(Radius.circular(24)),
                   child: Stack(
                     fit: StackFit.expand,
                     children: [
@@ -140,7 +128,10 @@ class StatesHomeView extends StatelessWidget {
                           if (snapshot.connectionState ==
                               ConnectionState.waiting) {
                             return const Center(
-                              child: CircularProgressIndicator(),
+                              child: ExpressiveCircularProgressIndicator(
+                                size: 32,
+                                strokeWidth: 4,
+                              ),
                             );
                           }
                           if (snapshot.hasData && snapshot.data != null) {

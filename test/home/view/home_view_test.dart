@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:expressive_kit/expressive_kit.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ghost_play/app/app.dart';
@@ -79,7 +80,7 @@ void main() {
     return MaterialApp.router(
       theme: ThemeData(brightness: brightness),
       localizationsDelegates: AppLocalizations.localizationsDelegates,
-      supportedLocales: AppVariables.supportedLocales,
+      supportedLocales: ExpressiveLanguages.supportedLocales,
       routerConfig: effectiveRouter,
     );
   }
@@ -184,21 +185,21 @@ void main() {
     );
 
     testWidgets(
-      'calls toggleSelectedIndex on NavigationBar destination selections',
+      'calls toggleSelectedIndex on ExpressiveNavigationBar destinations',
       (tester) async {
         await tester.pumpWidget(createWidgetUnderTest());
 
-        final destinations = find.byType(NavigationDestination);
+        final l10n = AppLocalizations.of(tester.element(find.byType(HomeView)));
 
-        await tester.tap(destinations.at(1));
+        await tester.tap(find.text(l10n.homeStatesTitle));
         await tester.pump();
         verify(() => homeCubit.toggleSelectedIndex(1)).called(1);
 
-        await tester.tap(destinations.at(0));
+        await tester.tap(find.text(l10n.homeAudiosTitle));
         await tester.pump();
         verify(() => homeCubit.toggleSelectedIndex(0)).called(1);
 
-        await tester.tap(destinations.at(2));
+        await tester.tap(find.text(l10n.homeVideosTitle));
         await tester.pump();
         verify(() => homeCubit.toggleSelectedIndex(2)).called(1);
       },

@@ -1,3 +1,4 @@
+import 'package:expressive_kit/expressive_kit.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ghost_play/app/app.dart';
@@ -28,14 +29,20 @@ extension PumpApp on WidgetTester {
         ],
         child: router != null
             ? MaterialApp.router(
-                localizationsDelegates: AppLocalizations.localizationsDelegates,
-                supportedLocales: AppLocalizations.supportedLocales,
+                localizationsDelegates: const [
+                  AppLocalizations.delegate,
+                  ...ExpressiveLocalizations.localizationsDelegates,
+                ],
+                supportedLocales: ExpressiveLanguages.supportedLocales,
                 routerConfig: router,
                 locale: locale,
               )
             : MaterialApp(
-                localizationsDelegates: AppLocalizations.localizationsDelegates,
-                supportedLocales: AppLocalizations.supportedLocales,
+                localizationsDelegates: const [
+                  AppLocalizations.delegate,
+                  ...ExpressiveLocalizations.localizationsDelegates,
+                ],
+                supportedLocales: ExpressiveLanguages.supportedLocales,
                 locale: locale,
                 home: Scaffold(body: widget),
               ),

@@ -115,3 +115,4 @@ app.*.map.json
 lib/l10n/gen/
 pubspec.lock
 .metadata
+graphify-out/

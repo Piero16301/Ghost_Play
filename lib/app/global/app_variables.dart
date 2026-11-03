@@ -1,13 +1,11 @@
 import 'package:intl/intl.dart';
-import 'package:material_ui/material_ui.dart';
 
 class AppVariables {
   static const String appName = 'Ghost Play';
-  static const Color defaultBaseColor = Colors.green;
-  static const String defaultFontFamily = 'GoogleSansFlex';
 
   static const tabletMaxWidth = 500.0;
   static const tabletMaxHeight = 400.0;
+  static const modalBottomSheetMaxHeightPct = 0.72;
 
   static const waVoiceNotesPath = 'Android/media/com.whatsapp/WhatsApp/Media';
 
@@ -17,31 +15,6 @@ class AppVariables {
   static const snackBarDuration = Duration(seconds: 5);
   static const logoNoBgDark = 'assets/images/logo-no-bg-dark.png';
   static const logoNoBgLight = 'assets/images/logo-no-bg-light.png';
-
-  static Map<String, String> availableFonts = getAvailableFonts();
-
-  static Map<String, String> getAvailableFonts() {
-    return {
-      'Google Sans Flex': 'GoogleSansFlex',
-      'Merriweather': 'Merriweather',
-      'Montserrat': 'Montserrat',
-      'Nunito': 'Nunito',
-      'Open Sans': 'OpenSans',
-      'Orbitron': 'Orbitron',
-      'Playfair Display': 'PlayfairDisplay',
-      'Roboto': 'Roboto',
-      'Source Code Pro': 'SourceCodePro',
-    };
-  }
-
-  static const List<Locale> supportedLocales = [
-    Locale('en', 'US'),
-    Locale('es', 'ES'),
-    Locale('it', 'IT'),
-    Locale('fr', 'FR'),
-    Locale('de', 'DE'),
-    Locale('pt', 'PT'),
-  ];
 }
 
 enum SnackBarType {
