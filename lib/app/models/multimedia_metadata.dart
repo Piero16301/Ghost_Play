@@ -5,7 +5,7 @@ import 'package:equatable/equatable.dart';
 /// {@endtemplate}
 class MultimediaMetadata extends Equatable {
   // {@macro multimedia_metadata}
-  const MultimediaMetadata({
+  const new({
     required this.uri,
     required this.name,
     required this.date,
@@ -15,7 +15,7 @@ class MultimediaMetadata extends Equatable {
   });
 
   /// Creates an instance of [MultimediaMetadata] from a [Map]
-  factory MultimediaMetadata.fromMap(Map<String, dynamic> map) {
+  factory fromMap(Map<String, dynamic> map) {
     return MultimediaMetadata(
       uri: map['uri'] as String? ?? '',
       name: map['name'] as String? ?? '',

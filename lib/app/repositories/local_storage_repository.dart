@@ -57,7 +57,7 @@ class MockLocalStorageRepository implements LocalStorageRepository {
 }
 
 class SharedPrefsLocalStorageRepository implements LocalStorageRepository {
-  SharedPrefsLocalStorageRepository({this._prefs});
+  new({this._prefs});
 
   SharedPreferences? _prefs;
 

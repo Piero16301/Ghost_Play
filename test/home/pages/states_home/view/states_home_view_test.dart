@@ -58,21 +58,18 @@ void main() {
     ).thenAnswer((_) {});
 
     final mockTrace = MockTrace();
-    when(
-      () => getIt<PerformanceService>().startTrace(any()),
-    ).thenReturn(mockTrace);
-    when(
-      () => getIt<PerformanceService>().stopTrace(any()),
-    ).thenAnswer((_) async {});
+    when(() => getIt<PerformanceService>().startTrace(any()))
+        .thenReturn(mockTrace);
+    when(() => getIt<PerformanceService>().stopTrace(any()))
+        .thenAnswer((_) async {});
   });
 
   group('StatesHomeView', () {
     testWidgets('renders CircularLoadingAnimation when loading', (
       tester,
     ) async {
-      when(
-        () => homeCubit.state,
-      ).thenReturn(const HomeState(statesStatus: HomeStatus.loading));
+      when(() => homeCubit.state)
+          .thenReturn(const HomeState(statesStatus: HomeStatus.loading));
 
       await tester.pumpApp(const StatesHomeView(), homeCubit: homeCubit);
 
@@ -82,9 +79,8 @@ void main() {
     testWidgets('renders failure message when status is failure', (
       tester,
     ) async {
-      when(
-        () => homeCubit.state,
-      ).thenReturn(const HomeState(statesStatus: HomeStatus.failure));
+      when(() => homeCubit.state)
+          .thenReturn(const HomeState(statesStatus: HomeStatus.failure));
 
       await tester.pumpApp(const StatesHomeView(), homeCubit: homeCubit);
 
@@ -110,9 +106,8 @@ void main() {
     testWidgets('renders no states found message when list is empty', (
       tester,
     ) async {
-      when(
-        () => homeCubit.state,
-      ).thenReturn(const HomeState(hasPermission: true));
+      when(() => homeCubit.state)
+          .thenReturn(const HomeState(hasPermission: true));
 
       await tester.pumpApp(const StatesHomeView(), homeCubit: homeCubit);
 
@@ -130,9 +125,8 @@ void main() {
         sizeBytes: 1024,
       );
 
-      when(
-        () => homeCubit.state,
-      ).thenReturn(HomeState(hasPermission: true, states: [stateItem]));
+      when(() => homeCubit.state)
+          .thenReturn(HomeState(hasPermission: true, states: [stateItem]));
 
       await tester.pumpApp(const StatesHomeView(), homeCubit: homeCubit);
 
@@ -267,9 +261,8 @@ void main() {
         sizeBytes: 1024,
       );
 
-      when(
-        () => homeCubit.state,
-      ).thenReturn(HomeState(hasPermission: true, states: [stateItem]));
+      when(() => homeCubit.state)
+          .thenReturn(HomeState(hasPermission: true, states: [stateItem]));
 
       await tester.pumpApp(const StatesHomeView(), homeCubit: homeCubit);
 
@@ -287,9 +280,8 @@ void main() {
         sizeBytes: 2048,
       );
 
-      when(
-        () => homeCubit.state,
-      ).thenReturn(HomeState(hasPermission: true, states: [stateItem]));
+      when(() => homeCubit.state)
+          .thenReturn(HomeState(hasPermission: true, states: [stateItem]));
 
       await tester.pumpApp(const StatesHomeView(), homeCubit: homeCubit);
 

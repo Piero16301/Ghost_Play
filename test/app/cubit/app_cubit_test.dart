@@ -46,14 +46,12 @@ void main() {
     blocTest<AppCubit, AppState>(
       'initialize emits updated state when data exists',
       setUp: () {
-        when(
-          () => localStorageService.getLanguage(),
-        ).thenReturn(const Locale('es', 'ES'));
+        when(() => localStorageService.getLanguage())
+            .thenReturn(const Locale('es', 'ES'));
         when(() => localStorageService.getTheme()).thenReturn(ThemeMode.dark);
         when(() => localStorageService.getBaseColor()).thenReturn(Colors.red);
-        when(
-          () => localStorageService.getFontFamily(),
-        ).thenReturn(ExpressiveFonts.roboto);
+        when(() => localStorageService.getFontFamily())
+            .thenReturn(ExpressiveFonts.roboto);
       },
       build: AppCubit.new,
       act: (cubit) => cubit.initialize(),
@@ -80,9 +78,8 @@ void main() {
             language: any(named: 'language'),
           ),
         ).thenReturn(null);
-        when(
-          () => localStorageService.saveTheme(theme: any(named: 'theme')),
-        ).thenReturn(null);
+        when(() => localStorageService.saveTheme(theme: any(named: 'theme')))
+            .thenReturn(null);
         when(
           () => localStorageService.saveBaseColor(
             baseColor: any(named: 'baseColor'),
@@ -124,16 +121,13 @@ void main() {
     blocTest<AppCubit, AppState>(
       'initialize resets font to default when current font is unsupported',
       setUp: () {
-        when(
-          () => localStorageService.getLanguage(),
-        ).thenReturn(const Locale('en', 'US'));
+        when(() => localStorageService.getLanguage())
+            .thenReturn(const Locale('en', 'US'));
         when(() => localStorageService.getTheme()).thenReturn(ThemeMode.system);
-        when(
-          () => localStorageService.getBaseColor(),
-        ).thenReturn(ExpressiveColors.defaultColor);
-        when(
-          () => localStorageService.getFontFamily(),
-        ).thenReturn('InvalidFont');
+        when(() => localStorageService.getBaseColor())
+            .thenReturn(ExpressiveColors.defaultColor);
+        when(() => localStorageService.getFontFamily())
+            .thenReturn('InvalidFont');
 
         when(
           () => localStorageService.saveFontFamily(
@@ -160,9 +154,8 @@ void main() {
             language: any(named: 'language'),
           ),
         ).thenReturn(null);
-        when(
-          () => localStorageService.saveTheme(theme: any(named: 'theme')),
-        ).thenReturn(null);
+        when(() => localStorageService.saveTheme(theme: any(named: 'theme')))
+            .thenReturn(null);
         when(
           () => localStorageService.saveBaseColor(
             baseColor: any(named: 'baseColor'),
@@ -203,9 +196,8 @@ void main() {
         act: (cubit) => cubit.changeTheme(theme: ThemeMode.dark),
         expect: () => [const AppState(theme: ThemeMode.dark)],
         verify: (_) {
-          verify(
-            () => localStorageService.saveTheme(theme: ThemeMode.dark),
-          ).called(1);
+          verify(() => localStorageService.saveTheme(theme: ThemeMode.dark))
+              .called(1);
           verify(() => crashService.setCustomKey('theme', 'dark')).called(1);
           verify(
             () => analyticsService.logEvent(
@@ -243,9 +235,8 @@ void main() {
           verify(
             () => localStorageService.saveFontFamily(fontFamily: 'Montserrat'),
           ).called(1);
-          verify(
-            () => crashService.setCustomKey('fontFamily', 'Montserrat'),
-          ).called(1);
+          verify(() => crashService.setCustomKey('fontFamily', 'Montserrat'))
+              .called(1);
           verify(
             () => analyticsService.logEvent(
               name: 'change_font_family',

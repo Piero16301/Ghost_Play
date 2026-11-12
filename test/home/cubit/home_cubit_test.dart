@@ -33,9 +33,8 @@ void main() {
       ..registerSingleton<CrashService>(crashService)
       ..registerSingleton<PerformanceService>(performanceService);
 
-    when(
-      () => performanceService.startTrace(any<String>()),
-    ).thenReturn(MockTrace());
+    when(() => performanceService.startTrace(any<String>()))
+        .thenReturn(MockTrace());
     when(() => crashService.log(any<String>())).thenReturn(null);
     when(
       () => crashService.recordError(
@@ -122,9 +121,8 @@ void main() {
       blocTest<HomeCubit, HomeState>(
         'emits success when persisted directories exist',
         setUp: () {
-          when(
-            () => storageService.getPersistedPermissionDirectories(),
-          ).thenAnswer((_) async => ['uri1']);
+          when(() => storageService.getPersistedPermissionDirectories())
+              .thenAnswer((_) async => ['uri1']);
           when(
             () => storageService.getRecentAudios(
               uri: any<String>(named: 'uri'),
@@ -145,18 +143,16 @@ void main() {
         build: () => homeCubit,
         act: (cubit) => cubit.initStorage(),
         verify: (_) {
-          verify(
-            () => storageService.getPersistedPermissionDirectories(),
-          ).called(1);
+          verify(() => storageService.getPersistedPermissionDirectories())
+              .called(1);
         },
       );
 
       blocTest<HomeCubit, HomeState>(
         'emits hasPermission false when no persisted directories',
         setUp: () {
-          when(
-            () => storageService.getPersistedPermissionDirectories(),
-          ).thenAnswer((_) async => []);
+          when(() => storageService.getPersistedPermissionDirectories())
+              .thenAnswer((_) async => []);
         },
         build: () => homeCubit,
         act: (cubit) => cubit.initStorage(),
@@ -166,9 +162,8 @@ void main() {
       blocTest<HomeCubit, HomeState>(
         'emits hasPermission false on exception',
         setUp: () {
-          when(
-            () => storageService.getPersistedPermissionDirectories(),
-          ).thenThrow(Exception('error'));
+          when(() => storageService.getPersistedPermissionDirectories())
+              .thenThrow(Exception('error'));
         },
         build: () => homeCubit,
         act: (cubit) => cubit.initStorage(),
@@ -200,19 +195,18 @@ void main() {
           hasPermission: true,
         ),
         setUp: () {
-          when(
-            () => storageService.getRecentAudios(uri: 'uri1', weeks: 1),
-          ).thenAnswer(
-            (_) async => [
-              {
-                'uri': 'a',
-                'name': 'n',
-                'date': 123,
-                'size': 100,
-                'duration': 1000,
-              },
-            ],
-          );
+          when(() => storageService.getRecentAudios(uri: 'uri1', weeks: 1))
+              .thenAnswer(
+                (_) async => [
+                  {
+                    'uri': 'a',
+                    'name': 'n',
+                    'date': 123,
+                    'size': 100,
+                    'duration': 1000,
+                  },
+                ],
+              );
         },
         build: () => homeCubit,
         act: (cubit) => cubit.loadAudios(),
@@ -245,9 +239,8 @@ void main() {
         'emits failure on PlatformException',
         seed: () => HomeState(savedDirectoryUri: 'uri1', saf: mockSaf),
         setUp: () {
-          when(
-            () => storageService.getRecentAudios(uri: 'uri1', weeks: 1),
-          ).thenThrow(PlatformException(code: 'error'));
+          when(() => storageService.getRecentAudios(uri: 'uri1', weeks: 1))
+              .thenThrow(PlatformException(code: 'error'));
         },
         build: () => homeCubit,
         act: (cubit) => cubit.loadAudios(),
@@ -269,9 +262,8 @@ void main() {
         'emits failure on Exception',
         seed: () => HomeState(savedDirectoryUri: 'uri1', saf: mockSaf),
         setUp: () {
-          when(
-            () => storageService.getRecentAudios(uri: 'uri1', weeks: 1),
-          ).thenThrow(Exception('error'));
+          when(() => storageService.getRecentAudios(uri: 'uri1', weeks: 1))
+              .thenThrow(Exception('error'));
         },
         build: () => homeCubit,
         act: (cubit) => cubit.loadAudios(),
@@ -294,12 +286,10 @@ void main() {
       blocTest<HomeCubit, HomeState>(
         'emits hasPermission true when granted',
         setUp: () {
-          when(
-            () => storageService.getDirectoryPermission(any<String>()),
-          ).thenAnswer((_) async => true);
-          when(
-            () => storageService.getPersistedPermissionDirectories(),
-          ).thenAnswer((_) async => ['uri1']);
+          when(() => storageService.getDirectoryPermission(any<String>()))
+              .thenAnswer((_) async => true);
+          when(() => storageService.getPersistedPermissionDirectories())
+              .thenAnswer((_) async => ['uri1']);
           when(
             () => storageService.getRecentAudios(
               uri: any<String>(named: 'uri'),
@@ -320,18 +310,16 @@ void main() {
         build: () => homeCubit,
         act: (cubit) => cubit.requestPermission(),
         verify: (_) {
-          verify(
-            () => storageService.getDirectoryPermission(any<String>()),
-          ).called(1);
+          verify(() => storageService.getDirectoryPermission(any<String>()))
+              .called(1);
         },
       );
 
       blocTest<HomeCubit, HomeState>(
         'does nothing when denied',
         setUp: () {
-          when(
-            () => storageService.getDirectoryPermission(any<String>()),
-          ).thenAnswer((_) async => false);
+          when(() => storageService.getDirectoryPermission(any<String>()))
+              .thenAnswer((_) async => false);
         },
         build: () => homeCubit,
         act: (cubit) => cubit.requestPermission(),
@@ -341,9 +329,8 @@ void main() {
       blocTest<HomeCubit, HomeState>(
         'does nothing when isGranted is null',
         setUp: () {
-          when(
-            () => storageService.getDirectoryPermission(any<String>()),
-          ).thenAnswer((_) async => null);
+          when(() => storageService.getDirectoryPermission(any<String>()))
+              .thenAnswer((_) async => null);
         },
         build: () => homeCubit,
         act: (cubit) => cubit.requestPermission(),
@@ -353,12 +340,10 @@ void main() {
       blocTest<HomeCubit, HomeState>(
         'does nothing when granted but persistedDirs is empty',
         setUp: () {
-          when(
-            () => storageService.getDirectoryPermission(any<String>()),
-          ).thenAnswer((_) async => true);
-          when(
-            () => storageService.getPersistedPermissionDirectories(),
-          ).thenAnswer((_) async => []);
+          when(() => storageService.getDirectoryPermission(any<String>()))
+              .thenAnswer((_) async => true);
+          when(() => storageService.getPersistedPermissionDirectories())
+              .thenAnswer((_) async => []);
         },
         build: () => homeCubit,
         act: (cubit) => cubit.requestPermission(),
@@ -460,9 +445,8 @@ void main() {
         'emits failure on PlatformException',
         seed: () => HomeState(savedDirectoryUri: 'uri1', saf: mockSaf),
         setUp: () {
-          when(
-            () => storageService.getRecentStates(uri: 'uri1'),
-          ).thenThrow(PlatformException(code: 'error'));
+          when(() => storageService.getRecentStates(uri: 'uri1'))
+              .thenThrow(PlatformException(code: 'error'));
         },
         build: () => homeCubit,
         act: (cubit) => cubit.loadStates(),
@@ -484,9 +468,8 @@ void main() {
         'emits failure on Exception',
         seed: () => HomeState(savedDirectoryUri: 'uri1', saf: mockSaf),
         setUp: () {
-          when(
-            () => storageService.getRecentStates(uri: 'uri1'),
-          ).thenThrow(Exception('error'));
+          when(() => storageService.getRecentStates(uri: 'uri1'))
+              .thenThrow(Exception('error'));
         },
         build: () => homeCubit,
         act: (cubit) => cubit.loadStates(),
@@ -540,19 +523,18 @@ void main() {
         'emits success with loaded videos',
         seed: () => HomeState(savedDirectoryUri: 'uri1', saf: mockSaf),
         setUp: () {
-          when(
-            () => storageService.getRecentVideos(uri: 'uri1', weeks: 1),
-          ).thenAnswer(
-            (_) async => [
-              {
-                'uri': 'v',
-                'name': 'n',
-                'date': 123,
-                'size': 100,
-                'is_video': true,
-              },
-            ],
-          );
+          when(() => storageService.getRecentVideos(uri: 'uri1', weeks: 1))
+              .thenAnswer(
+                (_) async => [
+                  {
+                    'uri': 'v',
+                    'name': 'n',
+                    'date': 123,
+                    'size': 100,
+                    'is_video': true,
+                  },
+                ],
+              );
         },
         build: () => homeCubit,
         act: (cubit) => cubit.loadVideos(),
@@ -583,9 +565,8 @@ void main() {
         'emits failure on PlatformException',
         seed: () => HomeState(savedDirectoryUri: 'uri1', saf: mockSaf),
         setUp: () {
-          when(
-            () => storageService.getRecentVideos(uri: 'uri1', weeks: 1),
-          ).thenThrow(PlatformException(code: 'error'));
+          when(() => storageService.getRecentVideos(uri: 'uri1', weeks: 1))
+              .thenThrow(PlatformException(code: 'error'));
         },
         build: () => homeCubit,
         act: (cubit) => cubit.loadVideos(),
@@ -607,9 +588,8 @@ void main() {
         'emits failure on Exception',
         seed: () => HomeState(savedDirectoryUri: 'uri1', saf: mockSaf),
         setUp: () {
-          when(
-            () => storageService.getRecentVideos(uri: 'uri1', weeks: 1),
-          ).thenThrow(Exception('error'));
+          when(() => storageService.getRecentVideos(uri: 'uri1', weeks: 1))
+              .thenThrow(Exception('error'));
         },
         build: () => homeCubit,
         act: (cubit) => cubit.loadVideos(),

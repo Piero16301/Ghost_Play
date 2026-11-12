@@ -36,9 +36,8 @@ void main() {
       ).thenReturn(null);
 
       service.recordError(ex, st, reason: 'r');
-      verify(
-        () => repository.recordError(ex, st, reason: 'r', fatal: false),
-      ).called(1);
+      verify(() => repository.recordError(ex, st, reason: 'r', fatal: false))
+          .called(1);
     });
 
     test('setCustomKey delegates to repository', () {

@@ -7,7 +7,7 @@ import 'package:material_ui/material_ui.dart';
 part 'app_state.dart';
 
 class AppCubit extends Cubit<AppState> {
-  AppCubit() : super(const AppState());
+  new() : super(const AppState());
 
   final LocalStorageService _localStorage = getIt<LocalStorageService>();
   final CrashService _crashService = getIt<CrashService>();

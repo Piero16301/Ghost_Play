@@ -30,18 +30,14 @@ void main() {
     appCubit = MockAppCubit();
 
     when(() => appCubit.state).thenReturn(const AppState());
-    when(
-      () => appCubit.changeLanguage(language: any(named: 'language')),
-    ).thenAnswer((_) async {});
-    when(
-      () => appCubit.changeTheme(theme: any(named: 'theme')),
-    ).thenAnswer((_) async {});
-    when(
-      () => appCubit.changeBaseColor(baseColor: any(named: 'baseColor')),
-    ).thenAnswer((_) async {});
-    when(
-      () => appCubit.changeFontFamily(fontFamily: any(named: 'fontFamily')),
-    ).thenAnswer((_) async {});
+    when(() => appCubit.changeLanguage(language: any(named: 'language')))
+        .thenAnswer((_) async {});
+    when(() => appCubit.changeTheme(theme: any(named: 'theme')))
+        .thenAnswer((_) async {});
+    when(() => appCubit.changeBaseColor(baseColor: any(named: 'baseColor')))
+        .thenAnswer((_) async {});
+    when(() => appCubit.changeFontFamily(fontFamily: any(named: 'fontFamily')))
+        .thenAnswer((_) async {});
   });
 
   group('SettingsView', () {
@@ -78,9 +74,8 @@ void main() {
       await tester.tap(find.text('Spanish').last);
       await tester.pumpAndSettle();
 
-      verify(
-        () => appCubit.changeLanguage(language: const Locale('es', 'ES')),
-      ).called(1);
+      verify(() => appCubit.changeLanguage(language: const Locale('es', 'ES')))
+          .called(1);
     });
 
     testWidgets('calls changeTheme when a new theme is selected', (
@@ -134,9 +129,8 @@ void main() {
     testWidgets('font fallback logic works when state has unknown font', (
       tester,
     ) async {
-      when(
-        () => appCubit.state,
-      ).thenReturn(const AppState(fontFamily: 'UnknownFont'));
+      when(() => appCubit.state)
+          .thenReturn(const AppState(fontFamily: 'UnknownFont'));
 
       await tester.pumpApp(const SettingsView(), appCubit: appCubit);
       await tester.pumpAndSettle();

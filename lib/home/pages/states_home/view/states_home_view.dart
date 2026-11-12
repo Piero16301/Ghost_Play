@@ -9,7 +9,7 @@ import 'package:hugeicons/hugeicons.dart';
 import 'package:material_ui/material_ui.dart';
 
 class StatesHomeView extends StatelessWidget {
-  const StatesHomeView({super.key});
+  const new({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -50,9 +50,10 @@ class StatesHomeView extends StatelessWidget {
                   l10n.welcomeTitle(AppVariables.appName),
                   style: Theme.of(context).textTheme.titleLarge?.copyWith(
                     fontVariations: [
-                      ...(Theme.of(
-                                context,
-                              ).textTheme.titleLarge?.fontVariations ??
+                      ...(Theme.of(context)
+                                  .textTheme
+                                  .titleLarge
+                                  ?.fontVariations ??
                               const <FontVariation>[])
                           .where((v) => v.axis != 'wght'),
                       const FontVariation('wght', 700),

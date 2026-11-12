@@ -10,7 +10,7 @@ import 'package:hugeicons/hugeicons.dart';
 import 'package:material_ui/material_ui.dart';
 
 class VideosHomeView extends StatelessWidget {
-  const VideosHomeView({super.key});
+  const new({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -51,9 +51,10 @@ class VideosHomeView extends StatelessWidget {
                   l10n.welcomeTitle(AppVariables.appName),
                   style: Theme.of(context).textTheme.titleLarge?.copyWith(
                     fontVariations: [
-                      ...(Theme.of(
-                                context,
-                              ).textTheme.titleLarge?.fontVariations ??
+                      ...(Theme.of(context)
+                                  .textTheme
+                                  .titleLarge
+                                  ?.fontVariations ??
                               const <FontVariation>[])
                           .where((v) => v.axis != 'wght'),
                       const FontVariation('wght', 700),
@@ -113,9 +114,9 @@ class VideosHomeView extends StatelessWidget {
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(100),
                     ),
-                    backgroundColor: Theme.of(
-                      context,
-                    ).colorScheme.secondaryContainer,
+                    backgroundColor: Theme.of(context)
+                        .colorScheme
+                        .secondaryContainer,
                     side: BorderSide.none,
                     label: Row(
                       spacing: 4,
@@ -123,18 +124,18 @@ class VideosHomeView extends StatelessWidget {
                         HugeIcon(
                           icon: HugeIcons.strokeRoundedCalendar02,
                           size: 18,
-                          color: Theme.of(
-                            context,
-                          ).colorScheme.onSecondaryContainer,
+                          color: Theme.of(context)
+                              .colorScheme
+                              .onSecondaryContainer,
                         ),
                         Text(
                           l10n.weeksFilter(state.videoWeeksFilter),
                           style: Theme.of(context).textTheme.labelMedium
                               ?.copyWith(
                                 fontWeight: FontWeight.w600,
-                                color: Theme.of(
-                                  context,
-                                ).colorScheme.onSecondaryContainer,
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .onSecondaryContainer,
                               ),
                         ),
                       ],

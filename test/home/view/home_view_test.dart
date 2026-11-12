@@ -43,9 +43,8 @@ void main() {
     when(() => homeCubit.close()).thenAnswer((_) async {});
     when(() => homeCubit.toggleSelectedIndex(any<int>())).thenReturn(null);
 
-    when(
-      () => performanceService.startTrace(any<String>()),
-    ).thenReturn(MockTrace());
+    when(() => performanceService.startTrace(any<String>()))
+        .thenReturn(MockTrace());
     when(() => crashService.log(any<String>())).thenReturn(null);
   });
 
@@ -127,9 +126,8 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('Settings'), findsOneWidget);
-      verify(
-        () => analyticsService.logEvent(name: 'open_settings_action'),
-      ).called(1);
+      verify(() => analyticsService.logEvent(name: 'open_settings_action'))
+          .called(1);
     });
 
     testWidgets('switches to StatesHomePage when index is 1', (tester) async {
@@ -208,9 +206,8 @@ void main() {
     testWidgets(
       'renders SizedBox.shrink for unknown index (hitting default branch)',
       (tester) async {
-        when(
-          () => homeCubit.state,
-        ).thenReturn(const HomeState(selectedIndex: 3));
+        when(() => homeCubit.state)
+            .thenReturn(const HomeState(selectedIndex: 3));
 
         await tester.pumpWidget(createWidgetUnderTest());
 

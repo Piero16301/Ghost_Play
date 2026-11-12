@@ -9,11 +9,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:video_player/video_player.dart';
 
 class MultimediaPreviewDialog extends StatefulWidget {
-  const MultimediaPreviewDialog({
-    required this.item,
-    required this.defaultAspectRatio,
-    super.key,
-  });
+  const new({required this.item, required this.defaultAspectRatio, super.key});
 
   final MultimediaMetadata item;
   final double defaultAspectRatio;
@@ -102,9 +98,9 @@ class _MultimediaPreviewDialogState extends State<MultimediaPreviewDialog> {
       getIt<CrashService>().log(
         'Requesting gallery access for: ${widget.item.uri}',
       );
-      final hasAccess = await Gal.hasAccess();
-      if (!hasAccess) {
-        final granted = await Gal.requestAccess();
+      final hasPermission = await Gal.hasPermission();
+      if (!hasPermission) {
+        final granted = await Gal.requestPermission();
         if (!granted) {
           if (mounted) {
             AppFunctions.showSnackBar(
@@ -417,7 +413,7 @@ class _MultimediaPreviewDialogState extends State<MultimediaPreviewDialog> {
 }
 
 class _VideoProgressBar extends StatefulWidget {
-  const _VideoProgressBar({required this.controller});
+  const new({required this.controller});
 
   final VideoPlayerController controller;
 
@@ -465,9 +461,9 @@ class _VideoProgressBarState extends State<_VideoProgressBar> {
         ),
         overlayShape: const RoundSliderOverlayShape(overlayRadius: 14),
         activeTrackColor: Theme.of(context).colorScheme.primary,
-        inactiveTrackColor: Theme.of(
-          context,
-        ).colorScheme.surfaceContainerHighest,
+        inactiveTrackColor: Theme.of(context)
+            .colorScheme
+            .surfaceContainerHighest,
         thumbColor: Theme.of(context).colorScheme.primary,
       ),
       child: Slider(

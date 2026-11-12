@@ -6,7 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:material_ui/material_ui.dart';
 
 class AppView extends StatefulWidget {
-  const AppView({super.key});
+  const new({super.key});
 
   @override
   State<AppView> createState() => _AppViewState();

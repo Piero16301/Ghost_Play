@@ -100,12 +100,10 @@ void main() {
     when(() => homeCubit.loadStates()).thenAnswer((_) async {});
 
     final mockTrace = MockTrace();
-    when(
-      () => getIt<PerformanceService>().startTrace(any<String>()),
-    ).thenReturn(mockTrace);
-    when(
-      () => getIt<PerformanceService>().stopTrace(any()),
-    ).thenAnswer((_) async {});
+    when(() => getIt<PerformanceService>().startTrace(any<String>()))
+        .thenReturn(mockTrace);
+    when(() => getIt<PerformanceService>().stopTrace(any()))
+        .thenAnswer((_) async {});
 
     when(() => getIt<CrashService>().log(any<String>())).thenAnswer((_) {});
     when(
@@ -170,8 +168,8 @@ void main() {
   }
 
   void mockGalChannel({
-    bool hasAccess = true,
-    bool requestAccess = true,
+    bool hasPermission = true,
+    bool requestPermission = true,
     bool throwOnPutImage = false,
     List<String>? calls,
   }) {
@@ -179,10 +177,10 @@ void main() {
         .setMockMethodCallHandler(const MethodChannel('gal'), (call) async {
           calls?.add(call.method);
           switch (call.method) {
-            case 'hasAccess':
-              return hasAccess;
-            case 'requestAccess':
-              return requestAccess;
+            case 'hasPermission':
+              return hasPermission;
+            case 'requestPermission':
+              return requestPermission;
             case 'putImage':
               if (throwOnPutImage) {
                 throw PlatformException(
@@ -368,7 +366,7 @@ void main() {
     testWidgets(
       'Save requests access and saves when initially denied then granted',
       (tester) async {
-        mockGalChannel(hasAccess: false);
+        mockGalChannel(hasPermission: false);
         final path = createTmpPng('dialog_save_request.png');
         when(
           () => getIt<StorageService>().cacheFile(
@@ -392,7 +390,7 @@ void main() {
     testWidgets('Save shows error snackbar when gallery access is denied', (
       tester,
     ) async {
-      mockGalChannel(hasAccess: false, requestAccess: false);
+      mockGalChannel(hasPermission: false, requestPermission: false);
       final path = createTmpPng('dialog_denied.png');
       when(
         () => getIt<StorageService>().cacheFile(
@@ -657,7 +655,7 @@ void main() {
 }
 
 class _FakeVideoPlayerPlatform extends VideoPlayerPlatform {
-  _FakeVideoPlayerPlatform({
+  new({
     required this.duration,
     this.videoSize = const Size(1080, 1920),
     this.rotationCorrection = 0,

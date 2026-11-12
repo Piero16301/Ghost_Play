@@ -1,9 +1,10 @@
 import 'dart:typed_data';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ghost_play/app/app.dart';
 import 'package:mocktail/mocktail.dart';
 
-class MocktailStorageRepository extends Mock implements StorageRepository {}
+class MocktailStorageRepository extends Mock implements StorageRepository;
 
 void main() {
   group('StorageService', () {
@@ -16,9 +17,8 @@ void main() {
     });
 
     test('getPersistedPermissionDirectories delegates to repository', () async {
-      when(
-        () => repository.getPersistedPermissionDirectories(),
-      ).thenAnswer((_) async => ['a']);
+      when(() => repository.getPersistedPermissionDirectories())
+          .thenAnswer((_) async => ['a']);
       final result = await service.getPersistedPermissionDirectories();
       expect(result, ['a']);
       verify(() => repository.getPersistedPermissionDirectories()).called(1);
@@ -38,9 +38,8 @@ void main() {
     });
 
     test('getDirectoryPermission delegates to repository', () async {
-      when(
-        () => repository.getDirectoryPermission('path'),
-      ).thenAnswer((_) async => true);
+      when(() => repository.getDirectoryPermission('path'))
+          .thenAnswer((_) async => true);
       final result = await service.getDirectoryPermission('path');
       expect(result, isTrue);
       verify(() => repository.getDirectoryPermission('path')).called(1);
@@ -61,17 +60,15 @@ void main() {
 
     test('getThumbnailBytes delegates to repository', () async {
       final bytes = Uint8List.fromList([1, 2, 3]);
-      when(
-        () => repository.getThumbnailBytes(uri: 'uri1', isVideo: true),
-      ).thenAnswer((_) async => bytes);
+      when(() => repository.getThumbnailBytes(uri: 'uri1', isVideo: true))
+          .thenAnswer((_) async => bytes);
       final result = await service.getThumbnailBytes(
         uri: 'uri1',
         isVideo: true,
       );
       expect(result, bytes);
-      verify(
-        () => repository.getThumbnailBytes(uri: 'uri1', isVideo: true),
-      ).called(1);
+      verify(() => repository.getThumbnailBytes(uri: 'uri1', isVideo: true))
+          .called(1);
     });
 
     test('getRecentVideos delegates to repository', () async {
@@ -88,14 +85,12 @@ void main() {
     });
 
     test('cacheFile delegates to repository', () async {
-      when(
-        () => repository.cacheFile(uri: 'uri1', fileName: 'file.mp3'),
-      ).thenAnswer((_) async => 'cached_path');
+      when(() => repository.cacheFile(uri: 'uri1', fileName: 'file.mp3'))
+          .thenAnswer((_) async => 'cached_path');
       final result = await service.cacheFile(uri: 'uri1', fileName: 'file.mp3');
       expect(result, 'cached_path');
-      verify(
-        () => repository.cacheFile(uri: 'uri1', fileName: 'file.mp3'),
-      ).called(1);
+      verify(() => repository.cacheFile(uri: 'uri1', fileName: 'file.mp3'))
+          .called(1);
     });
   });
 }

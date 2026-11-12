@@ -1,7 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 
 class AppFilledButton extends StatelessWidget {
-  const AppFilledButton({
+  const new({
     this.onPressed,
     this.icon,
     this.label,
@@ -33,9 +33,8 @@ class AppFilledButton extends StatelessWidget {
               label ?? '',
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
                 color: onPressed == null
-                    ? Theme.of(
-                        context,
-                      ).colorScheme.onSurface.withValues(alpha: 0.38)
+                    ? Theme.of(context).colorScheme.onSurface
+                          .withValues(alpha: 0.38)
                     : Theme.of(context).colorScheme.onPrimary,
                 fontVariations: <FontVariation>[
                   ...(Theme.of(context).textTheme.titleMedium?.fontVariations ??

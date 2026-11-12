@@ -9,7 +9,7 @@ import 'package:mocktail/mocktail.dart';
 
 import '../../../../helpers/mocks.dart';
 
-class MockAudioPlayer extends Mock implements ja.AudioPlayer {}
+class MockAudioPlayer extends Mock implements ja.AudioPlayer;
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -35,23 +35,19 @@ void main() {
     durationStream = StreamController<Duration?>.broadcast();
     playerStateStream = StreamController<ja.PlayerState>.broadcast();
 
-    when(
-      () => audioPlayer.positionStream,
-    ).thenAnswer((_) => positionStream.stream);
-    when(
-      () => audioPlayer.durationStream,
-    ).thenAnswer((_) => durationStream.stream);
-    when(
-      () => audioPlayer.playerStateStream,
-    ).thenAnswer((_) => playerStateStream.stream);
+    when(() => audioPlayer.positionStream)
+        .thenAnswer((_) => positionStream.stream);
+    when(() => audioPlayer.durationStream)
+        .thenAnswer((_) => durationStream.stream);
+    when(() => audioPlayer.playerStateStream)
+        .thenAnswer((_) => playerStateStream.stream);
     when(() => audioPlayer.dispose()).thenAnswer((_) async {});
     when(() => audioPlayer.stop()).thenAnswer((_) async {});
     when(() => audioPlayer.pause()).thenAnswer((_) async {});
     when(() => audioPlayer.play()).thenAnswer((_) async {});
     when(() => audioPlayer.setSpeed(any<double>())).thenAnswer((_) async {});
-    when(
-      () => audioPlayer.setAudioSource(any<ja.AudioSource>()),
-    ).thenAnswer((_) async => null);
+    when(() => audioPlayer.setAudioSource(any<ja.AudioSource>()))
+        .thenAnswer((_) async => null);
     when(() => audioPlayer.seek(any<Duration>())).thenAnswer((_) async {});
 
     unawaited(getIt.reset());
@@ -60,9 +56,8 @@ void main() {
       ..registerSingleton<CrashService>(crashService)
       ..registerSingleton<PerformanceService>(performanceService);
 
-    when(
-      () => performanceService.startTrace(any<String>()),
-    ).thenReturn(MockTrace());
+    when(() => performanceService.startTrace(any<String>()))
+        .thenReturn(MockTrace());
     when(
       () => analyticsService.logEvent(
         name: any<String>(named: 'name'),
@@ -207,9 +202,8 @@ void main() {
       ),
       verify: (_) {
         verify(() => audioPlayer.stop()).called(1);
-        verify(
-          () => audioPlayer.setAudioSource(any<ja.AudioSource>()),
-        ).called(1);
+        verify(() => audioPlayer.setAudioSource(any<ja.AudioSource>()))
+            .called(1);
         verify(() => audioPlayer.play()).called(1);
         verify(() => analyticsService.logEvent(name: 'play_audio')).called(1);
       },
@@ -219,9 +213,8 @@ void main() {
       'playAudio emits error on exception',
       build: () => audiosHomeCubit,
       setUp: () {
-        when(
-          () => audioPlayer.setAudioSource(any<ja.AudioSource>()),
-        ).thenThrow(Exception('error'));
+        when(() => audioPlayer.setAudioSource(any<ja.AudioSource>()))
+            .thenThrow(Exception('error'));
       },
       act: (cubit) async => await cubit.playAudio(
         AudioMetadata(

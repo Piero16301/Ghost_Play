@@ -7,7 +7,7 @@ import 'package:saf/saf.dart';
 part 'home_state.dart';
 
 class HomeCubit extends Cubit<HomeState> {
-  HomeCubit({StorageService? storageService})
+  new({StorageService? storageService})
     : _storageService = storageService ?? getIt<StorageService>(),
       super(const HomeState());
 
