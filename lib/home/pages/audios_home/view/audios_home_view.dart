@@ -80,12 +80,6 @@ class AudiosHomeView extends StatelessWidget {
           );
         }
 
-        if (state.audios.isEmpty) {
-          return Center(
-            child: Text(l10n.noAudiosFound, textAlign: TextAlign.center),
-          );
-        }
-
         return Stack(
           alignment: AlignmentGeometry.bottomCenter,
           children: [
@@ -149,42 +143,72 @@ class AudiosHomeView extends StatelessWidget {
                 Expanded(
                   child: RefreshIndicator(
                     onRefresh: context.read<HomeCubit>().loadAudios,
-                    child: ListView.builder(
-                      physics: const BouncingScrollPhysics(),
-                      itemCount: state.audios.length,
-                      itemBuilder: (context, index) {
-                        final audio = state.audios[index];
-                        return Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 2),
-                          child: ExpressiveListTile(
-                            leading: ExpressiveBadge(
-                              icon: HugeIcon(
-                                icon: HugeIcons.strokeRoundedAudioWave01,
-                                strokeWidth: 2,
-                                color: Theme.of(context).colorScheme.primary,
-                              ),
+                    child: state.audios.isEmpty
+                        ? LayoutBuilder(
+                            builder: (context, constraints) =>
+                                SingleChildScrollView(
+                                  physics: const AlwaysScrollableScrollPhysics(
+                                    parent: BouncingScrollPhysics(),
+                                  ),
+                                  child: ConstrainedBox(
+                                    constraints: BoxConstraints(
+                                      minHeight: constraints.maxHeight,
+                                    ),
+                                    child: Center(
+                                      child: Text(
+                                        l10n.noAudiosFound,
+                                        textAlign: TextAlign.center,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                          )
+                        : ListView.builder(
+                            physics: const AlwaysScrollableScrollPhysics(
+                              parent: BouncingScrollPhysics(),
                             ),
-                            title: Text(
-                              audio.name.split('.').first,
-                              style: Theme.of(context).textTheme.bodyLarge
-                                  ?.copyWith(fontWeight: FontWeight.w600),
-                            ),
-                            subtitle: Text(
-                              AppVariables.formatDateTime.format(audio.date),
-                              style: Theme.of(context).textTheme.bodySmall,
-                            ),
-                            trailing: Text(
-                              audio.formattedDuration,
-                              style: Theme.of(context).textTheme.bodySmall
-                                  ?.copyWith(fontWeight: FontWeight.w600),
-                            ),
-                            onTap: () => context
-                                .read<AudiosHomeCubit>()
-                                .playAudio(audio),
+                            itemCount: state.audios.length,
+                            itemBuilder: (context, index) {
+                              final audio = state.audios[index];
+                              return Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 2,
+                                ),
+                                child: ExpressiveListTile(
+                                  leading: ExpressiveBadge(
+                                    icon: HugeIcon(
+                                      icon: HugeIcons.strokeRoundedAudioWave01,
+                                      strokeWidth: 2,
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .primary,
+                                    ),
+                                  ),
+                                  title: Text(
+                                    audio.name.split('.').first,
+                                    style: Theme.of(context).textTheme.bodyLarge
+                                        ?.copyWith(fontWeight: FontWeight.w600),
+                                  ),
+                                  subtitle: Text(
+                                    AppVariables.formatDateTime.format(
+                                      audio.date,
+                                    ),
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .bodySmall,
+                                  ),
+                                  trailing: Text(
+                                    audio.formattedDuration,
+                                    style: Theme.of(context).textTheme.bodySmall
+                                        ?.copyWith(fontWeight: FontWeight.w600),
+                                  ),
+                                  onTap: () => context
+                                      .read<AudiosHomeCubit>()
+                                      .playAudio(audio),
+                                ),
+                              );
+                            },
                           ),
-                        );
-                      },
-                    ),
                   ),
                 ),
               ],

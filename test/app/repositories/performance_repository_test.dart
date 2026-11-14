@@ -35,10 +35,11 @@ void main() {
       verify(mockTrace.stop).called(1);
     });
 
-    test('MockPerformanceRepository throws', () {
+    test('MockPerformanceRepository is a no-op', () {
       final mockRepo = MockPerformanceRepository();
-      expect(() => mockRepo.startTrace('t'), throwsUnimplementedError);
-      expect(() => mockRepo.stopTrace(MockTrace()), throwsUnimplementedError);
+      expect(mockRepo.startTrace('t'), isNull);
+      expect(() => mockRepo.stopTrace(null), returnsNormally);
+      expect(() => mockRepo.stopTrace(MockTrace()), returnsNormally);
     });
 
     test('default constructor hits FirebasePerformance.instance line', () {

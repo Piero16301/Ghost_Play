@@ -54,7 +54,7 @@ void main() {
             .thenReturn(ExpressiveFonts.roboto);
       },
       build: AppCubit.new,
-      act: (cubit) => cubit.initialize(),
+      act: (cubit) => cubit.initialLoad(),
       expect: () => [
         const AppState(
           language: Locale('es', 'ES'),
@@ -92,7 +92,7 @@ void main() {
         ).thenReturn(null);
       },
       build: AppCubit.new,
-      act: (cubit) => cubit.initialize(),
+      act: (cubit) => cubit.initialLoad(),
       expect: () => [const AppState()],
       verify: (_) {
         verify(
@@ -136,7 +136,7 @@ void main() {
         ).thenReturn(null);
       },
       build: AppCubit.new,
-      act: (cubit) => cubit.initialize(),
+      act: (cubit) => cubit.initialLoad(),
       expect: () => [const AppState()],
       verify: (_) {
         verify(

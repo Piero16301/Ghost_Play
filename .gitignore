@@ -116,3 +116,4 @@ lib/l10n/gen/
 pubspec.lock
 .metadata
 graphify-out/
+.env

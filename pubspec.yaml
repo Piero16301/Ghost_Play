@@ -66,3 +66,7 @@ flutter:
 
   assets:
     - assets/images/
+    - mocks/audios/
+    - mocks/stories/
+    - mocks/thumbnails/
+    - mocks/videos/

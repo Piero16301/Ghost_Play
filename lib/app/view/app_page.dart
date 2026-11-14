@@ -9,7 +9,7 @@ class AppPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
-        BlocProvider<AppCubit>(create: (_) => AppCubit()..initialize()),
+        BlocProvider<AppCubit>(create: (_) => AppCubit()..initialLoad()),
       ],
       child: const AppView(),
     );
