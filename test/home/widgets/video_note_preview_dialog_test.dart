@@ -402,9 +402,7 @@ void main() {
       File(path).deleteSync();
     });
 
-    testWidgets('can seek by dragging around the circular timeline', (
-      tester,
-    ) async {
+    testWidgets('can seek using the timeline slider', (tester) async {
       final fakePlatform = _FakeVideoPlayerPlatform(
         duration: const Duration(seconds: 60),
       );
@@ -421,17 +419,10 @@ void main() {
       await tester.pump(const Duration(milliseconds: 300));
       await tester.pump(const Duration(milliseconds: 300));
 
-      final customPaintFinder = find.byWidgetPredicate(
-        (widget) => widget is CustomPaint && widget.size.width > 0,
-      );
-      expect(customPaintFinder, findsOneWidget);
+      final sliderFinder = find.byType(Slider);
+      expect(sliderFinder, findsOneWidget);
 
-      final center = tester.getCenter(customPaintFinder.first);
-      // Drag along perimeter: from top (12 o'clock) to right (3 o'clock)
-      await tester.dragFrom(
-        Offset(center.dx, center.dy - 100),
-        const Offset(100, 100),
-      );
+      await tester.drag(sliderFinder, const Offset(80, 0));
       await tester.pump(const Duration(milliseconds: 100));
 
       expect(fakePlatform.seekCalls.isNotEmpty, isTrue);
@@ -482,41 +473,43 @@ void main() {
       File(path).deleteSync();
     });
 
-    testWidgets('taps on outer perimeter of video to seek', (tester) async {
-      final fakePlatform = _FakeVideoPlayerPlatform(
-        duration: const Duration(seconds: 40),
-      );
-      VideoPlayerPlatform.instance = fakePlatform;
-      final path = createTmpMp4('video_note_tap_perimeter.mp4');
-      when(
-        () => getIt<StorageService>().cacheFile(
-          uri: any(named: 'uri'),
-          fileName: any(named: 'fileName'),
-        ),
-      ).thenAnswer((_) async => path);
+    testWidgets(
+      'circular perimeter is indicative only and does not seek on tap',
+      (tester) async {
+        final fakePlatform = _FakeVideoPlayerPlatform(
+          duration: const Duration(seconds: 40),
+        );
+        VideoPlayerPlatform.instance = fakePlatform;
+        final path = createTmpMp4('video_note_tap_perimeter.mp4');
+        when(
+          () => getIt<StorageService>().cacheFile(
+            uri: any(named: 'uri'),
+            fileName: any(named: 'fileName'),
+          ),
+        ).thenAnswer((_) async => path);
 
-      await pumpDialog(tester, makeItem());
-      await tester.pump(const Duration(milliseconds: 300));
-      await tester.pump(const Duration(milliseconds: 300));
+        await pumpDialog(tester, makeItem());
+        await tester.pump(const Duration(milliseconds: 300));
+        await tester.pump(const Duration(milliseconds: 300));
 
-      final customPaintFinder = find.byWidgetPredicate(
-        (widget) => widget is CustomPaint && widget.size.width > 0,
-      );
-      final playerRect = tester.getRect(customPaintFinder.first);
-      final radius = playerRect.width / 2;
-      // Tap on the edge (perimeter) of the circle
-      await tester.tapAt(
-        Offset(playerRect.center.dx + radius - 2, playerRect.center.dy),
-      );
-      await tester.pump(const Duration(milliseconds: 100));
+        final customPaintFinder = find.byWidgetPredicate(
+          (widget) => widget is CustomPaint && widget.size.width > 0,
+        );
+        final playerRect = tester.getRect(customPaintFinder.first);
+        final radius = playerRect.width / 2;
+        await tester.tapAt(
+          Offset(playerRect.center.dx + radius - 2, playerRect.center.dy),
+        );
+        await tester.pump(const Duration(milliseconds: 100));
 
-      expect(fakePlatform.seekCalls.isNotEmpty, isTrue);
+        expect(fakePlatform.seekCalls, isEmpty);
 
-      await tester.tap(find.text('Cancel'));
-      await tester.pumpAndSettle();
+        await tester.tap(find.text('Cancel'));
+        await tester.pumpAndSettle();
 
-      File(path).deleteSync();
-    });
+        File(path).deleteSync();
+      },
+    );
   });
 }
 

@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:gal/gal.dart';
 import 'package:ghost_play/app/app.dart';
+import 'package:ghost_play/home/widgets/video_progress_bar.dart';
 import 'package:ghost_play/l10n/l10n.dart';
 import 'package:hugeicons/hugeicons.dart';
 import 'package:material_ui/material_ui.dart';
@@ -327,7 +328,7 @@ class _MultimediaPreviewDialogState extends State<MultimediaPreviewDialog> {
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 8),
-                child: _VideoProgressBar(controller: _videoPlayerController!),
+                child: VideoProgressBar(controller: _videoPlayerController!),
               ),
             ),
             Text(
@@ -409,85 +410,5 @@ class _MultimediaPreviewDialogState extends State<MultimediaPreviewDialog> {
         ],
       ),
     ];
-  }
-}
-
-class _VideoProgressBar extends StatefulWidget {
-  const new({required this.controller});
-
-  final VideoPlayerController controller;
-
-  @override
-  State<_VideoProgressBar> createState() => _VideoProgressBarState();
-}
-
-class _VideoProgressBarState extends State<_VideoProgressBar> {
-  double? _dragValue;
-  late VoidCallback listener;
-
-  @override
-  void initState() {
-    super.initState();
-    listener = () {
-      if (mounted) {
-        setState(() {});
-      }
-    };
-    widget.controller.addListener(listener);
-  }
-
-  @override
-  void dispose() {
-    widget.controller.removeListener(listener);
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final duration = widget.controller.value.duration;
-    final position = widget.controller.value.position;
-
-    final max = duration.inMilliseconds.toDouble();
-    final value = _dragValue ?? position.inMilliseconds.toDouble();
-    final clampedValue = value.clamp(0.0, max > 0 ? max : 1.0);
-
-    return SliderTheme(
-      data: SliderThemeData(
-        trackHeight: 5,
-        thumbShape: const RoundSliderThumbShape(
-          enabledThumbRadius: 6,
-          elevation: 0,
-          pressedElevation: 4,
-        ),
-        overlayShape: const RoundSliderOverlayShape(overlayRadius: 14),
-        activeTrackColor: Theme.of(context).colorScheme.primary,
-        inactiveTrackColor: Theme.of(context)
-            .colorScheme
-            .surfaceContainerHighest,
-        thumbColor: Theme.of(context).colorScheme.primary,
-      ),
-      child: Slider(
-        padding: const EdgeInsets.symmetric(horizontal: 4),
-        max: max > 0 ? max : 1.0,
-        value: clampedValue,
-        onChanged: max > 0
-            ? (v) {
-                setState(() {
-                  _dragValue = v;
-                });
-              }
-            : null,
-        onChangeEnd: max > 0
-            ? (v) {
-                unawaited(
-                  widget.controller.seekTo(Duration(milliseconds: v.round())),
-                );
-                setState(() {
-                  _dragValue = null;
-                });
-              }
-            : null,
-      ),
-    );
   }
 }

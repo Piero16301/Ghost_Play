@@ -4,6 +4,7 @@ import 'dart:math' as math;
 
 import 'package:gal/gal.dart';
 import 'package:ghost_play/app/app.dart';
+import 'package:ghost_play/home/widgets/video_progress_bar.dart';
 import 'package:ghost_play/l10n/l10n.dart';
 import 'package:hugeicons/hugeicons.dart';
 import 'package:material_ui/material_ui.dart';
@@ -285,10 +286,9 @@ class _VideoNotePreviewDialogState extends State<VideoNotePreviewDialog> {
           final duration = value.duration;
 
           return Row(
-            mainAxisAlignment: MainAxisAlignment.center,
             children: [
               IconButton(
-                padding: const EdgeInsets.all(6),
+                padding: const EdgeInsets.all(5),
                 icon: HugeIcon(
                   icon: value.isPlaying
                       ? HugeIcons.strokeRoundedPause
@@ -307,16 +307,22 @@ class _VideoNotePreviewDialogState extends State<VideoNotePreviewDialog> {
                   }
                 },
               ),
-              const SizedBox(width: 8),
               Text(
-                '${_formatDuration(position)} / ${_formatDuration(duration)}',
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  fontVariations: [const FontVariation('wght', 600)],
+                _formatDuration(position),
+                style: Theme.of(context).textTheme.bodyMedium,
+              ),
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8),
+                  child: VideoProgressBar(controller: _videoPlayerController!),
                 ),
               ),
-              const SizedBox(width: 8),
+              Text(
+                _formatDuration(duration),
+                style: Theme.of(context).textTheme.bodyMedium,
+              ),
               IconButton(
-                padding: const EdgeInsets.all(6),
+                padding: const EdgeInsets.all(5),
                 icon: HugeIcon(
                   icon: value.volume == 0
                       ? HugeIcons.strokeRoundedVolumeMute02
@@ -407,15 +413,13 @@ class _CircularVideoPlayer extends StatefulWidget {
 
 class _CircularVideoPlayerState extends State<_CircularVideoPlayer> {
   static const double _strokeWidth = 6;
-  Duration? _dragPosition;
-  bool _isDragging = false;
   late VoidCallback _listener;
 
   @override
   void initState() {
     super.initState();
     _listener = () {
-      if (mounted && !_isDragging) {
+      if (mounted) {
         setState(() {});
       }
     };
@@ -428,43 +432,11 @@ class _CircularVideoPlayerState extends State<_CircularVideoPlayer> {
     super.dispose();
   }
 
-  void _handleSeek(Offset localPosition, {required bool isFinal}) {
-    final center = Offset(widget.size / 2, widget.size / 2);
-    final dx = localPosition.dx - center.dx;
-    final dy = localPosition.dy - center.dy;
-
-    // Angle starting at top (12 o'clock, -pi/2) going clockwise
-    var angle = math.atan2(dy, dx) + (math.pi / 2);
-    if (angle < 0) {
-      angle += 2 * math.pi;
-    }
-
-    final fraction = (angle / (2 * math.pi)).clamp(0.0, 1.0);
-    final duration = widget.controller.value.duration;
-    if (duration <= Duration.zero) return;
-
-    final targetMs = (duration.inMilliseconds * fraction).round();
-    final targetPosition = Duration(milliseconds: targetMs);
-
-    if (isFinal) {
-      unawaited(widget.controller.seekTo(targetPosition));
-      setState(() {
-        _dragPosition = null;
-        _isDragging = false;
-      });
-    } else {
-      setState(() {
-        _dragPosition = targetPosition;
-        _isDragging = true;
-      });
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     final value = widget.controller.value;
     final duration = value.duration;
-    final currentPosition = _dragPosition ?? value.position;
+    final currentPosition = value.position;
 
     final progress = duration.inMilliseconds > 0
         ? (currentPosition.inMilliseconds / duration.inMilliseconds).clamp(
@@ -481,44 +453,14 @@ class _CircularVideoPlayerState extends State<_CircularVideoPlayer> {
 
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
-      onPanStart: (details) =>
-          _handleSeek(details.localPosition, isFinal: false),
-      onPanUpdate: (details) =>
-          _handleSeek(details.localPosition, isFinal: false),
-      onPanEnd: (details) {
-        if (_dragPosition != null) {
-          unawaited(widget.controller.seekTo(_dragPosition!));
-        }
-        setState(() {
-          _dragPosition = null;
-          _isDragging = false;
-        });
-      },
-      onPanCancel: () {
-        setState(() {
-          _dragPosition = null;
-          _isDragging = false;
-        });
-      },
-      onTapUp: (details) {
-        final center = Offset(widget.size / 2, widget.size / 2);
-        final dx = details.localPosition.dx - center.dx;
-        final dy = details.localPosition.dy - center.dy;
-        final distance = math.sqrt(dx * dx + dy * dy);
-
-        // If tap is inside the inner video area, toggle play/pause
-        if (distance < (widget.size / 2) - (_strokeWidth * 2)) {
-          if (value.isPlaying) {
-            unawaited(widget.controller.pause());
-          } else {
-            if (value.position >= value.duration) {
-              unawaited(widget.controller.seekTo(Duration.zero));
-            }
-            unawaited(widget.controller.play());
-          }
+      onTap: () {
+        if (value.isPlaying) {
+          unawaited(widget.controller.pause());
         } else {
-          // If tap is on or near the perimeter, seek to that position
-          _handleSeek(details.localPosition, isFinal: true);
+          if (value.position >= value.duration) {
+            unawaited(widget.controller.seekTo(Duration.zero));
+          }
+          unawaited(widget.controller.play());
         }
       },
       child: SizedBox.square(
@@ -547,7 +489,7 @@ class _CircularVideoPlayerState extends State<_CircularVideoPlayer> {
                       ),
                     ),
                     // Centered play icon when paused
-                    if (!value.isPlaying && !_isDragging)
+                    if (!value.isPlaying)
                       ColoredBox(
                         color: Colors.black26,
                         child: Center(
@@ -578,7 +520,7 @@ class _CircularVideoPlayerState extends State<_CircularVideoPlayer> {
                 strokeWidth: _strokeWidth,
                 trackColor: trackColor,
                 progressColor: primaryColor,
-                isDragging: _isDragging,
+                isDragging: false,
               ),
             ),
           ],
