@@ -3,13 +3,13 @@ import 'package:ghost_play/app/app.dart';
 import 'package:material_ui/material_ui.dart';
 
 class AppPage extends StatelessWidget {
-  const AppPage({super.key});
+  const new({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
-        BlocProvider<AppCubit>(create: (_) => AppCubit()..initialize()),
+        BlocProvider<AppCubit>(create: (_) => AppCubit()..initialLoad()),
       ],
       child: const AppView(),
     );

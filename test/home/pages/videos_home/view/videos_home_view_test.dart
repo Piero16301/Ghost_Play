@@ -115,12 +115,10 @@ void main() {
       ),
     ).thenAnswer((_) async => 'cached_path');
 
-    when(
-      () => getIt<PerformanceService>().startTrace(any<String>()),
-    ).thenReturn(MockTrace());
-    when(
-      () => getIt<PerformanceService>().stopTrace(any()),
-    ).thenAnswer((_) async {});
+    when(() => getIt<PerformanceService>().startTrace(any<String>()))
+        .thenReturn(MockTrace());
+    when(() => getIt<PerformanceService>().stopTrace(any()))
+        .thenAnswer((_) async {});
 
     originalVideoPlayerPlatform = VideoPlayerPlatform.instance;
   });
@@ -133,9 +131,8 @@ void main() {
     testWidgets('renders CircularLoadingAnimation when loading', (
       tester,
     ) async {
-      when(
-        () => homeCubit.state,
-      ).thenReturn(const HomeState(videosStatus: HomeStatus.loading));
+      when(() => homeCubit.state)
+          .thenReturn(const HomeState(videosStatus: HomeStatus.loading));
       await tester.pumpApp(
         const VideosHomeView(),
         homeCubit: homeCubit,
@@ -147,9 +144,8 @@ void main() {
     testWidgets('renders failure message when status is failure', (
       tester,
     ) async {
-      when(
-        () => homeCubit.state,
-      ).thenReturn(const HomeState(videosStatus: HomeStatus.failure));
+      when(() => homeCubit.state)
+          .thenReturn(const HomeState(videosStatus: HomeStatus.failure));
       await tester.pumpApp(
         const VideosHomeView(),
         homeCubit: homeCubit,
@@ -277,7 +273,7 @@ void main() {
 }
 
 class _FakeVideoPlayerPlatform extends VideoPlayerPlatform {
-  _FakeVideoPlayerPlatform({
+  new({
     required this.videoSize,
     required this.rotationCorrection,
     required this.duration,

@@ -6,7 +6,7 @@ import 'package:hugeicons/hugeicons.dart';
 import 'package:material_ui/material_ui.dart';
 
 class MiniPlayer extends StatelessWidget {
-  const MiniPlayer({super.key});
+  const new({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -94,9 +94,9 @@ class MiniPlayer extends StatelessWidget {
                         dimension: 24,
                         child: CircularProgressIndicator(
                           strokeWidth: 3,
-                          color: Theme.of(
-                            context,
-                          ).colorScheme.onPrimaryContainer,
+                          color: Theme.of(context)
+                              .colorScheme
+                              .onPrimaryContainer,
                         ),
                       ),
                     )
@@ -153,7 +153,7 @@ class MiniPlayer extends StatelessWidget {
 }
 
 class _PlayerProgressBar extends StatefulWidget {
-  const _PlayerProgressBar({
+  const new({
     required this.position,
     required this.duration,
     required this.onSeek,

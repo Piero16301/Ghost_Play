@@ -50,9 +50,8 @@ void main() {
     });
 
     test('getLanguage returns correct locale', () {
-      when(
-        () => prefs.getString(LocalStorageRepository.kUserLanguage),
-      ).thenReturn('en_US');
+      when(() => prefs.getString(LocalStorageRepository.kUserLanguage))
+          .thenReturn('en_US');
 
       final locale = repository.getLanguage();
 
@@ -60,9 +59,8 @@ void main() {
     });
 
     test('getLanguage returns null if string is null', () {
-      when(
-        () => prefs.getString(LocalStorageRepository.kUserLanguage),
-      ).thenReturn(null);
+      when(() => prefs.getString(LocalStorageRepository.kUserLanguage))
+          .thenReturn(null);
       expect(repository.getLanguage(), isNull);
     });
 
@@ -76,9 +74,8 @@ void main() {
 
       repository.saveTheme(theme: ThemeMode.dark);
 
-      verify(
-        () => prefs.setString(LocalStorageRepository.kUserTheme, 'DARK'),
-      ).called(1);
+      verify(() => prefs.setString(LocalStorageRepository.kUserTheme, 'DARK'))
+          .called(1);
     });
 
     test('saveTheme does nothing if _prefs is null', () {
@@ -87,17 +84,15 @@ void main() {
     });
 
     test('getTheme returns correct theme', () {
-      when(
-        () => prefs.getString(LocalStorageRepository.kUserTheme),
-      ).thenReturn('DARK');
+      when(() => prefs.getString(LocalStorageRepository.kUserTheme))
+          .thenReturn('DARK');
 
       expect(repository.getTheme(), equals(ThemeMode.dark));
     });
 
     test('getTheme returns null if string is null', () {
-      when(
-        () => prefs.getString(LocalStorageRepository.kUserTheme),
-      ).thenReturn(null);
+      when(() => prefs.getString(LocalStorageRepository.kUserTheme))
+          .thenReturn(null);
       expect(repository.getTheme(), isNull);
     });
 
@@ -122,17 +117,15 @@ void main() {
     });
 
     test('getBaseColor returns correct color', () {
-      when(
-        () => prefs.getString(LocalStorageRepository.kUserBaseColor),
-      ).thenReturn('RED');
+      when(() => prefs.getString(LocalStorageRepository.kUserBaseColor))
+          .thenReturn('RED');
 
       expect(repository.getBaseColor(), equals(Colors.red));
     });
 
     test('getBaseColor returns null if string is null', () {
-      when(
-        () => prefs.getString(LocalStorageRepository.kUserBaseColor),
-      ).thenReturn(null);
+      when(() => prefs.getString(LocalStorageRepository.kUserBaseColor))
+          .thenReturn(null);
       expect(repository.getBaseColor(), isNull);
     });
 
@@ -157,9 +150,8 @@ void main() {
     });
 
     test('getFontFamily returns correct font', () {
-      when(
-        () => prefs.getString(LocalStorageRepository.kUserFontFamily),
-      ).thenReturn('Roboto');
+      when(() => prefs.getString(LocalStorageRepository.kUserFontFamily))
+          .thenReturn('Roboto');
 
       expect(repository.getFontFamily(), equals('Roboto'));
     });

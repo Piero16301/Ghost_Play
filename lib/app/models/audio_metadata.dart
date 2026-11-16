@@ -5,7 +5,7 @@ import 'package:equatable/equatable.dart';
 /// {@endtemplate}
 class AudioMetadata extends Equatable {
   // {@macro audio_metadata}
-  const AudioMetadata({
+  const new({
     required this.uri,
     required this.name,
     required this.date,
@@ -14,7 +14,7 @@ class AudioMetadata extends Equatable {
   });
 
   /// Creates an instance of [AudioMetadata] from a [Map]
-  factory AudioMetadata.fromMap(Map<String, dynamic> map) {
+  factory fromMap(Map<String, dynamic> map) {
     return AudioMetadata(
       uri: map['uri'] as String? ?? '',
       name: map['name'] as String? ?? '',

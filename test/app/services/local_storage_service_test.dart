@@ -25,9 +25,8 @@ void main() {
 
     test('saveLanguage delegates to repository', () {
       const locale = Locale('es');
-      when(
-        () => repository.saveLanguage(language: any(named: 'language')),
-      ).thenReturn(null);
+      when(() => repository.saveLanguage(language: any(named: 'language')))
+          .thenReturn(null);
       service.saveLanguage(language: locale);
       verify(() => repository.saveLanguage(language: locale)).called(1);
     });
@@ -41,9 +40,8 @@ void main() {
 
     test('saveTheme delegates to repository', () {
       const theme = ThemeMode.dark;
-      when(
-        () => repository.saveTheme(theme: any(named: 'theme')),
-      ).thenReturn(null);
+      when(() => repository.saveTheme(theme: any(named: 'theme')))
+          .thenReturn(null);
       service.saveTheme(theme: theme);
       verify(() => repository.saveTheme(theme: theme)).called(1);
     });
@@ -57,9 +55,8 @@ void main() {
 
     test('saveBaseColor delegates to repository', () {
       const color = Colors.red;
-      when(
-        () => repository.saveBaseColor(baseColor: any(named: 'baseColor')),
-      ).thenReturn(null);
+      when(() => repository.saveBaseColor(baseColor: any(named: 'baseColor')))
+          .thenReturn(null);
       service.saveBaseColor(baseColor: color);
       verify(() => repository.saveBaseColor(baseColor: color)).called(1);
     });

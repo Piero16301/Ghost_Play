@@ -9,7 +9,7 @@ import 'package:hugeicons/hugeicons.dart';
 import 'package:material_ui/material_ui.dart';
 
 class StatesHomeView extends StatelessWidget {
-  const StatesHomeView({super.key});
+  const new({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -50,9 +50,10 @@ class StatesHomeView extends StatelessWidget {
                   l10n.welcomeTitle(AppVariables.appName),
                   style: Theme.of(context).textTheme.titleLarge?.copyWith(
                     fontVariations: [
-                      ...(Theme.of(
-                                context,
-                              ).textTheme.titleLarge?.fontVariations ??
+                      ...(Theme.of(context)
+                                  .textTheme
+                                  .titleLarge
+                                  ?.fontVariations ??
                               const <FontVariation>[])
                           .where((v) => v.axis != 'wght'),
                       const FontVariation('wght', 700),
@@ -79,90 +80,123 @@ class StatesHomeView extends StatelessWidget {
           );
         }
 
-        if (state.states.isEmpty) {
-          return Center(
-            child: Text(l10n.noStatesFound, textAlign: TextAlign.center),
-          );
-        }
-
         return RefreshIndicator(
           onRefresh: context.read<HomeCubit>().loadStates,
-          child: GridView.builder(
-            physics: const BouncingScrollPhysics(),
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              childAspectRatio: 3 / 4,
-              mainAxisSpacing: 16,
-              crossAxisSpacing: 16,
-            ),
-            itemCount: state.states.length,
-            itemBuilder: (context, index) {
-              final item = state.states[index];
-              return InkWell(
-                onTap: () {
-                  getIt<AnalyticsService>().logEvent(
-                    name: 'preview_state_action',
-                    parameters: {'uri': item.uri},
-                  );
-
-                  showDialog<void>(
-                    context: context,
-                    builder: (context) => MultimediaPreviewDialog(
-                      item: item,
-                      defaultAspectRatio: 3 / 4,
+          child: state.states.isEmpty
+              ? LayoutBuilder(
+                  builder: (context, constraints) => SingleChildScrollView(
+                    physics: const AlwaysScrollableScrollPhysics(
+                      parent: BouncingScrollPhysics(),
                     ),
-                  );
-                },
-                borderRadius: const BorderRadius.all(Radius.circular(24)),
-                child: ClipRRect(
-                  borderRadius: const BorderRadius.all(Radius.circular(24)),
-                  child: Stack(
-                    fit: StackFit.expand,
-                    children: [
-                      FutureBuilder<Uint8List?>(
-                        future: getIt<StorageService>().getThumbnailBytes(
-                          uri: item.uri,
-                          isVideo: item.isVideo,
-                        ),
-                        builder: (context, snapshot) {
-                          if (snapshot.connectionState ==
-                              ConnectionState.waiting) {
-                            return const Center(
-                              child: ExpressiveCircularProgressIndicator(
-                                size: 32,
-                                strokeWidth: 4,
-                              ),
-                            );
-                          }
-                          if (snapshot.hasData && snapshot.data != null) {
-                            return Image.memory(
-                              snapshot.data!,
-                              fit: BoxFit.cover,
-                            );
-                          }
-                          return const Center(
-                            child: HugeIcon(
-                              icon: HugeIcons.strokeRoundedImageDelete01,
-                              strokeWidth: 2,
-                            ),
-                          );
-                        },
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(
+                        minHeight: constraints.maxHeight,
                       ),
-                      if (item.isVideo)
-                        const Center(
-                          child: HugeIcon(
-                            icon: HugeIcons.strokeRoundedPlayCircle,
-                            strokeWidth: 2,
-                            size: 80,
-                            color: Colors.white,
-                          ),
+                      child: Center(
+                        child: Text(
+                          l10n.noStatesFound,
+                          textAlign: TextAlign.center,
                         ),
-                    ],
+                      ),
+                    ),
                   ),
+                )
+              : GridView.builder(
+                  physics: const AlwaysScrollableScrollPhysics(
+                    parent: BouncingScrollPhysics(),
+                  ),
+                  scrollCacheExtent: const ScrollCacheExtent.pixels(500),
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    childAspectRatio: 3 / 4,
+                    mainAxisSpacing: 16,
+                    crossAxisSpacing: 16,
+                  ),
+                  itemCount: state.states.length,
+                  itemBuilder: (context, index) {
+                    final item = state.states[index];
+                    return InkWell(
+                      onTap: () {
+                        getIt<AnalyticsService>().logEvent(
+                          name: 'preview_state_action',
+                          parameters: {'uri': item.uri},
+                        );
+
+                        showDialog<void>(
+                          context: context,
+                          builder: (context) => MultimediaPreviewDialog(
+                            item: item,
+                            defaultAspectRatio: 3 / 4,
+                          ),
+                        );
+                      },
+                      borderRadius: const BorderRadius.all(Radius.circular(24)),
+                      child: ClipRRect(
+                        borderRadius: const BorderRadius.all(
+                          Radius.circular(24),
+                        ),
+                        child: Stack(
+                          fit: StackFit.expand,
+                          children: [
+                            if (getIt<StorageService>().getCachedThumbnail(
+                                  item.uri,
+                                )
+                                case final cachedBytes?)
+                              Image.memory(
+                                cachedBytes,
+                                fit: BoxFit.cover,
+                                gaplessPlayback: true,
+                              )
+                            else
+                              FutureBuilder<Uint8List?>(
+                                future: getIt<StorageService>()
+                                    .getThumbnailBytes(
+                                      uri: item.uri,
+                                      isVideo: item.isVideo,
+                                    ),
+                                builder: (context, snapshot) {
+                                  if (snapshot.connectionState ==
+                                      ConnectionState.waiting) {
+                                    return const Center(
+                                      child:
+                                          ExpressiveCircularProgressIndicator(
+                                            size: 32,
+                                            strokeWidth: 4,
+                                          ),
+                                    );
+                                  }
+                                  if (snapshot.hasData &&
+                                      snapshot.data != null) {
+                                    return Image.memory(
+                                      snapshot.data!,
+                                      fit: BoxFit.cover,
+                                      gaplessPlayback: true,
+                                    );
+                                  }
+                                  return const Center(
+                                    child: HugeIcon(
+                                      icon:
+                                          HugeIcons.strokeRoundedImageDelete01,
+                                      strokeWidth: 2,
+                                    ),
+                                  );
+                                },
+                              ),
+                            if (item.isVideo)
+                              const Center(
+                                child: HugeIcon(
+                                  icon: HugeIcons.strokeRoundedPlayCircle,
+                                  strokeWidth: 2,
+                                  size: 80,
+                                  color: Colors.white,
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
                 ),
-              );
-            },
-          ),
         );
       },
     );

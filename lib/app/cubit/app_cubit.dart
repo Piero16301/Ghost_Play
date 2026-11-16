@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:bloc/bloc.dart';
 import 'package:equatable/equatable.dart';
 import 'package:expressive_kit/expressive_kit.dart';
@@ -7,60 +9,56 @@ import 'package:material_ui/material_ui.dart';
 part 'app_state.dart';
 
 class AppCubit extends Cubit<AppState> {
-  AppCubit() : super(const AppState());
+  new() : super(const AppState());
 
   final LocalStorageService _localStorage = getIt<LocalStorageService>();
   final CrashService _crashService = getIt<CrashService>();
   final AnalyticsService _analyticsService = getIt<AnalyticsService>();
   final PerformanceService _performanceService = getIt<PerformanceService>();
 
-  void initialize() {
+  void initialLoad() {
     final trace = _performanceService.startTrace('app_cubit_initialize');
     try {
-      var language = _localStorage.getLanguage();
+      // Setting the language to the device language if it's not set
+      final language = _localStorage.getLanguage();
       if (language == null) {
-        language = ExpressiveLanguages.defaultLocale;
-        _localStorage.saveLanguage(language: language);
+        final deviceLocale = Platform.localeName.split('_').first;
+        final deviceLanguage = ExpressiveLanguages.fromLanguageCode(
+          deviceLocale,
+        );
+        _localStorage.saveLanguage(language: deviceLanguage);
       }
 
-      var theme = _localStorage.getTheme();
+      // Setting the theme to the device theme if it's not set
+      final theme = _localStorage.getTheme();
       if (theme == null) {
-        theme = ExpressiveTheme.defaultTheme;
-        _localStorage.saveTheme(theme: theme);
+        _localStorage.saveTheme(theme: ExpressiveTheme.defaultTheme);
       }
 
-      var baseColor = _localStorage.getBaseColor();
+      // Setting the base color to default color if it's not set
+      final baseColor = _localStorage.getBaseColor();
       if (baseColor == null) {
-        baseColor = ExpressiveColors.defaultColor;
-        _localStorage.saveBaseColor(baseColor: baseColor);
+        _localStorage.saveBaseColor(baseColor: ExpressiveColors.defaultColor);
       }
 
+      // Setting the font family to default font if it's not set
       var fontFamily = _localStorage.getFontFamily();
       final isFontSupported =
           fontFamily != null &&
-          (ExpressiveFonts.availableFonts.containsValue(fontFamily) ||
-              ExpressiveFonts.availableFonts.containsKey(fontFamily));
+          ExpressiveFonts.availableFonts.containsValue(fontFamily);
 
       if (!isFontSupported) {
         const defaultFont = ExpressiveFonts.defaultFont;
         _localStorage.saveFontFamily(fontFamily: defaultFont);
         fontFamily = defaultFont;
-      } else if (ExpressiveFonts.availableFonts.containsKey(fontFamily)) {
-        fontFamily = ExpressiveFonts.availableFonts[fontFamily]!;
       }
-
-      // Update CrashService with finalized values
-      _crashService
-        ..setCustomKey('language', language.languageCode)
-        ..setCustomKey('theme', theme.name)
-        ..setCustomKey('fontFamily', fontFamily);
 
       // Emit consolidated state
       emit(
         state.copyWith(
-          language: language,
-          theme: theme,
-          baseColor: baseColor,
+          language: _localStorage.getLanguage(),
+          theme: _localStorage.getTheme(),
+          baseColor: _localStorage.getBaseColor(),
           fontFamily: fontFamily,
         ),
       );

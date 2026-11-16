@@ -37,9 +37,8 @@ void main() {
     when(
       () => localStorageService.saveLanguage(language: any(named: 'language')),
     ).thenReturn(null);
-    when(
-      () => localStorageService.saveTheme(theme: any(named: 'theme')),
-    ).thenReturn(null);
+    when(() => localStorageService.saveTheme(theme: any(named: 'theme')))
+        .thenReturn(null);
     when(
       () =>
           localStorageService.saveBaseColor(baseColor: any(named: 'baseColor')),
@@ -57,9 +56,8 @@ void main() {
         parameters: any(named: 'parameters'),
       ),
     ).thenAnswer((_) async {});
-    when(
-      () => storageService.getPersistedPermissionDirectories(),
-    ).thenAnswer((_) async => []);
+    when(() => storageService.getPersistedPermissionDirectories())
+        .thenAnswer((_) async => []);
   });
 
   group('AppPage', () {

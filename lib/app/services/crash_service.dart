@@ -1,7 +1,7 @@
 import 'package:ghost_play/app/app.dart';
 
 class CrashService {
-  CrashService({required this._crashRepository});
+  new({required this._crashRepository});
 
   final CrashRepository _crashRepository;
 

@@ -10,7 +10,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:video_player/video_player.dart';
 
 class VideoNotePreviewDialog extends StatefulWidget {
-  const VideoNotePreviewDialog({required this.item, super.key});
+  const new({required this.item, super.key});
 
   final MultimediaMetadata item;
 
@@ -95,9 +95,9 @@ class _VideoNotePreviewDialogState extends State<VideoNotePreviewDialog> {
       getIt<CrashService>().log(
         'Requesting gallery access for: ${widget.item.uri}',
       );
-      final hasAccess = await Gal.hasAccess();
-      if (!hasAccess) {
-        final granted = await Gal.requestAccess();
+      final hasPermission = await Gal.hasPermission();
+      if (!hasPermission) {
+        final granted = await Gal.requestPermission();
         if (!granted) {
           if (mounted) {
             AppFunctions.showSnackBar(
@@ -396,7 +396,7 @@ class _VideoNotePreviewDialogState extends State<VideoNotePreviewDialog> {
 }
 
 class _CircularVideoPlayer extends StatefulWidget {
-  const _CircularVideoPlayer({required this.controller, required this.size});
+  const new({required this.controller, required this.size});
 
   final VideoPlayerController controller;
   final double size;
@@ -589,7 +589,7 @@ class _CircularVideoPlayerState extends State<_CircularVideoPlayer> {
 }
 
 class _CircularTimePainter extends CustomPainter {
-  _CircularTimePainter({
+  new({
     required this.progress,
     required this.strokeWidth,
     required this.trackColor,

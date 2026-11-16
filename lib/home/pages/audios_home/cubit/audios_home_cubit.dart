@@ -8,7 +8,7 @@ import 'package:just_audio/just_audio.dart' as ja;
 part 'audios_home_state.dart';
 
 class AudiosHomeCubit extends Cubit<AudiosHomeState> {
-  AudiosHomeCubit({ja.AudioPlayer? audioPlayer})
+  new({ja.AudioPlayer? audioPlayer})
     : _audioPlayer = audioPlayer ?? ja.AudioPlayer(),
       super(const AudiosHomeState()) {
     _initSubscriptions();

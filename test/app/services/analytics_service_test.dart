@@ -40,9 +40,8 @@ void main() {
 
       service.setCurrentScreen(screenName: 'test_screen');
 
-      verify(
-        () => repository.setCurrentScreen(screenName: 'test_screen'),
-      ).called(1);
+      verify(() => repository.setCurrentScreen(screenName: 'test_screen'))
+          .called(1);
     });
   });
 }

@@ -32,7 +32,7 @@ enum AppRoute {
   home('/', 'home'),
   settings('/settings', 'settings');
 
-  const AppRoute(this.path, this.name);
+  new(this.path, this.name);
   final String path;
   final String name;
 }

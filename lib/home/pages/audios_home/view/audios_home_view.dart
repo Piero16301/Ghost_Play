@@ -9,7 +9,7 @@ import 'package:hugeicons/hugeicons.dart';
 import 'package:material_ui/material_ui.dart';
 
 class AudiosHomeView extends StatelessWidget {
-  const AudiosHomeView({super.key});
+  const new({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -50,9 +50,10 @@ class AudiosHomeView extends StatelessWidget {
                   l10n.welcomeTitle(AppVariables.appName),
                   style: Theme.of(context).textTheme.titleLarge?.copyWith(
                     fontVariations: [
-                      ...(Theme.of(
-                                context,
-                              ).textTheme.titleLarge?.fontVariations ??
+                      ...(Theme.of(context)
+                                  .textTheme
+                                  .titleLarge
+                                  ?.fontVariations ??
                               const <FontVariation>[])
                           .where((v) => v.axis != 'wght'),
                       const FontVariation('wght', 700),
@@ -76,12 +77,6 @@ class AudiosHomeView extends StatelessWidget {
                 ),
               ],
             ),
-          );
-        }
-
-        if (state.audios.isEmpty) {
-          return Center(
-            child: Text(l10n.noAudiosFound, textAlign: TextAlign.center),
           );
         }
 
@@ -115,9 +110,9 @@ class AudiosHomeView extends StatelessWidget {
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(100),
                         ),
-                        backgroundColor: Theme.of(
-                          context,
-                        ).colorScheme.secondaryContainer,
+                        backgroundColor: Theme.of(context)
+                            .colorScheme
+                            .secondaryContainer,
                         side: BorderSide.none,
                         label: Row(
                           spacing: 4,
@@ -125,18 +120,18 @@ class AudiosHomeView extends StatelessWidget {
                             HugeIcon(
                               icon: HugeIcons.strokeRoundedCalendar02,
                               size: 18,
-                              color: Theme.of(
-                                context,
-                              ).colorScheme.onSecondaryContainer,
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .onSecondaryContainer,
                             ),
                             Text(
                               l10n.weeksFilter(state.audioWeeksFilter),
                               style: Theme.of(context).textTheme.labelMedium
                                   ?.copyWith(
                                     fontWeight: FontWeight.w600,
-                                    color: Theme.of(
-                                      context,
-                                    ).colorScheme.onSecondaryContainer,
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .onSecondaryContainer,
                                   ),
                             ),
                           ],
@@ -148,42 +143,72 @@ class AudiosHomeView extends StatelessWidget {
                 Expanded(
                   child: RefreshIndicator(
                     onRefresh: context.read<HomeCubit>().loadAudios,
-                    child: ListView.builder(
-                      physics: const BouncingScrollPhysics(),
-                      itemCount: state.audios.length,
-                      itemBuilder: (context, index) {
-                        final audio = state.audios[index];
-                        return Padding(
-                          padding: const EdgeInsets.symmetric(vertical: 2),
-                          child: ExpressiveListTile(
-                            leading: ExpressiveBadge(
-                              icon: HugeIcon(
-                                icon: HugeIcons.strokeRoundedAudioWave01,
-                                strokeWidth: 2,
-                                color: Theme.of(context).colorScheme.primary,
-                              ),
+                    child: state.audios.isEmpty
+                        ? LayoutBuilder(
+                            builder: (context, constraints) =>
+                                SingleChildScrollView(
+                                  physics: const AlwaysScrollableScrollPhysics(
+                                    parent: BouncingScrollPhysics(),
+                                  ),
+                                  child: ConstrainedBox(
+                                    constraints: BoxConstraints(
+                                      minHeight: constraints.maxHeight,
+                                    ),
+                                    child: Center(
+                                      child: Text(
+                                        l10n.noAudiosFound,
+                                        textAlign: TextAlign.center,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                          )
+                        : ListView.builder(
+                            physics: const AlwaysScrollableScrollPhysics(
+                              parent: BouncingScrollPhysics(),
                             ),
-                            title: Text(
-                              audio.name.split('.').first,
-                              style: Theme.of(context).textTheme.bodyLarge
-                                  ?.copyWith(fontWeight: FontWeight.w600),
-                            ),
-                            subtitle: Text(
-                              AppVariables.formatDateTime.format(audio.date),
-                              style: Theme.of(context).textTheme.bodySmall,
-                            ),
-                            trailing: Text(
-                              audio.formattedDuration,
-                              style: Theme.of(context).textTheme.bodySmall
-                                  ?.copyWith(fontWeight: FontWeight.w600),
-                            ),
-                            onTap: () => context
-                                .read<AudiosHomeCubit>()
-                                .playAudio(audio),
+                            itemCount: state.audios.length,
+                            itemBuilder: (context, index) {
+                              final audio = state.audios[index];
+                              return Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 2,
+                                ),
+                                child: ExpressiveListTile(
+                                  leading: ExpressiveBadge(
+                                    icon: HugeIcon(
+                                      icon: HugeIcons.strokeRoundedAudioWave01,
+                                      strokeWidth: 2,
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .primary,
+                                    ),
+                                  ),
+                                  title: Text(
+                                    audio.name.split('.').first,
+                                    style: Theme.of(context).textTheme.bodyLarge
+                                        ?.copyWith(fontWeight: FontWeight.w600),
+                                  ),
+                                  subtitle: Text(
+                                    AppVariables.formatDateTime.format(
+                                      audio.date,
+                                    ),
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .bodySmall,
+                                  ),
+                                  trailing: Text(
+                                    audio.formattedDuration,
+                                    style: Theme.of(context).textTheme.bodySmall
+                                        ?.copyWith(fontWeight: FontWeight.w600),
+                                  ),
+                                  onTap: () => context
+                                      .read<AudiosHomeCubit>()
+                                      .playAudio(audio),
+                                ),
+                              );
+                            },
                           ),
-                        );
-                      },
-                    ),
                   ),
                 ),
               ],

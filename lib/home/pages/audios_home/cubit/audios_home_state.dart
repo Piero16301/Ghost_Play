@@ -17,7 +17,7 @@ enum AudiosHomeStatus {
 }
 
 class AudiosHomeState extends Equatable {
-  const AudiosHomeState({
+  const new({
     this.status = AudiosHomeStatus.initial,
     this.isVisible = false,
     this.currentAudio,

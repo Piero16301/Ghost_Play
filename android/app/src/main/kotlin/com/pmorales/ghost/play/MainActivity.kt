@@ -1,11 +1,15 @@
 package com.pmorales.ghost.play
 
+import android.content.Context
 import android.media.MediaMetadataRetriever
 import android.net.Uri
 import android.provider.DocumentsContract
 import io.flutter.embedding.android.FlutterActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
+import java.util.concurrent.Callable
+import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.Executors
 
 class MainActivity : FlutterActivity() {
         private val CHANNEL = "ghostplay/storage"
@@ -63,12 +67,6 @@ class MainActivity : FlutterActivity() {
                                                                                 .getTreeDocumentId(
                                                                                         rootUri
                                                                                 )
-                                                                val rootChildrenUri =
-                                                                        DocumentsContract
-                                                                                .buildChildDocumentsUriUsingTree(
-                                                                                        rootUri,
-                                                                                        rootDocId
-                                                                                )
 
                                                                 val projection =
                                                                         arrayOf(
@@ -89,60 +87,24 @@ class MainActivity : FlutterActivity() {
                                                                                         .COLUMN_SIZE
                                                                         )
 
-                                                                var voiceNotesDocId = rootDocId
-                                                                applicationContext.contentResolver
-                                                                        .query(
-                                                                                rootChildrenUri,
-                                                                                projection,
-                                                                                null,
-                                                                                null,
-                                                                                null
+                                                                val voiceNotesDocId =
+                                                                        findWhatsAppSubfolderDocId(
+                                                                                rootUri,
+                                                                                rootDocId,
+                                                                                "WhatsApp Voice Notes"
                                                                         )
-                                                                        ?.use { cursor ->
-                                                                                val idIdx =
-                                                                                        cursor.getColumnIndexOrThrow(
-                                                                                                DocumentsContract
-                                                                                                        .Document
-                                                                                                        .COLUMN_DOCUMENT_ID
-                                                                                        )
-                                                                                val nameIdx =
-                                                                                        cursor.getColumnIndexOrThrow(
-                                                                                                DocumentsContract
-                                                                                                        .Document
-                                                                                                        .COLUMN_DISPLAY_NAME
-                                                                                        )
-                                                                                val mimeIdx =
-                                                                                        cursor.getColumnIndexOrThrow(
-                                                                                                DocumentsContract
-                                                                                                        .Document
-                                                                                                        .COLUMN_MIME_TYPE
-                                                                                        )
 
-                                                                                while (cursor.moveToNext()) {
-                                                                                        val mime =
-                                                                                                cursor.getString(
-                                                                                                        mimeIdx
-                                                                                                )
-                                                                                        val name =
-                                                                                                cursor.getString(
-                                                                                                        nameIdx
-                                                                                                )
-                                                                                                        ?: ""
-                                                                                        if (mime ==
-                                                                                                        DocumentsContract
-                                                                                                                .Document
-                                                                                                                .MIME_TYPE_DIR &&
-                                                                                                        name ==
-                                                                                                                "WhatsApp Voice Notes"
-                                                                                        ) {
-                                                                                                voiceNotesDocId =
-                                                                                                        cursor.getString(
-                                                                                                                idIdx
-                                                                                                        )
-                                                                                                break
-                                                                                        }
-                                                                                }
+                                                                if (voiceNotesDocId == null) {
+                                                                        runOnUiThread {
+                                                                                result.success(
+                                                                                        emptyList<
+                                                                                                Map<
+                                                                                                        String,
+                                                                                                        Any>>()
+                                                                                )
                                                                         }
+                                                                        return@Thread
+                                                                }
 
                                                                 val voiceNotesChildrenUri =
                                                                         DocumentsContract
@@ -233,11 +195,22 @@ class MainActivity : FlutterActivity() {
                                                                                 }
                                                                         }
 
-                                                                weekFolders.sortByDescending {
-                                                                        it.second
-                                                                }
+                                                                val numericWeekFolders =
+                                                                        weekFolders.filter {
+                                                                                it.second.isNotEmpty() &&
+                                                                                        it.second.all { ch ->
+                                                                                                ch.isDigit()
+                                                                                        }
+                                                                        }
+                                                                val sortedWeekFolders =
+                                                                        (numericWeekFolders.ifEmpty {
+                                                                                weekFolders
+                                                                        })
+                                                                                .sortedByDescending {
+                                                                                        it.second
+                                                                                }
                                                                 val foldersToScan =
-                                                                        weekFolders.take(
+                                                                        sortedWeekFolders.take(
                                                                                 weeksToScan
                                                                         )
 
@@ -337,33 +310,19 @@ class MainActivity : FlutterActivity() {
                                                                                         it.lastModified
                                                                                 }
 
-                                                                val resultList =
-                                                                        mutableListOf<
-                                                                                Map<String, Any>>()
-                                                                val retriever =
-                                                                        MediaMetadataRetriever()
-
-                                                                for (file in topFiles) {
-                                                                        var durationMs: Long = 0
-                                                                        try {
-                                                                                retriever
-                                                                                        .setDataSource(
-                                                                                                applicationContext,
-                                                                                                file.uri
+                                                                val durations =
+                                                                        resolveDurationsParallel(
+                                                                                topFiles.map {
+                                                                                        Triple(
+                                                                                                it.uri,
+                                                                                                it.lastModified,
+                                                                                                it.size
                                                                                         )
-                                                                                val durationStr =
-                                                                                        retriever
-                                                                                                .extractMetadata(
-                                                                                                        MediaMetadataRetriever
-                                                                                                                .METADATA_KEY_DURATION
-                                                                                                )
-                                                                                durationMs =
-                                                                                        durationStr
-                                                                                                ?.toLongOrNull()
-                                                                                                ?: 0L
-                                                                        } catch (e: Exception) {}
+                                                                                }
+                                                                        )
 
-                                                                        val fileData =
+                                                                val resultList =
+                                                                        topFiles.map { file ->
                                                                                 mapOf(
                                                                                         "uri" to
                                                                                                 file.uri
@@ -375,11 +334,12 @@ class MainActivity : FlutterActivity() {
                                                                                         "size" to
                                                                                                 file.size,
                                                                                         "duration" to
-                                                                                                durationMs
+                                                                                                (durations[
+                                                                                                        file.uri
+                                                                                                                .toString()]
+                                                                                                        ?: 0L)
                                                                                 )
-                                                                        resultList.add(fileData)
-                                                                }
-                                                                retriever.release()
+                                                                        }
 
                                                                 runOnUiThread {
                                                                         result.success(resultList)
@@ -441,12 +401,6 @@ class MainActivity : FlutterActivity() {
                                                                                 .getTreeDocumentId(
                                                                                         rootUri
                                                                                 )
-                                                                val rootChildrenUri =
-                                                                        DocumentsContract
-                                                                                .buildChildDocumentsUriUsingTree(
-                                                                                        rootUri,
-                                                                                        rootDocId
-                                                                                )
 
                                                                 val projection =
                                                                         arrayOf(
@@ -467,63 +421,12 @@ class MainActivity : FlutterActivity() {
                                                                                         .COLUMN_SIZE
                                                                         )
 
-                                                                var statusesDocId: String? = null
-
-                                                                applicationContext.contentResolver
-                                                                        .query(
-                                                                                rootChildrenUri,
-                                                                                projection,
-                                                                                null,
-                                                                                null,
-                                                                                null
+                                                                val statusesDocId =
+                                                                        findWhatsAppSubfolderDocId(
+                                                                                rootUri,
+                                                                                rootDocId,
+                                                                                ".Statuses"
                                                                         )
-                                                                        ?.use { cursor ->
-                                                                                val idIdx =
-                                                                                        cursor.getColumnIndexOrThrow(
-                                                                                                DocumentsContract
-                                                                                                        .Document
-                                                                                                        .COLUMN_DOCUMENT_ID
-                                                                                        )
-                                                                                val nameIdx =
-                                                                                        cursor.getColumnIndexOrThrow(
-                                                                                                DocumentsContract
-                                                                                                        .Document
-                                                                                                        .COLUMN_DISPLAY_NAME
-                                                                                        )
-                                                                                val mimeIdx =
-                                                                                        cursor.getColumnIndexOrThrow(
-                                                                                                DocumentsContract
-                                                                                                        .Document
-                                                                                                        .COLUMN_MIME_TYPE
-                                                                                        )
-
-                                                                                while (cursor.moveToNext()) {
-                                                                                        val mime =
-                                                                                                cursor.getString(
-                                                                                                        mimeIdx
-                                                                                                )
-                                                                                        if (mime ==
-                                                                                                        DocumentsContract
-                                                                                                                .Document
-                                                                                                                .MIME_TYPE_DIR
-                                                                                        ) {
-                                                                                                val name =
-                                                                                                        cursor.getString(
-                                                                                                                nameIdx
-                                                                                                        )
-                                                                                                                ?: ""
-                                                                                                if (name ==
-                                                                                                                ".Statuses"
-                                                                                                ) {
-                                                                                                        statusesDocId =
-                                                                                                                cursor.getString(
-                                                                                                                        idIdx
-                                                                                                                )
-                                                                                                        break
-                                                                                                }
-                                                                                        }
-                                                                                }
-                                                                        }
 
                                                                 if (statusesDocId == null) {
                                                                         runOnUiThread {
@@ -957,12 +860,6 @@ class MainActivity : FlutterActivity() {
                                                                                 .getTreeDocumentId(
                                                                                         rootUri
                                                                                 )
-                                                                val rootChildrenUri =
-                                                                        DocumentsContract
-                                                                                .buildChildDocumentsUriUsingTree(
-                                                                                        rootUri,
-                                                                                        rootDocId
-                                                                                )
 
                                                                 val projection =
                                                                         arrayOf(
@@ -985,60 +882,24 @@ class MainActivity : FlutterActivity() {
 
                                                                 // Navigate to "WhatsApp Video
                                                                 // Notes" folder
-                                                                var videoNotesDocId = rootDocId
-                                                                applicationContext.contentResolver
-                                                                        .query(
-                                                                                rootChildrenUri,
-                                                                                projection,
-                                                                                null,
-                                                                                null,
-                                                                                null
+                                                                val videoNotesDocId =
+                                                                        findWhatsAppSubfolderDocId(
+                                                                                rootUri,
+                                                                                rootDocId,
+                                                                                "WhatsApp Video Notes"
                                                                         )
-                                                                        ?.use { cursor ->
-                                                                                val idIdx =
-                                                                                        cursor.getColumnIndexOrThrow(
-                                                                                                DocumentsContract
-                                                                                                        .Document
-                                                                                                        .COLUMN_DOCUMENT_ID
-                                                                                        )
-                                                                                val nameIdx =
-                                                                                        cursor.getColumnIndexOrThrow(
-                                                                                                DocumentsContract
-                                                                                                        .Document
-                                                                                                        .COLUMN_DISPLAY_NAME
-                                                                                        )
-                                                                                val mimeIdx =
-                                                                                        cursor.getColumnIndexOrThrow(
-                                                                                                DocumentsContract
-                                                                                                        .Document
-                                                                                                        .COLUMN_MIME_TYPE
-                                                                                        )
 
-                                                                                while (cursor.moveToNext()) {
-                                                                                        val mime =
-                                                                                                cursor.getString(
-                                                                                                        mimeIdx
-                                                                                                )
-                                                                                        val name =
-                                                                                                cursor.getString(
-                                                                                                        nameIdx
-                                                                                                )
-                                                                                                        ?: ""
-                                                                                        if (mime ==
-                                                                                                        DocumentsContract
-                                                                                                                .Document
-                                                                                                                .MIME_TYPE_DIR &&
-                                                                                                        name ==
-                                                                                                                "WhatsApp Video Notes"
-                                                                                        ) {
-                                                                                                videoNotesDocId =
-                                                                                                        cursor.getString(
-                                                                                                                idIdx
-                                                                                                        )
-                                                                                                break
-                                                                                        }
-                                                                                }
+                                                                if (videoNotesDocId == null) {
+                                                                        runOnUiThread {
+                                                                                result.success(
+                                                                                        emptyList<
+                                                                                                Map<
+                                                                                                        String,
+                                                                                                        Any>>()
+                                                                                )
                                                                         }
+                                                                        return@Thread
+                                                                }
 
                                                                 val videoNotesChildrenUri =
                                                                         DocumentsContract
@@ -1131,11 +992,22 @@ class MainActivity : FlutterActivity() {
                                                                                 }
                                                                         }
 
-                                                                weekFolders.sortByDescending {
-                                                                        it.second
-                                                                }
+                                                                val numericWeekFolders =
+                                                                        weekFolders.filter {
+                                                                                it.second.isNotEmpty() &&
+                                                                                        it.second.all { ch ->
+                                                                                                ch.isDigit()
+                                                                                        }
+                                                                        }
+                                                                val sortedWeekFolders =
+                                                                        (numericWeekFolders.ifEmpty {
+                                                                                weekFolders
+                                                                        })
+                                                                                .sortedByDescending {
+                                                                                        it.second
+                                                                                }
                                                                 val foldersToScan =
-                                                                        weekFolders.take(
+                                                                        sortedWeekFolders.take(
                                                                                 weeksToScan
                                                                         )
 
@@ -1237,33 +1109,19 @@ class MainActivity : FlutterActivity() {
                                                                                         it.lastModified
                                                                                 }
 
-                                                                val resultList =
-                                                                        mutableListOf<
-                                                                                Map<String, Any>>()
-                                                                val retriever =
-                                                                        MediaMetadataRetriever()
-
-                                                                for (file in topFiles) {
-                                                                        var durationMs: Long = 0
-                                                                        try {
-                                                                                retriever
-                                                                                        .setDataSource(
-                                                                                                applicationContext,
-                                                                                                file.uri
+                                                                val durations =
+                                                                        resolveDurationsParallel(
+                                                                                topFiles.map {
+                                                                                        Triple(
+                                                                                                it.uri,
+                                                                                                it.lastModified,
+                                                                                                it.size
                                                                                         )
-                                                                                val durationStr =
-                                                                                        retriever
-                                                                                                .extractMetadata(
-                                                                                                        MediaMetadataRetriever
-                                                                                                                .METADATA_KEY_DURATION
-                                                                                                )
-                                                                                durationMs =
-                                                                                        durationStr
-                                                                                                ?.toLongOrNull()
-                                                                                                ?: 0L
-                                                                        } catch (e: Exception) {}
+                                                                                }
+                                                                        )
 
-                                                                        val fileData =
+                                                                val resultList =
+                                                                        topFiles.map { file ->
                                                                                 mapOf(
                                                                                         "uri" to
                                                                                                 file.uri
@@ -1277,11 +1135,12 @@ class MainActivity : FlutterActivity() {
                                                                                         "is_video" to
                                                                                                 true,
                                                                                         "duration" to
-                                                                                                durationMs
+                                                                                                (durations[
+                                                                                                        file.uri
+                                                                                                                .toString()]
+                                                                                                        ?: 0L)
                                                                                 )
-                                                                        resultList.add(fileData)
-                                                                }
-                                                                retriever.release()
+                                                                        }
 
                                                                 runOnUiThread {
                                                                         result.success(resultList)
@@ -1301,5 +1160,154 @@ class MainActivity : FlutterActivity() {
                                         result.notImplemented()
                                 }
                         }
+        }
+
+        private fun findWhatsAppSubfolderDocId(
+                rootUri: Uri,
+                rootDocId: String,
+                targetName: String
+        ): String? {
+                if (rootDocId.endsWith("/$targetName") || rootDocId.endsWith(":$targetName")) {
+                        return rootDocId
+                }
+
+                val intermediateDirs = setOf("Android", "media", "com.whatsapp", "WhatsApp", "Media")
+                val queue = ArrayDeque<Pair<String, Int>>()
+                queue.add(rootDocId to 0)
+                val projection =
+                        arrayOf(
+                                DocumentsContract.Document.COLUMN_DOCUMENT_ID,
+                                DocumentsContract.Document.COLUMN_DISPLAY_NAME,
+                                DocumentsContract.Document.COLUMN_MIME_TYPE
+                        )
+
+                while (queue.isNotEmpty()) {
+                        val (currentDocId, depth) = queue.removeFirst()
+                        val childrenUri =
+                                DocumentsContract.buildChildDocumentsUriUsingTree(
+                                        rootUri,
+                                        currentDocId
+                                )
+
+                        applicationContext.contentResolver
+                                .query(childrenUri, projection, null, null, null)
+                                ?.use { cursor ->
+                                        val idIdx =
+                                                cursor.getColumnIndexOrThrow(
+                                                        DocumentsContract.Document.COLUMN_DOCUMENT_ID
+                                                )
+                                        val nameIdx =
+                                                cursor.getColumnIndexOrThrow(
+                                                        DocumentsContract.Document.COLUMN_DISPLAY_NAME
+                                                )
+                                        val mimeIdx =
+                                                cursor.getColumnIndexOrThrow(
+                                                        DocumentsContract.Document.COLUMN_MIME_TYPE
+                                                )
+
+                                        while (cursor.moveToNext()) {
+                                                val mime = cursor.getString(mimeIdx)
+                                                if (mime == DocumentsContract.Document.MIME_TYPE_DIR) {
+                                                        val name = cursor.getString(nameIdx) ?: ""
+                                                        val docId = cursor.getString(idIdx)
+                                                        if (name == targetName) {
+                                                                return docId
+                                                        }
+                                                        if (depth < 5 &&
+                                                                        intermediateDirs.any {
+                                                                                it.equals(
+                                                                                        name,
+                                                                                        ignoreCase = true
+                                                                                )
+                                                                        }
+                                                        ) {
+                                                                queue.add(docId to depth + 1)
+                                                        }
+                                                }
+                                        }
+                                }
+                }
+                return null
+        }
+
+        private fun resolveDurationsParallel(
+                items: List<Triple<Uri, Long, Long>>
+        ): Map<String, Long> {
+                if (items.isEmpty()) return emptyMap()
+
+                val prefs =
+                        applicationContext.getSharedPreferences(
+                                "media_duration_cache",
+                                Context.MODE_PRIVATE
+                        )
+                val results = ConcurrentHashMap<String, Long>(items.size)
+                val uncached = mutableListOf<Triple<Uri, Long, Long>>()
+
+                for (item in items) {
+                        val key = "${item.first}|${item.second}|${item.third}"
+                        val cached = prefs.getLong(key, -1L)
+                        if (cached >= 0L) {
+                                results[item.first.toString()] = cached
+                        } else {
+                                uncached.add(item)
+                        }
+                }
+
+                if (uncached.isEmpty()) return results
+
+                val workerCount = minOf(6, uncached.size)
+                val chunkSize = (uncached.size + workerCount - 1) / workerCount
+                val chunks = uncached.chunked(chunkSize)
+                val executor = Executors.newFixedThreadPool(workerCount)
+                val newEntries = ConcurrentHashMap<String, Long>(uncached.size)
+
+                try {
+                        val tasks =
+                                chunks.map { chunk ->
+                                        Callable {
+                                                val retriever = MediaMetadataRetriever()
+                                                try {
+                                                        for ((uri, lastModified, size) in chunk) {
+                                                                var durationMs = 0L
+                                                                try {
+                                                                        retriever.setDataSource(
+                                                                                applicationContext,
+                                                                                uri
+                                                                        )
+                                                                        val durationStr =
+                                                                                retriever.extractMetadata(
+                                                                                        MediaMetadataRetriever
+                                                                                                .METADATA_KEY_DURATION
+                                                                                )
+                                                                        durationMs =
+                                                                                durationStr
+                                                                                        ?.toLongOrNull()
+                                                                                        ?: 0L
+                                                                } catch (_: Exception) {}
+                                                                results[uri.toString()] = durationMs
+                                                                newEntries["$uri|$lastModified|$size"] =
+                                                                        durationMs
+                                                        }
+                                                } finally {
+                                                        try {
+                                                                retriever.release()
+                                                        } catch (_: Exception) {}
+                                                }
+                                        }
+                                }
+                        executor.invokeAll(tasks)
+                } finally {
+                        executor.shutdown()
+                }
+
+                if (newEntries.isNotEmpty()) {
+                        val editor = prefs.edit()
+                        for ((k, v) in newEntries) {
+                                editor.putLong(k, v)
+                        }
+                        editor.apply()
+                }
+
+                return results
         }
 }

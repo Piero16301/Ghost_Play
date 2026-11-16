@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:ghost_play/app/app.dart';
+
 import 'mocks.dart';
 
 Future<void> setupServiceLocatorMocks() async {

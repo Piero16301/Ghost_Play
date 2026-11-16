@@ -49,9 +49,8 @@ void main() {
     });
 
     test('setCustomKey calls _crashlytics.setCustomKey', () async {
-      when(
-        () => crashlytics.setCustomKey(any<String>(), any<Object>()),
-      ).thenAnswer((_) async {});
+      when(() => crashlytics.setCustomKey(any<String>(), any<Object>()))
+          .thenAnswer((_) async {});
 
       repository.setCustomKey('key', 'value');
 

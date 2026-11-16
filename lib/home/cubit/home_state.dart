@@ -13,7 +13,7 @@ enum HomeStatus {
 }
 
 class HomeState extends Equatable {
-  const HomeState({
+  const new({
     this.selectedIndex = 0,
     this.audiosStatus = HomeStatus.initial,
     this.statesStatus = HomeStatus.initial,

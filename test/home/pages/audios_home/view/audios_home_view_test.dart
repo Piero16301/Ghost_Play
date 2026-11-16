@@ -27,18 +27,16 @@ void main() {
     when(() => homeCubit.requestPermission()).thenAnswer((_) async {});
     when(() => homeCubit.setAudiosWeeks(any<int>())).thenAnswer((_) async {});
     when(() => homeCubit.setVideosWeeks(any<int>())).thenAnswer((_) async {});
-    when(
-      () => audiosHomeCubit.playAudio(any<AudioMetadata>()),
-    ).thenAnswer((_) async {});
+    when(() => audiosHomeCubit.playAudio(any<AudioMetadata>()))
+        .thenAnswer((_) async {});
   });
 
   group('AudiosHomeView', () {
     testWidgets('renders CircularLoadingAnimation when loading', (
       tester,
     ) async {
-      when(
-        () => homeCubit.state,
-      ).thenReturn(const HomeState(audiosStatus: HomeStatus.loading));
+      when(() => homeCubit.state)
+          .thenReturn(const HomeState(audiosStatus: HomeStatus.loading));
       await tester.pumpApp(
         const AudiosHomeView(),
         homeCubit: homeCubit,
@@ -51,9 +49,8 @@ void main() {
     testWidgets('renders failure message when status is failure', (
       tester,
     ) async {
-      when(
-        () => homeCubit.state,
-      ).thenReturn(const HomeState(audiosStatus: HomeStatus.failure));
+      when(() => homeCubit.state)
+          .thenReturn(const HomeState(audiosStatus: HomeStatus.failure));
       await tester.pumpApp(
         const AudiosHomeView(),
         homeCubit: homeCubit,

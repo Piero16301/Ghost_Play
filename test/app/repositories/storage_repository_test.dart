@@ -143,14 +143,15 @@ void main() {
       repository = MockStorageRepository();
     });
 
-    test('getPersistedPermissionDirectories returns empty list', () async {
+    test('getPersistedPermissionDirectories returns mock directory', () async {
       final result = await repository.getPersistedPermissionDirectories();
-      expect(result, isEmpty);
+      expect(result, ['mock://whatsapp/voice_notes']);
     });
 
-    test('getRecentAudios returns empty list', () async {
+    test('getRecentAudios returns mock audios within weeks filter', () async {
       final result = await repository.getRecentAudios(uri: 'uri1', weeks: 2);
-      expect(result, isEmpty);
+      expect(result, isNotEmpty);
+      expect(result!.length, 6);
     });
 
     test('getDirectoryPermission returns true', () async {
@@ -158,12 +159,13 @@ void main() {
       expect(result, isTrue);
     });
 
-    test('getRecentStates returns empty list', () async {
+    test('getRecentStates returns mock states', () async {
       final result = await repository.getRecentStates(uri: 'uri1');
-      expect(result, isEmpty);
+      expect(result, isNotEmpty);
+      expect(result!.length, 4);
     });
 
-    test('getThumbnailBytes returns null', () async {
+    test('getThumbnailBytes returns null when asset does not exist', () async {
       final result = await repository.getThumbnailBytes(
         uri: 'uri1',
         isVideo: true,
@@ -171,12 +173,13 @@ void main() {
       expect(result, isNull);
     });
 
-    test('getRecentVideos returns empty list', () async {
+    test('getRecentVideos returns mock videos within weeks filter', () async {
       final result = await repository.getRecentVideos(uri: 'uri1', weeks: 2);
-      expect(result, isEmpty);
+      expect(result, isNotEmpty);
+      expect(result!.length, 2);
     });
 
-    test('cacheFile returns null', () async {
+    test('cacheFile returns null when asset does not exist', () async {
       final result = await repository.cacheFile(
         uri: 'uri1',
         fileName: 'file.mp3',

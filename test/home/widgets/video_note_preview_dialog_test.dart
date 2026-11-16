@@ -99,12 +99,10 @@ void main() {
     when(() => homeCubit.state).thenReturn(const HomeState());
 
     final mockTrace = MockTrace();
-    when(
-      () => getIt<PerformanceService>().startTrace(any<String>()),
-    ).thenReturn(mockTrace);
-    when(
-      () => getIt<PerformanceService>().stopTrace(any()),
-    ).thenAnswer((_) async {});
+    when(() => getIt<PerformanceService>().startTrace(any<String>()))
+        .thenReturn(mockTrace);
+    when(() => getIt<PerformanceService>().stopTrace(any()))
+        .thenAnswer((_) async {});
 
     when(() => getIt<CrashService>().log(any<String>())).thenAnswer((_) {});
     when(
@@ -161,8 +159,8 @@ void main() {
   }
 
   void mockGalChannel({
-    bool hasAccess = true,
-    bool requestAccess = true,
+    bool hasPermission = true,
+    bool requestPermission = true,
     bool throwOnPutVideo = false,
     List<String>? calls,
   }) {
@@ -170,10 +168,10 @@ void main() {
         .setMockMethodCallHandler(const MethodChannel('gal'), (call) async {
           calls?.add(call.method);
           switch (call.method) {
-            case 'hasAccess':
-              return hasAccess;
-            case 'requestAccess':
-              return requestAccess;
+            case 'hasPermission':
+              return hasPermission;
+            case 'requestPermission':
+              return requestPermission;
             case 'putVideo':
               if (throwOnPutVideo) {
                 throw PlatformException(
@@ -523,7 +521,7 @@ void main() {
 }
 
 class _FakeVideoPlayerPlatform extends VideoPlayerPlatform {
-  _FakeVideoPlayerPlatform({required this.duration});
+  new({required this.duration});
 
   final Duration duration;
   final Size videoSize = const Size(720, 720);

@@ -10,7 +10,7 @@ import 'package:hugeicons/hugeicons.dart';
 import 'package:material_ui/material_ui.dart';
 
 class HomeView extends StatefulWidget {
-  const HomeView({super.key});
+  const new({super.key});
 
   @override
   State<HomeView> createState() => _HomeViewState();
@@ -108,7 +108,7 @@ class _HomeViewState extends State<HomeView> {
 }
 
 class _KeepAliveTab extends StatefulWidget {
-  const _KeepAliveTab({required this.child});
+  const new({required this.child});
 
   final Widget child;
 
@@ -129,7 +129,7 @@ class _KeepAliveTabState extends State<_KeepAliveTab>
 }
 
 class BottomNavigationBarHome extends StatelessWidget {
-  const BottomNavigationBarHome({super.key});
+  const new({super.key});
 
   @override
   Widget build(BuildContext context) {

@@ -10,7 +10,7 @@ import 'package:hugeicons/hugeicons.dart';
 import 'package:material_ui/material_ui.dart';
 
 class VideosHomeView extends StatelessWidget {
-  const VideosHomeView({super.key});
+  const new({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -51,9 +51,10 @@ class VideosHomeView extends StatelessWidget {
                   l10n.welcomeTitle(AppVariables.appName),
                   style: Theme.of(context).textTheme.titleLarge?.copyWith(
                     fontVariations: [
-                      ...(Theme.of(
-                                context,
-                              ).textTheme.titleLarge?.fontVariations ??
+                      ...(Theme.of(context)
+                                  .textTheme
+                                  .titleLarge
+                                  ?.fontVariations ??
                               const <FontVariation>[])
                           .where((v) => v.axis != 'wght'),
                       const FontVariation('wght', 700),
@@ -77,12 +78,6 @@ class VideosHomeView extends StatelessWidget {
                 ),
               ],
             ),
-          );
-        }
-
-        if (state.videos.isEmpty) {
-          return Center(
-            child: Text(l10n.noVideosFound, textAlign: TextAlign.center),
           );
         }
 
@@ -113,9 +108,9 @@ class VideosHomeView extends StatelessWidget {
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(100),
                     ),
-                    backgroundColor: Theme.of(
-                      context,
-                    ).colorScheme.secondaryContainer,
+                    backgroundColor: Theme.of(context)
+                        .colorScheme
+                        .secondaryContainer,
                     side: BorderSide.none,
                     label: Row(
                       spacing: 4,
@@ -123,18 +118,18 @@ class VideosHomeView extends StatelessWidget {
                         HugeIcon(
                           icon: HugeIcons.strokeRoundedCalendar02,
                           size: 18,
-                          color: Theme.of(
-                            context,
-                          ).colorScheme.onSecondaryContainer,
+                          color: Theme.of(context)
+                              .colorScheme
+                              .onSecondaryContainer,
                         ),
                         Text(
                           l10n.weeksFilter(state.videoWeeksFilter),
                           style: Theme.of(context).textTheme.labelMedium
                               ?.copyWith(
                                 fontWeight: FontWeight.w600,
-                                color: Theme.of(
-                                  context,
-                                ).colorScheme.onSecondaryContainer,
+                                color: Theme.of(context)
+                                    .colorScheme
+                                    .onSecondaryContainer,
                               ),
                         ),
                       ],
@@ -143,87 +138,7 @@ class VideosHomeView extends StatelessWidget {
                 ),
               ],
             ),
-            Expanded(
-              child: RefreshIndicator(
-                onRefresh: context.read<HomeCubit>().loadVideos,
-                child: GridView.builder(
-                  physics: const BouncingScrollPhysics(),
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
-                    mainAxisSpacing: 16,
-                    crossAxisSpacing: 16,
-                  ),
-                  itemCount: state.videos.length,
-                  itemBuilder: (context, index) {
-                    final item = state.videos[index];
-                    return InkWell(
-                      onTap: () {
-                        getIt<AnalyticsService>().logEvent(
-                          name: 'preview_video_action',
-                          parameters: {'uri': item.uri},
-                        );
-
-                        showDialog<void>(
-                          context: context,
-                          builder: (context) =>
-                              VideoNotePreviewDialog(item: item),
-                        );
-                      },
-                      borderRadius: const BorderRadius.all(
-                        Radius.circular(100),
-                      ),
-                      child: ClipRRect(
-                        borderRadius: const BorderRadius.all(
-                          Radius.circular(100),
-                        ),
-                        child: Stack(
-                          fit: StackFit.expand,
-                          children: [
-                            FutureBuilder<Uint8List?>(
-                              future: getIt<StorageService>().getThumbnailBytes(
-                                uri: item.uri,
-                                isVideo: item.isVideo,
-                              ),
-                              builder: (context, snapshot) {
-                                if (snapshot.connectionState ==
-                                    ConnectionState.waiting) {
-                                  return const Center(
-                                    child: ExpressiveCircularProgressIndicator(
-                                      size: 32,
-                                      strokeWidth: 4,
-                                    ),
-                                  );
-                                }
-                                if (snapshot.hasData && snapshot.data != null) {
-                                  return Image.memory(
-                                    snapshot.data!,
-                                    fit: BoxFit.cover,
-                                  );
-                                }
-                                return const Center(
-                                  child: HugeIcon(
-                                    icon: HugeIcons.strokeRoundedVideoOff,
-                                    strokeWidth: 2,
-                                  ),
-                                );
-                              },
-                            ),
-                            const Center(
-                              child: HugeIcon(
-                                icon: HugeIcons.strokeRoundedPlayCircle,
-                                strokeWidth: 2,
-                                size: 80,
-                                color: Colors.white,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              ),
-            ),
+            ListVideosHome(state: state),
           ],
         );
       },
@@ -294,6 +209,130 @@ class VideosHomeView extends StatelessWidget {
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+class ListVideosHome extends StatelessWidget {
+  const new({super.key, required this.state});
+
+  final HomeState state;
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
+    return Expanded(
+      child: RefreshIndicator(
+        onRefresh: context.read<HomeCubit>().loadVideos,
+        child: state.videos.isEmpty
+            ? LayoutBuilder(
+                builder: (context, constraints) => SingleChildScrollView(
+                  physics: const AlwaysScrollableScrollPhysics(
+                    parent: BouncingScrollPhysics(),
+                  ),
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(
+                      minHeight: constraints.maxHeight,
+                    ),
+                    child: Center(
+                      child: Text(
+                        l10n.noVideosFound,
+                        textAlign: TextAlign.center,
+                      ),
+                    ),
+                  ),
+                ),
+              )
+            : GridView.builder(
+                physics: const AlwaysScrollableScrollPhysics(
+                  parent: BouncingScrollPhysics(),
+                ),
+                scrollCacheExtent: const ScrollCacheExtent.pixels(500),
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  mainAxisSpacing: 16,
+                  crossAxisSpacing: 16,
+                ),
+                itemCount: state.videos.length,
+                itemBuilder: (context, index) {
+                  final item = state.videos[index];
+                  return InkWell(
+                    onTap: () {
+                      getIt<AnalyticsService>().logEvent(
+                        name: 'preview_video_action',
+                        parameters: {'uri': item.uri},
+                      );
+
+                      showDialog<void>(
+                        context: context,
+                        builder: (context) =>
+                            VideoNotePreviewDialog(item: item),
+                      );
+                    },
+                    borderRadius: const BorderRadius.all(Radius.circular(100)),
+                    child: ClipRRect(
+                      borderRadius: const BorderRadius.all(
+                        Radius.circular(100),
+                      ),
+                      child: Stack(
+                        fit: StackFit.expand,
+                        children: [
+                          if (getIt<StorageService>().getCachedThumbnail(
+                                item.uri,
+                              )
+                              case final cachedBytes?)
+                            Image.memory(
+                              cachedBytes,
+                              fit: BoxFit.cover,
+                              gaplessPlayback: true,
+                            )
+                          else
+                            FutureBuilder<Uint8List?>(
+                              future: getIt<StorageService>().getThumbnailBytes(
+                                uri: item.uri,
+                                isVideo: item.isVideo,
+                              ),
+                              builder: (context, snapshot) {
+                                if (snapshot.connectionState ==
+                                    ConnectionState.waiting) {
+                                  return const Center(
+                                    child: ExpressiveCircularProgressIndicator(
+                                      size: 32,
+                                      strokeWidth: 4,
+                                    ),
+                                  );
+                                }
+                                if (snapshot.hasData && snapshot.data != null) {
+                                  return Image.memory(
+                                    snapshot.data!,
+                                    fit: BoxFit.cover,
+                                    gaplessPlayback: true,
+                                  );
+                                }
+                                return const Center(
+                                  child: HugeIcon(
+                                    icon: HugeIcons.strokeRoundedVideoOff,
+                                    strokeWidth: 2,
+                                  ),
+                                );
+                              },
+                            ),
+                          const Center(
+                            child: HugeIcon(
+                              icon: HugeIcons.strokeRoundedPlayCircle,
+                              strokeWidth: 2,
+                              size: 80,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
       ),
     );
   }

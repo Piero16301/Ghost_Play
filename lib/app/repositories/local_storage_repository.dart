@@ -28,7 +28,7 @@ class MockLocalStorageRepository implements LocalStorageRepository {
 
   @override
   Locale? getLanguage() {
-    return const Locale('en', 'US');
+    return ExpressiveLanguages.defaultLocale;
   }
 
   @override
@@ -36,7 +36,7 @@ class MockLocalStorageRepository implements LocalStorageRepository {
 
   @override
   ThemeMode? getTheme() {
-    return ThemeMode.light;
+    return ExpressiveTheme.defaultTheme;
   }
 
   @override
@@ -44,7 +44,7 @@ class MockLocalStorageRepository implements LocalStorageRepository {
 
   @override
   Color? getBaseColor() {
-    return Colors.blue;
+    return ExpressiveColors.defaultColor;
   }
 
   @override
@@ -52,12 +52,12 @@ class MockLocalStorageRepository implements LocalStorageRepository {
 
   @override
   String? getFontFamily() {
-    return 'default';
+    return ExpressiveFonts.defaultFont;
   }
 }
 
 class SharedPrefsLocalStorageRepository implements LocalStorageRepository {
-  SharedPrefsLocalStorageRepository({this._prefs});
+  new({this._prefs});
 
   SharedPreferences? _prefs;
 
