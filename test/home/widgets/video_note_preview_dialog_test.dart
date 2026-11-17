@@ -433,7 +433,9 @@ void main() {
       File(path).deleteSync();
     });
 
-    testWidgets('taps inside video circle to pause and resume', (tester) async {
+    testWidgets('taps inside video circle does not pause or resume', (
+      tester,
+    ) async {
       final fakePlatform = _FakeVideoPlayerPlatform(
         duration: const Duration(seconds: 40),
       );
@@ -455,17 +457,13 @@ void main() {
       );
       final center = tester.getCenter(customPaintFinder.first);
 
+      final initialPauseCalls = fakePlatform.pauseCalls;
+
       // Tap directly in the center of the video
       await tester.tapAt(center);
       await tester.pump(const Duration(milliseconds: 100));
 
-      expect(fakePlatform.pauseCalls, greaterThanOrEqualTo(1));
-
-      // Tap again to resume
-      await tester.tapAt(center);
-      await tester.pump(const Duration(milliseconds: 100));
-
-      expect(fakePlatform.playCalls, greaterThanOrEqualTo(2));
+      expect(fakePlatform.pauseCalls, initialPauseCalls);
 
       await tester.tap(find.text('Cancel'));
       await tester.pumpAndSettle();
