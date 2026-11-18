@@ -63,6 +63,14 @@ void main() {
           fontFamily: ExpressiveFonts.roboto,
         ),
       ],
+      verify: (_) {
+        verify(() => crashService.setCustomKey('language', 'es')).called(1);
+        verify(() => crashService.setCustomKey('theme', 'dark')).called(1);
+        verify(() => crashService.setCustomKey('baseColor', 'RED')).called(1);
+        verify(
+          () => crashService.setCustomKey('fontFamily', ExpressiveFonts.roboto),
+        ).called(1);
+      },
     );
 
     blocTest<AppCubit, AppState>(
@@ -217,6 +225,8 @@ void main() {
           verify(
             () => localStorageService.saveBaseColor(baseColor: Colors.blue),
           ).called(1);
+          verify(() => crashService.setCustomKey('baseColor', 'BLUE'))
+              .called(1);
           verify(
             () => analyticsService.logEvent(
               name: 'change_base_color',

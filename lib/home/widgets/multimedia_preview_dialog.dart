@@ -50,6 +50,10 @@ class _MultimediaPreviewDialogState extends State<MultimediaPreviewDialog> {
       }
 
       _cachedFilePath = path;
+      if (!mounted) {
+        _deleteCachedFile();
+        return;
+      }
 
       if (widget.item.isVideo) {
         _videoPlayerController = VideoPlayerController.file(File(path));
@@ -86,7 +90,19 @@ class _MultimediaPreviewDialogState extends State<MultimediaPreviewDialog> {
   @override
   void dispose() {
     unawaited(_videoPlayerController?.dispose());
+    _deleteCachedFile();
     super.dispose();
+  }
+
+  void _deleteCachedFile() {
+    final path = _cachedFilePath;
+    if (path == null) return;
+    try {
+      final file = File(path);
+      if (file.existsSync()) {
+        file.deleteSync();
+      }
+    } on Object catch (_) {}
   }
 
   Future<void> _saveToGallery(AppLocalizations l10n) async {
@@ -140,10 +156,10 @@ class _MultimediaPreviewDialogState extends State<MultimediaPreviewDialog> {
         );
         Navigator.of(context).pop();
       }
-    } on Exception catch (e) {
+    } on Exception catch (e, stackTrace) {
       getIt<CrashService>().recordError(
         e,
-        StackTrace.current,
+        stackTrace,
         reason: 'Error saving multimedia to gallery',
       );
       if (mounted) {
@@ -293,74 +309,10 @@ class _MultimediaPreviewDialogState extends State<MultimediaPreviewDialog> {
   }
 
   Widget _buildVideoControls() {
-    return ValueListenableBuilder(
-      valueListenable: _videoPlayerController!,
-      builder: (context, value, child) {
-        final position = value.position;
-        final duration = value.duration;
-
-        return Row(
-          children: [
-            IconButton(
-              padding: const EdgeInsets.all(5),
-              icon: HugeIcon(
-                icon: value.isPlaying
-                    ? HugeIcons.strokeRoundedPause
-                    : HugeIcons.strokeRoundedPlay,
-                strokeWidth: 2,
-                color: Theme.of(context).colorScheme.onSurface,
-              ),
-              onPressed: () {
-                if (value.isPlaying) {
-                  unawaited(_videoPlayerController!.pause());
-                } else {
-                  if (value.position >= value.duration) {
-                    unawaited(_videoPlayerController!.seekTo(Duration.zero));
-                  }
-                  unawaited(_videoPlayerController!.play());
-                }
-              },
-            ),
-            Text(
-              _formatDuration(position),
-              style: Theme.of(context).textTheme.bodyMedium,
-            ),
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 8),
-                child: VideoProgressBar(controller: _videoPlayerController!),
-              ),
-            ),
-            Text(
-              _formatDuration(duration),
-              style: Theme.of(context).textTheme.bodyMedium,
-            ),
-            IconButton(
-              padding: const EdgeInsets.all(5),
-              icon: HugeIcon(
-                icon: value.volume == 0
-                    ? HugeIcons.strokeRoundedVolumeMute02
-                    : HugeIcons.strokeRoundedVolumeHigh,
-                strokeWidth: 2,
-                color: Theme.of(context).colorScheme.onSurface,
-              ),
-              onPressed: () =>
-                  _videoPlayerController!.setVolume(value.volume == 0 ? 1 : 0),
-            ),
-          ],
-        );
-      },
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(12, 12, 12, 4),
+      child: VideoControlsBar(controller: _videoPlayerController!),
     );
-  }
-
-  String _formatDuration(Duration duration) {
-    String twoDigits(int n) => n.toString().padLeft(2, '0');
-    final minutes = twoDigits(duration.inMinutes.remainder(60));
-    final seconds = twoDigits(duration.inSeconds.remainder(60));
-    if (duration.inHours > 0) {
-      return '${duration.inHours}:$minutes:$seconds';
-    }
-    return '$minutes:$seconds';
   }
 
   List<Widget>? _buildActions(AppLocalizations l10n) {

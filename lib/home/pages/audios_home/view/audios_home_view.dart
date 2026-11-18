@@ -213,7 +213,7 @@ class AudiosHomeView extends StatelessWidget {
                 ),
               ],
             ),
-            const MiniPlayer(),
+            const _AudioPlayerSheetLauncher(),
           ],
         );
       },
@@ -285,6 +285,95 @@ class AudiosHomeView extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+class _AudioPlayerSheetLauncher extends StatefulWidget {
+  const new();
+
+  @override
+  State<_AudioPlayerSheetLauncher> createState() =>
+      _AudioPlayerSheetLauncherState();
+}
+
+class _AudioPlayerSheetLauncherState extends State<_AudioPlayerSheetLauncher> {
+  bool _isSheetOpen = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final state = context.read<AudiosHomeCubit>().state;
+      if (state.isVisible && state.currentAudio != null) {
+        _openPlayerSheet();
+      }
+    });
+  }
+
+  void _openPlayerSheet() {
+    if (_isSheetOpen || !mounted) return;
+    _isSheetOpen = true;
+    final cubit = context.read<AudiosHomeCubit>();
+
+    unawaited(
+      showModalBottomSheet<void>(
+        context: context,
+        isScrollControlled: true,
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        barrierColor: Colors.black.withValues(alpha: 0.6),
+        builder: (sheetContext) {
+          return BlocProvider.value(
+            value: cubit,
+            child: BlocListener<AudiosHomeCubit, AudiosHomeState>(
+              listenWhen: (previous, current) =>
+                  previous.isVisible != current.isVisible,
+              listener: (listenerContext, state) {
+                if (!state.isVisible &&
+                    Navigator.of(listenerContext).canPop()) {
+                  Navigator.of(listenerContext).pop();
+                }
+              },
+              child: GestureDetector(
+                behavior: HitTestBehavior.translucent,
+                onTap: () => Navigator.of(sheetContext).pop(),
+                child: const SafeArea(
+                  top: false,
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 16),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [AudioTranscriptionCard(), MiniPlayer()],
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          );
+        },
+      ).whenComplete(() {
+        _isSheetOpen = false;
+        if (mounted && cubit.state.isVisible) {
+          unawaited(cubit.closePlayer());
+        }
+      }),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocListener<AudiosHomeCubit, AudiosHomeState>(
+      listenWhen: (previous, current) =>
+          previous.isVisible != current.isVisible ||
+          previous.currentAudio != current.currentAudio,
+      listener: (context, state) {
+        if (state.isVisible && state.currentAudio != null) {
+          _openPlayerSheet();
+        }
+      },
+      child: const SizedBox.shrink(),
     );
   }
 }

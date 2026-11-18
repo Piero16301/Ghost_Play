@@ -145,5 +145,9 @@
                 "type": "int"
             }
         }
-    }
+    },
+    "regenerateTranscription": "Regenerate",
+    "@regenerateTranscription": {},
+    "transcriptionError": "Could not get transcription",
+    "@transcriptionError": {}
 }

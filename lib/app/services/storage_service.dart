@@ -44,6 +44,8 @@ class StorageService {
     }
 
     return _pendingThumbnails.putIfAbsent(uri, () async {
+      final performance = getIt<PerformanceService>();
+      final trace = performance.startTrace('thumbnail_generation_latency');
       try {
         final bytes = await _storageRepository.getThumbnailBytes(
           uri: uri,
@@ -53,7 +55,15 @@ class StorageService {
           _thumbnailCache[uri] = bytes;
         }
         return bytes;
+      } on Object catch (e, stackTrace) {
+        getIt<CrashService>().recordError(
+          e,
+          stackTrace,
+          reason: 'Error getting thumbnail bytes for $uri',
+        );
+        return null;
       } finally {
+        performance.stopTrace(trace);
         unawaited(_pendingThumbnails.remove(uri));
       }
     });

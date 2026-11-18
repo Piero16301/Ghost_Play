@@ -173,6 +173,116 @@ void main() {
         ..saveTheme(theme: ThemeMode.light)
         ..saveBaseColor(baseColor: Colors.blue)
         ..saveFontFamily(fontFamily: 'f');
+
+      final recent = TranscriptionMetadata(
+        text: 'Recent',
+        timestamp: DateTime.now(),
+      );
+      final old = TranscriptionMetadata(
+        text: 'Old',
+        timestamp: DateTime.now().subtract(const Duration(days: 20)),
+      );
+      mock
+        ..saveTranscription(fileName: 'recent.opus', transcription: recent)
+        ..saveTranscription(fileName: 'old.opus', transcription: old);
+      expect(mock.getTranscription(fileName: 'recent.opus'), equals(recent));
+
+      mock.clearOldTranscriptions(maxDays: 14);
+      expect(mock.getTranscription(fileName: 'recent.opus'), equals(recent));
+      expect(mock.getTranscription(fileName: 'old.opus'), isNull);
+    });
+
+    test('saveTranscription stores JSON with prefix and fileName', () async {
+      when(() => prefs.setString(any(), any())).thenAnswer((_) async => true);
+
+      final metadata = TranscriptionMetadata(
+        text: 'Hola mundo',
+        timestamp: DateTime(2026, 11, 17, 12),
+      );
+      repository.saveTranscription(
+        fileName: 'audio.opus',
+        transcription: metadata,
+      );
+
+      verify(
+        () => prefs.setString(
+          '${LocalStorageRepository.kTranscriptionPrefix}audio.opus',
+          metadata.toJson(),
+        ),
+      ).called(1);
+    });
+
+    test('getTranscription returns metadata when JSON is valid', () {
+      final metadata = TranscriptionMetadata(
+        text: 'Hola mundo',
+        timestamp: DateTime(2026, 11, 17, 12),
+      );
+      when(
+        () => prefs.getString(
+          '${LocalStorageRepository.kTranscriptionPrefix}audio.opus',
+        ),
+      ).thenReturn(metadata.toJson());
+
+      expect(
+        repository.getTranscription(fileName: 'audio.opus'),
+        equals(metadata),
+      );
+    });
+
+    test('getTranscription returns null when missing or invalid', () {
+      when(
+        () => prefs.getString(
+          '${LocalStorageRepository.kTranscriptionPrefix}missing.opus',
+        ),
+      ).thenReturn(null);
+      when(
+        () => prefs.getString(
+          '${LocalStorageRepository.kTranscriptionPrefix}bad.opus',
+        ),
+      ).thenReturn('not-json');
+
+      expect(repository.getTranscription(fileName: 'missing.opus'), isNull);
+      expect(repository.getTranscription(fileName: 'bad.opus'), isNull);
+      expect(
+        SharedPrefsLocalStorageRepository().getTranscription(
+          fileName: 'audio.opus',
+        ),
+        isNull,
+      );
+    });
+
+    test('clearOldTranscriptions removes only expired or invalid entries', () {
+      final now = DateTime.now();
+      final recent = TranscriptionMetadata(
+        text: 'Recent',
+        timestamp: now.subtract(const Duration(days: 5)),
+      );
+      final expired = TranscriptionMetadata(
+        text: 'Expired',
+        timestamp: now.subtract(const Duration(days: 20)),
+      );
+
+      const prefix = LocalStorageRepository.kTranscriptionPrefix;
+      when(() => prefs.getKeys()).thenReturn({
+        LocalStorageRepository.kUserTheme,
+        '${prefix}recent.opus',
+        '${prefix}expired.opus',
+        '${prefix}corrupt.opus',
+      });
+      when(() => prefs.getString('${prefix}recent.opus'))
+          .thenReturn(recent.toJson());
+      when(() => prefs.getString('${prefix}expired.opus'))
+          .thenReturn(expired.toJson());
+      when(() => prefs.getString('${prefix}corrupt.opus'))
+          .thenReturn('invalid-json');
+      when(() => prefs.remove(any())).thenAnswer((_) async => true);
+
+      repository.clearOldTranscriptions(maxDays: 14);
+
+      verify(() => prefs.remove('${prefix}expired.opus')).called(1);
+      verify(() => prefs.remove('${prefix}corrupt.opus')).called(1);
+      verifyNever(() => prefs.remove('${prefix}recent.opus'));
+      verifyNever(() => prefs.remove(LocalStorageRepository.kUserTheme));
     });
   });
 }

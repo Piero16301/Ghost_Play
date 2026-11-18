@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:expressive_kit/expressive_kit.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:ghost_play/home/home.dart';
 import 'package:hugeicons/hugeicons.dart';
@@ -10,6 +11,9 @@ class MiniPlayer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
     return BlocBuilder<AudiosHomeCubit, AudiosHomeState>(
       builder: (context, state) {
         if (!state.isVisible || state.currentAudio == null) {
@@ -21,53 +25,56 @@ class MiniPlayer extends StatelessWidget {
         final isLoading = state.status.isLoading;
         final speedString = state.playbackSpeed.toString();
 
-        return Container(
-          margin: const EdgeInsets.symmetric(vertical: 16),
-          decoration: BoxDecoration(
-            color: Theme.of(context).colorScheme.primaryContainer,
-            borderRadius: BorderRadius.circular(16),
-          ),
-          padding: const EdgeInsets.all(12),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            spacing: 8,
-            children: [
-              Row(
+        return Padding(
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          child: GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: () {},
+            child: Container(
+              decoration: BoxDecoration(
+                color: colorScheme.surfaceContainerHigh,
+                borderRadius: BorderRadius.circular(16),
+              ),
+              padding: const EdgeInsets.all(12),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                spacing: 8,
                 children: [
-                  GestureDetector(
-                    onTap: () => unawaited(
-                      context.read<AudiosHomeCubit>().changeSpeed(),
-                    ),
-                    child: Container(
-                      width: 56,
-                      height: 56,
-                      decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.primary,
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Center(
-                        child: Text(
-                          'x${speedString.replaceAll(RegExp(r'\.0$'), '')}',
-                          style: Theme.of(context).textTheme.titleMedium
-                              ?.copyWith(
-                                color: Theme.of(context).colorScheme.onPrimary,
+                  Row(
+                    children: [
+                      GestureDetector(
+                        onTap: () => unawaited(
+                          context.read<AudiosHomeCubit>().changeSpeed(),
+                        ),
+                        child: Container(
+                          width: 42,
+                          height: 42,
+                          decoration: BoxDecoration(
+                            color: colorScheme.secondaryContainer,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Center(
+                            child: Text(
+                              'x${speedString.replaceAll(RegExp(r'\.0$'), '')}',
+                              style: theme.textTheme.titleMedium?.copyWith(
+                                color: colorScheme.onSecondaryContainer,
                                 fontWeight: FontWeight.bold,
                               ),
+                            ),
+                          ),
                         ),
                       ),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          audio.name.split('.').first,
-                          style: Theme.of(context).textTheme.bodyLarge
-                              ?.copyWith(
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              audio.name.split('.').first,
+                              style: theme.textTheme.bodyLarge?.copyWith(
+                                color: colorScheme.onSurface,
                                 fontVariations: [
-                                  ...(Theme.of(context)
+                                  ...(theme
                                               .textTheme
                                               .bodyLarge
                                               ?.fontVariations ??
@@ -76,69 +83,89 @@ class MiniPlayer extends StatelessWidget {
                                   const FontVariation('wght', 700),
                                 ],
                               ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              '${_formatDuration(state.position)} / '
+                              '${audio.formattedDuration}',
+                              style: theme.textTheme.bodyMedium?.copyWith(
+                                color: colorScheme.onSurfaceVariant,
+                              ),
+                            ),
+                          ],
                         ),
-                        const SizedBox(height: 4),
-                        Text(
-                          '${_formatDuration(state.position)} / ${audio.formattedDuration}',
-                          style: Theme.of(context).textTheme.bodyMedium,
+                      ),
+                      if (!state.isTranscriptionVisible)
+                        ExpressiveIconButton.circle(
+                          icon: HugeIcon(
+                            icon: HugeIcons.strokeRoundedAiTranscribeAudio,
+                            color: colorScheme.onSurface,
+                            strokeWidth: 2,
+                          ),
+                          onPressed: () => unawaited(
+                            context.read<AudiosHomeCubit>().transcribeAudio(),
+                          ),
                         ),
-                      ],
-                    ),
+                      if (isLoading)
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 12),
+                          child: SizedBox.square(
+                            dimension: 24,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 3,
+                              color: colorScheme.primary,
+                            ),
+                          ),
+                        )
+                      else
+                        IconButton(
+                          icon: HugeIcon(
+                            icon: isPlaying
+                                ? HugeIcons.strokeRoundedPause
+                                : HugeIcons.strokeRoundedPlay,
+                            color: colorScheme.onSurface,
+                            strokeWidth: 2,
+                          ),
+                          onPressed: () {
+                            if (isPlaying) {
+                              unawaited(
+                                context.read<AudiosHomeCubit>().pause(),
+                              );
+                            } else {
+                              unawaited(
+                                context.read<AudiosHomeCubit>().resume(),
+                              );
+                            }
+                          },
+                        ),
+                      IconButton(
+                        icon: HugeIcon(
+                          icon: HugeIcons.strokeRoundedCancel01,
+                          color: colorScheme.onSurfaceVariant,
+                          strokeWidth: 2,
+                        ),
+                        onPressed: () =>
+                            context.read<AudiosHomeCubit>().closePlayer(),
+                      ),
+                    ],
                   ),
-                  if (isLoading)
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 12),
-                      child: SizedBox.square(
-                        dimension: 24,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 3,
-                          color: Theme.of(context)
-                              .colorScheme
-                              .onPrimaryContainer,
-                        ),
-                      ),
-                    )
-                  else
-                    IconButton(
-                      icon: HugeIcon(
-                        icon: isPlaying
-                            ? HugeIcons.strokeRoundedPause
-                            : HugeIcons.strokeRoundedPlay,
-                        color: Theme.of(context).colorScheme.onPrimaryContainer,
-                        strokeWidth: 2,
-                      ),
-                      onPressed: () {
-                        if (isPlaying) {
-                          unawaited(context.read<AudiosHomeCubit>().pause());
-                        } else {
-                          unawaited(context.read<AudiosHomeCubit>().resume());
-                        }
+                  SizedBox(
+                    height: 16,
+                    child: _PlayerProgressBar(
+                      position: state.position,
+                      duration: state.duration,
+                      onSeek: (position) {
+                        unawaited(
+                          context.read<AudiosHomeCubit>().seek(position),
+                        );
                       },
                     ),
-                  IconButton(
-                    icon: HugeIcon(
-                      icon: HugeIcons.strokeRoundedCancel01,
-                      color: Theme.of(context).colorScheme.onPrimaryContainer,
-                      strokeWidth: 2,
-                    ),
-                    onPressed: () =>
-                        context.read<AudiosHomeCubit>().closePlayer(),
                   ),
                 ],
               ),
-              SizedBox(
-                height: 16,
-                child: _PlayerProgressBar(
-                  position: state.position,
-                  duration: state.duration,
-                  onSeek: (position) {
-                    unawaited(context.read<AudiosHomeCubit>().seek(position));
-                  },
-                ),
-              ),
-            ],
+            ),
           ),
         );
       },
@@ -172,6 +199,7 @@ class _PlayerProgressBarState extends State<_PlayerProgressBar> {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
     final max = widget.duration.inMilliseconds.toDouble();
     final value = _dragValue ?? widget.position.inMilliseconds.toDouble();
     final clampedValue = value.clamp(0.0, max > 0 ? max : 1.0);
@@ -185,9 +213,9 @@ class _PlayerProgressBarState extends State<_PlayerProgressBar> {
           pressedElevation: 4,
         ),
         overlayShape: const RoundSliderOverlayShape(overlayRadius: 14),
-        activeTrackColor: Theme.of(context).colorScheme.primary,
-        inactiveTrackColor: Theme.of(context).colorScheme.onPrimary,
-        thumbColor: Theme.of(context).colorScheme.primary,
+        activeTrackColor: colorScheme.primary,
+        inactiveTrackColor: colorScheme.primary.withValues(alpha: 0.22),
+        thumbColor: colorScheme.primary,
       ),
       child: Slider(
         padding: const EdgeInsets.symmetric(horizontal: 4),

@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:math' as math;
 
+import 'package:expressive_kit/expressive_kit.dart';
 import 'package:gal/gal.dart';
 import 'package:ghost_play/app/app.dart';
 import 'package:ghost_play/home/widgets/video_progress_bar.dart';
@@ -24,6 +25,9 @@ class _VideoNotePreviewDialogState extends State<VideoNotePreviewDialog> {
   bool _isLoading = true;
   String? _error;
   VideoPlayerController? _videoPlayerController;
+  bool _isTranscriptionVisible = false;
+  bool _isTranscribing = false;
+  String? _transcription;
 
   @override
   void initState() {
@@ -49,6 +53,10 @@ class _VideoNotePreviewDialogState extends State<VideoNotePreviewDialog> {
       }
 
       _cachedFilePath = path;
+      if (!mounted) {
+        _deleteCachedFile();
+        return;
+      }
 
       _videoPlayerController = VideoPlayerController.file(File(path));
       await _videoPlayerController!.initialize();
@@ -83,7 +91,19 @@ class _VideoNotePreviewDialogState extends State<VideoNotePreviewDialog> {
   @override
   void dispose() {
     unawaited(_videoPlayerController?.dispose());
+    _deleteCachedFile();
     super.dispose();
+  }
+
+  void _deleteCachedFile() {
+    final path = _cachedFilePath;
+    if (path == null) return;
+    try {
+      final file = File(path);
+      if (file.existsSync()) {
+        file.deleteSync();
+      }
+    } on Object catch (_) {}
   }
 
   Future<void> _saveToGallery(AppLocalizations l10n) async {
@@ -134,10 +154,10 @@ class _VideoNotePreviewDialogState extends State<VideoNotePreviewDialog> {
         );
         Navigator.of(context).pop();
       }
-    } on Exception catch (e) {
+    } on Exception catch (e, stackTrace) {
       getIt<CrashService>().recordError(
         e,
-        StackTrace.current,
+        stackTrace,
         reason: 'Error saving video note to gallery',
       );
       if (mounted) {
@@ -149,6 +169,45 @@ class _VideoNotePreviewDialogState extends State<VideoNotePreviewDialog> {
       }
     } finally {
       getIt<PerformanceService>().stopTrace(trace);
+    }
+  }
+
+  Future<void> _transcribeVideo({bool forceRefresh = false}) async {
+    if (_isTranscribing) return;
+
+    getIt<AnalyticsService>().logEvent(
+      name: 'transcribe_video_note_action',
+      parameters: {'force_refresh': forceRefresh.toString()},
+    );
+    setState(() {
+      _isTranscriptionVisible = true;
+      _isTranscribing = true;
+      _transcription = null;
+    });
+
+    try {
+      final result = await getIt<AiService>().extractVideoTranscription(
+        video: widget.item,
+        forceRefresh: forceRefresh,
+      );
+      if (mounted) {
+        setState(() {
+          _isTranscribing = false;
+          _transcription = result;
+        });
+      }
+    } on Object catch (e, stackTrace) {
+      getIt<CrashService>().recordError(
+        e,
+        stackTrace,
+        reason: 'Error transcribing video note: ${widget.item.uri}',
+      );
+      if (mounted) {
+        setState(() {
+          _isTranscribing = false;
+          _transcription = null;
+        });
+      }
     }
   }
 
@@ -170,14 +229,29 @@ class _VideoNotePreviewDialogState extends State<VideoNotePreviewDialog> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Flexible(
-              child: FittedBox(
-                fit: BoxFit.scaleDown,
-                child: _buildContent(l10n),
+            if (_isTranscriptionVisible)
+              ConstrainedBox(
+                constraints: BoxConstraints(
+                  maxHeight: MediaQuery.sizeOf(context).height * 0.42,
+                ),
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: _buildContent(l10n),
+                ),
+              )
+            else
+              Flexible(
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: _buildContent(l10n),
+                ),
               ),
-            ),
             if (_videoPlayerController != null && !_isLoading && _error == null)
               _buildBottomControls(),
+            if (_isTranscriptionVisible) ...[
+              const SizedBox(height: 12),
+              Flexible(child: _buildTranscriptionSection(l10n)),
+            ],
           ],
         ),
       ),
@@ -279,76 +353,73 @@ class _VideoNotePreviewDialogState extends State<VideoNotePreviewDialog> {
   Widget _buildBottomControls() {
     return Padding(
       padding: const EdgeInsets.only(top: 8),
-      child: ValueListenableBuilder<VideoPlayerValue>(
-        valueListenable: _videoPlayerController!,
-        builder: (context, value, child) {
-          final position = value.position;
-          final duration = value.duration;
-
-          return Row(
-            children: [
-              IconButton(
-                padding: const EdgeInsets.all(5),
-                icon: HugeIcon(
-                  icon: value.isPlaying
-                      ? HugeIcons.strokeRoundedPause
-                      : HugeIcons.strokeRoundedPlay,
-                  strokeWidth: 2,
-                  color: Theme.of(context).colorScheme.onSurface,
-                ),
-                onPressed: () {
-                  if (value.isPlaying) {
-                    unawaited(_videoPlayerController!.pause());
-                  } else {
-                    if (value.position >= value.duration) {
-                      unawaited(_videoPlayerController!.seekTo(Duration.zero));
-                    }
-                    unawaited(_videoPlayerController!.play());
-                  }
-                },
-              ),
-              Text(
-                _formatDuration(position),
-                style: Theme.of(context).textTheme.bodyMedium,
-              ),
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 8),
-                  child: VideoProgressBar(controller: _videoPlayerController!),
-                ),
-              ),
-              Text(
-                _formatDuration(duration),
-                style: Theme.of(context).textTheme.bodyMedium,
-              ),
-              IconButton(
-                padding: const EdgeInsets.all(5),
-                icon: HugeIcon(
-                  icon: value.volume == 0
-                      ? HugeIcons.strokeRoundedVolumeMute02
-                      : HugeIcons.strokeRoundedVolumeHigh,
-                  strokeWidth: 2,
-                  color: Theme.of(context).colorScheme.onSurface,
-                ),
-                onPressed: () => _videoPlayerController!.setVolume(
-                  value.volume == 0 ? 1 : 0,
-                ),
-              ),
-            ],
-          );
-        },
+      child: VideoControlsBar(
+        controller: _videoPlayerController!,
+        onTranscribe: _isTranscriptionVisible
+            ? null
+            : () => unawaited(_transcribeVideo()),
       ),
     );
   }
 
-  String _formatDuration(Duration duration) {
-    String twoDigits(int n) => n.toString().padLeft(2, '0');
-    final minutes = twoDigits(duration.inMinutes.remainder(60));
-    final seconds = twoDigits(duration.inSeconds.remainder(60));
-    if (duration.inHours > 0) {
-      return '${duration.inHours}:$minutes:$seconds';
-    }
-    return '$minutes:$seconds';
+  Widget _buildTranscriptionSection(AppLocalizations l10n) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+    final transcriptionText = (_transcription?.trim().isNotEmpty ?? false)
+        ? _transcription!.trim()
+        : l10n.transcriptionError;
+
+    return SizedBox(
+      width: double.infinity,
+      child: ExpressiveCard(
+        margin: EdgeInsets.zero,
+        backgroundColor: colorScheme.surfaceContainerHigh,
+        borderRadius: BorderRadius.circular(16),
+        child: _isTranscribing
+            ? SingleChildScrollView(
+                child: Center(
+                  heightFactor: 1.5,
+                  child: ExpressiveCircularProgressIndicator(
+                    size: 36,
+                    strokeWidth: 4,
+                    color: colorScheme.primary,
+                    backgroundColor: colorScheme.primary.withValues(
+                      alpha: 0.22,
+                    ),
+                  ),
+                ),
+              )
+            : SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  spacing: 12,
+                  children: [
+                    Text(
+                      transcriptionText,
+                      style: theme.textTheme.bodyMedium?.copyWith(
+                        color: colorScheme.onSurface,
+                        height: 1.4,
+                      ),
+                    ),
+                    Align(
+                      child: ExpressiveButton.tonal(
+                        size: ExpressiveButtonSize.small,
+                        icon: const HugeIcon(
+                          icon: HugeIcons.strokeRoundedRefresh,
+                          size: 18,
+                          strokeWidth: 2,
+                        ),
+                        label: l10n.regenerateTranscription,
+                        onPressed: () =>
+                            unawaited(_transcribeVideo(forceRefresh: true)),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+      ),
+    );
   }
 
   List<Widget>? _buildActions(AppLocalizations l10n) {
@@ -451,80 +522,67 @@ class _CircularVideoPlayerState extends State<_CircularVideoPlayer> {
     // Inner video radius taking stroke into account to avoid cutoffs
     final videoDimension = widget.size - (_strokeWidth * 1.5);
 
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      onTap: () {
-        if (value.isPlaying) {
-          unawaited(widget.controller.pause());
-        } else {
-          if (value.position >= value.duration) {
-            unawaited(widget.controller.seekTo(Duration.zero));
-          }
-          unawaited(widget.controller.play());
-        }
-      },
-      child: SizedBox.square(
-        dimension: widget.size,
-        child: Stack(
-          alignment: Alignment.center,
-          children: [
-            // Circular Video
-            ClipOval(
-              child: SizedBox.square(
-                dimension: videoDimension,
-                child: Stack(
-                  fit: StackFit.expand,
-                  children: [
-                    // Slight scale so that WhatsApp PTV rectangular edge
-                    // artifacts are hidden.
-                    Transform.scale(
-                      scale: 1.06,
-                      child: FittedBox(
-                        fit: BoxFit.cover,
-                        child: SizedBox(
-                          width: value.size.width > 0 ? value.size.width : 1,
-                          height: value.size.height > 0 ? value.size.height : 1,
-                          child: VideoPlayer(widget.controller),
-                        ),
+    return SizedBox.square(
+      dimension: widget.size,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          // Circular Video
+          ClipOval(
+            child: SizedBox.square(
+              dimension: videoDimension,
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  // Slight scale so that WhatsApp PTV rectangular edge
+                  // artifacts are hidden.
+                  Transform.scale(
+                    scale: 1.06,
+                    child: FittedBox(
+                      fit: BoxFit.cover,
+                      child: SizedBox(
+                        width: value.size.width > 0 ? value.size.width : 1,
+                        height: value.size.height > 0 ? value.size.height : 1,
+                        child: VideoPlayer(widget.controller),
                       ),
                     ),
-                    // Centered play icon when paused
-                    if (!value.isPlaying)
-                      ColoredBox(
-                        color: Colors.black26,
-                        child: Center(
-                          child: Container(
-                            padding: const EdgeInsets.all(12),
-                            decoration: const BoxDecoration(
-                              color: Colors.black45,
-                              shape: BoxShape.circle,
-                            ),
-                            child: const HugeIcon(
-                              icon: HugeIcons.strokeRoundedPlay,
-                              size: 40,
-                              color: Colors.white,
-                              strokeWidth: 2,
-                            ),
+                  ),
+                  // Centered play icon when paused
+                  if (!value.isPlaying)
+                    ColoredBox(
+                      color: Colors.black26,
+                      child: Center(
+                        child: Container(
+                          padding: const EdgeInsets.all(12),
+                          decoration: const BoxDecoration(
+                            color: Colors.black45,
+                            shape: BoxShape.circle,
+                          ),
+                          child: const HugeIcon(
+                            icon: HugeIcons.strokeRoundedPlay,
+                            size: 40,
+                            color: Colors.white,
+                            strokeWidth: 2,
                           ),
                         ),
                       ),
-                  ],
-                ),
+                    ),
+                ],
               ),
             ),
-            // Circular Progress Bar Track and Arc
-            CustomPaint(
-              size: Size.square(widget.size),
-              painter: _CircularTimePainter(
-                progress: progress,
-                strokeWidth: _strokeWidth,
-                trackColor: trackColor,
-                progressColor: primaryColor,
-                isDragging: false,
-              ),
+          ),
+          // Circular Progress Bar Track and Arc
+          CustomPaint(
+            size: Size.square(widget.size),
+            painter: _CircularTimePainter(
+              progress: progress,
+              strokeWidth: _strokeWidth,
+              trackColor: trackColor,
+              progressColor: primaryColor,
+              isDragging: false,
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

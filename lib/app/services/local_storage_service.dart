@@ -41,4 +41,28 @@ class LocalStorageService {
   String? getFontFamily() {
     return _localStorageRepository.getFontFamily();
   }
+
+  void saveTranscription({
+    required String fileName,
+    required TranscriptionMetadata transcription,
+  }) {
+    _localStorageRepository.saveTranscription(
+      fileName: fileName,
+      transcription: transcription,
+    );
+  }
+
+  TranscriptionMetadata? getTranscription({required String fileName}) {
+    return _localStorageRepository.getTranscription(fileName: fileName);
+  }
+
+  void clearOldTranscriptions({required int maxDays}) {
+    final performance = getIt<PerformanceService>();
+    final trace = performance.startTrace('clear_old_transcriptions');
+    try {
+      _localStorageRepository.clearOldTranscriptions(maxDays: maxDays);
+    } finally {
+      performance.stopTrace(trace);
+    }
+  }
 }

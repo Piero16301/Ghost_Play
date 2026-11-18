@@ -29,6 +29,12 @@ void main() {
     when(() => homeCubit.setVideosWeeks(any<int>())).thenAnswer((_) async {});
     when(() => audiosHomeCubit.playAudio(any<AudioMetadata>()))
         .thenAnswer((_) async {});
+    when(
+      () => audiosHomeCubit.transcribeAudio(
+        forceRefresh: any<bool>(named: 'forceRefresh'),
+      ),
+    ).thenAnswer((_) async {});
+    when(() => audiosHomeCubit.closePlayer()).thenAnswer((_) async {});
   });
 
   group('AudiosHomeView', () {
@@ -161,5 +167,184 @@ void main() {
 
       verify(() => homeCubit.setAudiosWeeks(2)).called(1);
     });
+
+    testWidgets('shows loading indicator while transcribing', (tester) async {
+      final audio = AudioMetadata(
+        uri: 'u',
+        name: 'voice.opus',
+        date: DateTime(2024),
+        sizeBytes: 100,
+        durationMs: 1000,
+      );
+      when(() => homeCubit.state).thenReturn(
+        HomeState(
+          hasPermission: true,
+          audiosStatus: HomeStatus.success,
+          audios: [audio],
+        ),
+      );
+      when(() => audiosHomeCubit.state).thenReturn(
+        AudiosHomeState(
+          isVisible: true,
+          currentAudio: audio,
+          isTranscriptionVisible: true,
+          isTranscribing: true,
+        ),
+      );
+
+      await tester.pumpApp(
+        const AudiosHomeView(),
+        homeCubit: homeCubit,
+        audiosHomeCubit: audiosHomeCubit,
+        locale: const Locale('en'),
+      );
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
+
+      expect(find.byType(ExpressiveCard), findsOneWidget);
+      expect(find.byType(ExpressiveCircularProgressIndicator), findsOneWidget);
+    });
+
+    testWidgets(
+      'shows transcription card, max half height, and regenerate button',
+      (tester) async {
+        tester.view.physicalSize = const Size(400, 800);
+        tester.view.devicePixelRatio = 1.0;
+        addTearDown(tester.view.resetPhysicalSize);
+
+        final audio = AudioMetadata(
+          uri: 'u',
+          name: 'voice.opus',
+          date: DateTime(2024),
+          sizeBytes: 100,
+          durationMs: 1000,
+        );
+        final longText = List.filled(
+          80,
+          'Line of transcribed audio text.',
+        ).join(' ');
+
+        when(() => homeCubit.state).thenReturn(
+          HomeState(
+            hasPermission: true,
+            audiosStatus: HomeStatus.success,
+            audios: [audio],
+          ),
+        );
+        when(() => audiosHomeCubit.state).thenReturn(
+          AudiosHomeState(
+            isVisible: true,
+            currentAudio: audio,
+            isTranscriptionVisible: true,
+            transcription: longText,
+          ),
+        );
+
+        await tester.pumpApp(
+          const AudiosHomeView(),
+          homeCubit: homeCubit,
+          audiosHomeCubit: audiosHomeCubit,
+          locale: const Locale('en'),
+        );
+        await tester.pumpAndSettle();
+
+        final cardFinder = find.byType(ExpressiveCard);
+        expect(cardFinder, findsOneWidget);
+        expect(find.text(longText), findsOneWidget);
+        expect(find.text('Regenerate'), findsOneWidget);
+        expect(tester.getSize(cardFinder).height, lessThanOrEqualTo(400));
+
+        await tester.ensureVisible(find.text('Regenerate'));
+        await tester.tap(find.text('Regenerate'));
+        verify(() => audiosHomeCubit.transcribeAudio(forceRefresh: true))
+            .called(1);
+      },
+    );
+
+    testWidgets('shows fallback error text when transcription is null', (
+      tester,
+    ) async {
+      final audio = AudioMetadata(
+        uri: 'u',
+        name: 'voice.opus',
+        date: DateTime(2024),
+        sizeBytes: 100,
+        durationMs: 1000,
+      );
+      when(() => homeCubit.state).thenReturn(
+        HomeState(
+          hasPermission: true,
+          audiosStatus: HomeStatus.success,
+          audios: [audio],
+        ),
+      );
+      when(() => audiosHomeCubit.state).thenReturn(
+        AudiosHomeState(
+          isVisible: true,
+          currentAudio: audio,
+          isTranscriptionVisible: true,
+        ),
+      );
+
+      await tester.pumpApp(
+        const AudiosHomeView(),
+        homeCubit: homeCubit,
+        audiosHomeCubit: audiosHomeCubit,
+        locale: const Locale('en'),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.text('Could not get transcription'), findsOneWidget);
+      expect(find.text('Regenerate'), findsOneWidget);
+    });
+
+    testWidgets(
+      'dismisses bottom sheet and closes player when tapping outside cards',
+      (tester) async {
+        tester.view.physicalSize = const Size(400, 800);
+        tester.view.devicePixelRatio = 1.0;
+        addTearDown(tester.view.resetPhysicalSize);
+
+        final audio = AudioMetadata(
+          uri: 'u',
+          name: 'voice.opus',
+          date: DateTime(2024),
+          sizeBytes: 100,
+          durationMs: 1000,
+        );
+        when(() => homeCubit.state).thenReturn(
+          HomeState(
+            hasPermission: true,
+            audiosStatus: HomeStatus.success,
+            audios: [audio],
+          ),
+        );
+        when(() => audiosHomeCubit.state).thenReturn(
+          AudiosHomeState(
+            isVisible: true,
+            currentAudio: audio,
+            isTranscriptionVisible: true,
+            transcription: 'Short transcription',
+          ),
+        );
+
+        await tester.pumpApp(
+          const AudiosHomeView(),
+          homeCubit: homeCubit,
+          audiosHomeCubit: audiosHomeCubit,
+          locale: const Locale('en'),
+        );
+        await tester.pumpAndSettle();
+
+        expect(find.byType(MiniPlayer), findsOneWidget);
+        expect(find.byType(AudioTranscriptionCard), findsOneWidget);
+
+        await tester.tapAt(const Offset(20, 20));
+        await tester.pumpAndSettle();
+
+        expect(find.byType(MiniPlayer), findsNothing);
+        verify(() => audiosHomeCubit.closePlayer()).called(1);
+      },
+    );
   });
 }

@@ -11,10 +11,13 @@ import '../../../../helpers/mocks.dart';
 
 class MockAudioPlayer extends Mock implements ja.AudioPlayer;
 
+class MockAiService extends Mock implements AiService;
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   late AudiosHomeCubit audiosHomeCubit;
   late MockAudioPlayer audioPlayer;
+  late MockAiService aiService;
   late MockAnalyticsService analyticsService;
   late MockCrashService crashService;
   late MockPerformanceService performanceService;
@@ -27,6 +30,7 @@ void main() {
 
   setUp(() {
     audioPlayer = MockAudioPlayer();
+    aiService = MockAiService();
     analyticsService = MockAnalyticsService();
     crashService = MockCrashService();
     performanceService = MockPerformanceService();
@@ -73,7 +77,10 @@ void main() {
       ),
     ).thenReturn(null);
 
-    audiosHomeCubit = AudiosHomeCubit(audioPlayer: audioPlayer);
+    audiosHomeCubit = AudiosHomeCubit(
+      audioPlayer: audioPlayer,
+      aiService: aiService,
+    );
   });
 
   tearDown(() async {
@@ -318,6 +325,187 @@ void main() {
       playerStateStream.add(ja.PlayerState(false, ja.ProcessingState.idle));
       await Future<void>.delayed(const Duration(milliseconds: 50));
       expect(audiosHomeCubit.state.status, AudiosHomeStatus.initial);
+    });
+
+    blocTest<AudiosHomeCubit, AudiosHomeState>(
+      'transcribeAudio does nothing when currentAudio is null',
+      build: () => audiosHomeCubit,
+      act: (cubit) async => await cubit.transcribeAudio(),
+      expect: () => <AudiosHomeState>[],
+      verify: (_) {
+        verifyNever(
+          () => aiService.extractAudioTranscription(
+            audio: any<AudioMetadata>(named: 'audio'),
+          ),
+        );
+      },
+    );
+
+    blocTest<AudiosHomeCubit, AudiosHomeState>(
+      'transcribeAudio emits loading and transcription on success',
+      build: () => audiosHomeCubit,
+      seed: () => AudiosHomeState(
+        isVisible: true,
+        currentAudio: AudioMetadata(
+          uri: 'uri',
+          name: 'audio.opus',
+          date: DateTime(2024),
+          sizeBytes: 100,
+          durationMs: 1000,
+        ),
+      ),
+      setUp: () {
+        when(
+          () => aiService.extractAudioTranscription(
+            audio: any<AudioMetadata>(named: 'audio'),
+            forceRefresh: any<bool>(named: 'forceRefresh'),
+          ),
+        ).thenAnswer((_) async => 'Hola mundo');
+      },
+      act: (cubit) async => await cubit.transcribeAudio(),
+      expect: () => [
+        isA<AudiosHomeState>()
+            .having((s) => s.isTranscriptionVisible, 'visible', isTrue)
+            .having((s) => s.isTranscribing, 'transcribing', isTrue)
+            .having((s) => s.transcription, 'transcription', isNull),
+        isA<AudiosHomeState>()
+            .having((s) => s.isTranscriptionVisible, 'visible', isTrue)
+            .having((s) => s.isTranscribing, 'transcribing', isFalse)
+            .having((s) => s.transcription, 'transcription', 'Hola mundo'),
+      ],
+      verify: (_) {
+        verify(
+          () => analyticsService.logEvent(
+            name: 'transcribe_audio',
+            parameters: {'force_refresh': 'false'},
+          ),
+        ).called(1);
+        verify(
+          () => aiService.extractAudioTranscription(
+            audio: any<AudioMetadata>(named: 'audio'),
+          ),
+        ).called(1);
+      },
+    );
+
+    blocTest<AudiosHomeCubit, AudiosHomeState>(
+      'transcribeAudio passes forceRefresh true when regenerating',
+      build: () => audiosHomeCubit,
+      seed: () => AudiosHomeState(
+        isVisible: true,
+        currentAudio: AudioMetadata(
+          uri: 'uri',
+          name: 'audio.opus',
+          date: DateTime(2024),
+          sizeBytes: 100,
+          durationMs: 1000,
+        ),
+      ),
+      setUp: () {
+        when(
+          () => aiService.extractAudioTranscription(
+            audio: any<AudioMetadata>(named: 'audio'),
+            forceRefresh: true,
+          ),
+        ).thenAnswer((_) async => 'Nuevo texto');
+      },
+      act: (cubit) async => await cubit.transcribeAudio(forceRefresh: true),
+      expect: () => [
+        isA<AudiosHomeState>().having(
+          (s) => s.isTranscribing,
+          'transcribing',
+          isTrue,
+        ),
+        isA<AudiosHomeState>()
+            .having((s) => s.isTranscribing, 'transcribing', isFalse)
+            .having((s) => s.transcription, 'transcription', 'Nuevo texto'),
+      ],
+      verify: (_) {
+        verify(
+          () => analyticsService.logEvent(
+            name: 'transcribe_audio',
+            parameters: {'force_refresh': 'true'},
+          ),
+        ).called(1);
+        verify(
+          () => aiService.extractAudioTranscription(
+            audio: any<AudioMetadata>(named: 'audio'),
+            forceRefresh: true,
+          ),
+        ).called(1);
+      },
+    );
+
+    blocTest<AudiosHomeCubit, AudiosHomeState>(
+      'transcribeAudio clears transcription and records error on failure',
+      build: () => audiosHomeCubit,
+      seed: () => AudiosHomeState(
+        isVisible: true,
+        currentAudio: AudioMetadata(
+          uri: 'uri',
+          name: 'audio.opus',
+          date: DateTime(2024),
+          sizeBytes: 100,
+          durationMs: 1000,
+        ),
+      ),
+      setUp: () {
+        when(
+          () => aiService.extractAudioTranscription(
+            audio: any<AudioMetadata>(named: 'audio'),
+            forceRefresh: any<bool>(named: 'forceRefresh'),
+          ),
+        ).thenThrow(Exception('AI failure'));
+      },
+      act: (cubit) async => await cubit.transcribeAudio(),
+      expect: () => [
+        isA<AudiosHomeState>()
+            .having((s) => s.isTranscriptionVisible, 'visible', isTrue)
+            .having((s) => s.isTranscribing, 'transcribing', isTrue)
+            .having((s) => s.transcription, 'transcription', isNull),
+        isA<AudiosHomeState>()
+            .having((s) => s.isTranscriptionVisible, 'visible', isTrue)
+            .having((s) => s.isTranscribing, 'transcribing', isFalse)
+            .having((s) => s.transcription, 'transcription', isNull),
+      ],
+      verify: (_) {
+        verify(
+          () => crashService.recordError(
+            any<dynamic>(),
+            any<StackTrace?>(),
+            reason: any<dynamic>(named: 'reason'),
+          ),
+        ).called(1);
+      },
+    );
+
+    test('records errors emitted on audio player streams', () async {
+      positionStream.addError(Exception('position error'));
+      durationStream.addError(Exception('duration error'));
+      playerStateStream.addError(Exception('player state error'));
+      await Future<void>.delayed(const Duration(milliseconds: 50));
+
+      verify(
+        () => crashService.recordError(
+          any<dynamic>(),
+          any<StackTrace?>(),
+          reason: 'AudioPlayer positionStream error',
+        ),
+      ).called(1);
+      verify(
+        () => crashService.recordError(
+          any<dynamic>(),
+          any<StackTrace?>(),
+          reason: 'AudioPlayer durationStream error',
+        ),
+      ).called(1);
+      verify(
+        () => crashService.recordError(
+          any<dynamic>(),
+          any<StackTrace?>(),
+          reason: 'AudioPlayer playerStateStream error',
+        ),
+      ).called(1);
     });
   });
 }
