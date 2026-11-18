@@ -1,3 +1,4 @@
+import 'package:expressive_kit/expressive_kit.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ghost_play/app/app.dart';
 import 'package:ghost_play/home/home.dart';
@@ -22,6 +23,7 @@ void main() {
     when(() => audiosHomeCubit.changeSpeed()).thenAnswer((_) async {});
     when(() => audiosHomeCubit.closePlayer()).thenAnswer((_) async {});
     when(() => audiosHomeCubit.seek(any())).thenAnswer((_) async {});
+    when(() => audiosHomeCubit.transcribeAudio()).thenAnswer((_) async {});
   });
 
   group('MiniPlayer', () {
@@ -80,7 +82,7 @@ void main() {
         audiosHomeCubit: audiosHomeCubit,
       );
 
-      await tester.tap(find.byType(HugeIcon).at(0));
+      await tester.tap(find.byType(HugeIcon).at(1));
       verify(() => audiosHomeCubit.pause()).called(1);
     });
 
@@ -105,7 +107,7 @@ void main() {
         audiosHomeCubit: audiosHomeCubit,
       );
 
-      await tester.tap(find.byType(HugeIcon).at(0));
+      await tester.tap(find.byType(HugeIcon).at(1));
       verify(() => audiosHomeCubit.resume()).called(1);
     });
 
@@ -176,8 +178,57 @@ void main() {
         audiosHomeCubit: audiosHomeCubit,
       );
 
-      await tester.tap(find.byType(HugeIcon).at(1));
+      await tester.tap(find.byType(HugeIcon).at(2));
       verify(() => audiosHomeCubit.closePlayer()).called(1);
+    });
+
+    testWidgets('taps transcribeAudio when transcription is hidden', (
+      tester,
+    ) async {
+      final audio = AudioMetadata(
+        uri: 'u',
+        name: 'a.opus',
+        date: DateTime(2024),
+        sizeBytes: 0,
+        durationMs: 0,
+      );
+      when(() => audiosHomeCubit.state)
+          .thenReturn(AudiosHomeState(isVisible: true, currentAudio: audio));
+
+      await tester.pumpApp(
+        const MiniPlayer(),
+        audiosHomeCubit: audiosHomeCubit,
+      );
+
+      expect(find.byType(ExpressiveIconButton), findsOneWidget);
+      await tester.tap(find.byType(ExpressiveIconButton));
+      verify(() => audiosHomeCubit.transcribeAudio()).called(1);
+    });
+
+    testWidgets('hides transcribe button when isTranscriptionVisible is true', (
+      tester,
+    ) async {
+      final audio = AudioMetadata(
+        uri: 'u',
+        name: 'a.opus',
+        date: DateTime(2024),
+        sizeBytes: 0,
+        durationMs: 0,
+      );
+      when(() => audiosHomeCubit.state).thenReturn(
+        AudiosHomeState(
+          isVisible: true,
+          currentAudio: audio,
+          isTranscriptionVisible: true,
+        ),
+      );
+
+      await tester.pumpApp(
+        const MiniPlayer(),
+        audiosHomeCubit: audiosHomeCubit,
+      );
+
+      expect(find.byType(ExpressiveIconButton), findsNothing);
     });
 
     testWidgets('seeks when slider changes', (tester) async {

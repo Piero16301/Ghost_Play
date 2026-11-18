@@ -8,13 +8,30 @@ import '../../helpers/mocks.dart';
 void main() {
   group('LocalStorageService', () {
     late LocalStorageRepository repository;
+    late MockPerformanceService performanceService;
+    late MockTrace trace;
     late LocalStorageService service;
 
-    setUpAll(registerFallbackValues);
+    setUpAll(() {
+      registerFallbackValues();
+      registerFallbackValue(
+        TranscriptionMetadata(text: '', timestamp: DateTime(2024)),
+      );
+    });
 
-    setUp(() {
+    setUp(() async {
+      await getIt.reset();
       repository = MocktailLocalStorageRepository();
+      performanceService = MockPerformanceService();
+      trace = MockTrace();
+      getIt.registerSingleton<PerformanceService>(performanceService);
+      when(() => performanceService.startTrace(any())).thenReturn(trace);
+      when(() => performanceService.stopTrace(any())).thenReturn(null);
       service = LocalStorageService(localStorageRepository: repository);
+    });
+
+    tearDown(() async {
+      await getIt.reset();
     });
 
     test('initialize delegates to repository', () async {
@@ -82,6 +99,53 @@ void main() {
       when(() => repository.getFontFamily()).thenReturn(font);
       expect(service.getFontFamily(), equals(font));
       verify(() => repository.getFontFamily()).called(1);
+    });
+
+    test('saveTranscription delegates to repository', () {
+      final metadata = TranscriptionMetadata(
+        text: 'Hello',
+        timestamp: DateTime(2026),
+      );
+      when(
+        () => repository.saveTranscription(
+          fileName: any(named: 'fileName'),
+          transcription: any(named: 'transcription'),
+        ),
+      ).thenReturn(null);
+
+      service.saveTranscription(fileName: 'a.opus', transcription: metadata);
+
+      verify(
+        () => repository.saveTranscription(
+          fileName: 'a.opus',
+          transcription: metadata,
+        ),
+      ).called(1);
+    });
+
+    test('getTranscription delegates to repository', () {
+      final metadata = TranscriptionMetadata(
+        text: 'Hello',
+        timestamp: DateTime(2026),
+      );
+      when(() => repository.getTranscription(fileName: 'a.opus'))
+          .thenReturn(metadata);
+
+      expect(service.getTranscription(fileName: 'a.opus'), equals(metadata));
+      verify(() => repository.getTranscription(fileName: 'a.opus')).called(1);
+    });
+
+    test('clearOldTranscriptions delegates to repository', () {
+      when(
+        () => repository.clearOldTranscriptions(maxDays: any(named: 'maxDays')),
+      ).thenReturn(null);
+
+      service.clearOldTranscriptions(maxDays: 14);
+
+      verify(() => repository.clearOldTranscriptions(maxDays: 14)).called(1);
+      verify(() => performanceService.startTrace('clear_old_transcriptions'))
+          .called(1);
+      verify(() => performanceService.stopTrace(trace)).called(1);
     });
   });
 }

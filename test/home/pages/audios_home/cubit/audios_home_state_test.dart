@@ -37,6 +37,9 @@ void main() {
         duration: const Duration(seconds: 2),
         errorMessage: 'error',
         playbackSpeed: 1.5,
+        isTranscriptionVisible: true,
+        isTranscribing: true,
+        transcription: 'hello',
       );
 
       expect(state.props, [
@@ -47,6 +50,9 @@ void main() {
         const Duration(seconds: 2),
         'error',
         1.5,
+        true,
+        true,
+        'hello',
       ]);
     });
 
@@ -62,16 +68,21 @@ void main() {
         sizeBytes: 100,
         durationMs: 1000,
       );
+      final updated = const AudiosHomeState().copyWith(
+        status: AudiosHomeStatus.playing,
+        isVisible: true,
+        currentAudio: audio,
+        position: const Duration(seconds: 1),
+        duration: const Duration(seconds: 2),
+        errorMessage: 'error',
+        playbackSpeed: 1.5,
+        isTranscriptionVisible: true,
+        isTranscribing: true,
+        transcription: 'hello',
+      );
+
       expect(
-        const AudiosHomeState().copyWith(
-          status: AudiosHomeStatus.playing,
-          isVisible: true,
-          currentAudio: audio,
-          position: const Duration(seconds: 1),
-          duration: const Duration(seconds: 2),
-          errorMessage: 'error',
-          playbackSpeed: 1.5,
-        ),
+        updated,
         AudiosHomeState(
           status: AudiosHomeStatus.playing,
           isVisible: true,
@@ -80,8 +91,13 @@ void main() {
           duration: const Duration(seconds: 2),
           errorMessage: 'error',
           playbackSpeed: 1.5,
+          isTranscriptionVisible: true,
+          isTranscribing: true,
+          transcription: 'hello',
         ),
       );
+
+      expect(updated.copyWith(clearTranscription: true).transcription, isNull);
     });
   });
 }

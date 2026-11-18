@@ -13,6 +13,10 @@ class AppVariables {
   static final List<int> weeksOptions = [1, 2, 3, 4, 5, 6, 7, 8];
   static const animationDuration = Duration(milliseconds: 400);
   static const snackBarDuration = Duration(seconds: 5);
+  static const remoteConfigFetchTimeout = Duration(minutes: 1);
+  static const remoteConfigMinimumFetchInterval = Duration(hours: 1);
+  static const timeoutDuration = Duration(seconds: 5);
+  static const aiTimeoutDuration = Duration(seconds: 15);
   static const logoNoBgDark = 'assets/images/logo-no-bg-dark.png';
   static const logoNoBgLight = 'assets/images/logo-no-bg-light.png';
 }

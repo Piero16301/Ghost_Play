@@ -26,10 +26,19 @@ void setupServiceLocator(Environment env) {
         localStorageRepository: ServiceFactory.getLocalStorageRepository(env),
       ),
     )
+    ..registerLazySingleton<RemoteConfigService>(
+      () => RemoteConfigService(
+        remoteConfigRepository: ServiceFactory.getRemoteConfigRepository(env),
+      ),
+    )
     ..registerLazySingleton<StorageService>(
       () => StorageService(
         storageRepository: ServiceFactory.getStorageRepository(env),
       ),
+    )
+    // 3. Servicios de Lógica de Negocio / IA
+    ..registerLazySingleton<AiService>(
+      () => AiService(aiRepository: ServiceFactory.getAiRepository(env)),
     );
 }
 
@@ -72,12 +81,30 @@ class ServiceFactory {
     }
   }
 
+  static RemoteConfigRepository getRemoteConfigRepository(Environment env) {
+    switch (env) {
+      case Environment.mock:
+        return MockRemoteConfigRepository();
+      case Environment.prod:
+        return FirebaseRemoteConfigRepository();
+    }
+  }
+
   static StorageRepository getStorageRepository(Environment env) {
     switch (env) {
       case Environment.mock:
         return MockStorageRepository();
       case Environment.prod:
         return MethodChannelStorageRepository();
+    }
+  }
+
+  static AiRepository getAiRepository(Environment env) {
+    switch (env) {
+      case Environment.mock:
+        return MockAiRepository();
+      case Environment.prod:
+        return FirebaseAiRepository();
     }
   }
 }

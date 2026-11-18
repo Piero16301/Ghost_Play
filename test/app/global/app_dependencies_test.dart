@@ -37,13 +37,17 @@ void main() {
       expect(getIt.isRegistered<PerformanceService>(), isTrue);
       expect(getIt.isRegistered<AnalyticsService>(), isTrue);
       expect(getIt.isRegistered<LocalStorageService>(), isTrue);
+      expect(getIt.isRegistered<RemoteConfigService>(), isTrue);
       expect(getIt.isRegistered<StorageService>(), isTrue);
+      expect(getIt.isRegistered<AiService>(), isTrue);
 
       expect(getIt<CrashService>(), isA<CrashService>());
       expect(getIt<PerformanceService>(), isA<PerformanceService>());
       expect(getIt<AnalyticsService>(), isA<AnalyticsService>());
       expect(getIt<LocalStorageService>(), isA<LocalStorageService>());
+      expect(getIt<RemoteConfigService>(), isA<RemoteConfigService>());
       expect(getIt<StorageService>(), isA<StorageService>());
+      expect(getIt<AiService>(), isA<AiService>());
     });
 
     test('setupServiceLocator registers prod dependencies', () {
@@ -53,7 +57,9 @@ void main() {
       expect(getIt.isRegistered<PerformanceService>(), isTrue);
       expect(getIt.isRegistered<AnalyticsService>(), isTrue);
       expect(getIt.isRegistered<LocalStorageService>(), isTrue);
+      expect(getIt.isRegistered<RemoteConfigService>(), isTrue);
       expect(getIt.isRegistered<StorageService>(), isTrue);
+      expect(getIt.isRegistered<AiService>(), isTrue);
 
       try {
         getIt<CrashService>();
@@ -68,7 +74,13 @@ void main() {
         getIt<LocalStorageService>();
       } on Exception catch (_) {}
       try {
+        getIt<RemoteConfigService>();
+      } on Exception catch (_) {}
+      try {
         getIt<StorageService>();
+      } on Exception catch (_) {}
+      try {
+        getIt<AiService>();
       } on Exception catch (_) {}
     });
 
@@ -96,8 +108,16 @@ void main() {
           isA<MockLocalStorageRepository>(),
         );
         expect(
+          ServiceFactory.getRemoteConfigRepository(Environment.mock),
+          isA<MockRemoteConfigRepository>(),
+        );
+        expect(
           ServiceFactory.getStorageRepository(Environment.mock),
           isA<MockStorageRepository>(),
+        );
+        expect(
+          ServiceFactory.getAiRepository(Environment.mock),
+          isA<MockAiRepository>(),
         );
       });
 
@@ -110,6 +130,10 @@ void main() {
           ServiceFactory.getStorageRepository(Environment.prod),
           isA<MethodChannelStorageRepository>(),
         );
+        expect(
+          ServiceFactory.getAiRepository(Environment.prod),
+          isA<FirebaseAiRepository>(),
+        );
 
         try {
           ServiceFactory.getCrashRepository(Environment.prod);
@@ -119,6 +143,9 @@ void main() {
         } on Exception catch (_) {}
         try {
           ServiceFactory.getAnalyticsRepository(Environment.prod);
+        } on Exception catch (_) {}
+        try {
+          ServiceFactory.getRemoteConfigRepository(Environment.prod);
         } on Exception catch (_) {}
       });
     });

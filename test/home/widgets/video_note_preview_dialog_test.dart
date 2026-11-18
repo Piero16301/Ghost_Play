@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:expressive_kit/expressive_kit.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ghost_play/app/app.dart';
@@ -88,6 +89,7 @@ const _kValidPng = <int>[
 
 void main() {
   late HomeCubit homeCubit;
+  late AiService aiService;
   late VideoPlayerPlatform originalVideoPlayerPlatform;
 
   setUpAll(registerFallbackValues);
@@ -95,6 +97,8 @@ void main() {
   setUp(() async {
     await setupServiceLocatorMocks();
     homeCubit = MockHomeCubit();
+    aiService = _MockAiService();
+    getIt.registerSingleton<AiService>(aiService);
 
     when(() => homeCubit.state).thenReturn(const HomeState());
 
@@ -250,7 +254,7 @@ void main() {
       await tester.tap(find.text('Cancel'));
       await tester.pumpAndSettle();
 
-      File(path).deleteSync();
+      expect(File(path).existsSync(), isFalse);
     });
 
     testWidgets(
@@ -295,7 +299,7 @@ void main() {
         await tester.tap(find.text('Cancel'));
         await tester.pumpAndSettle();
 
-        File(path).deleteSync();
+        expect(File(path).existsSync(), isFalse);
       },
     );
 
@@ -335,7 +339,7 @@ void main() {
       await tester.tap(find.text('Cancel'));
       await tester.pumpAndSettle();
 
-      File(path).deleteSync();
+      expect(File(path).existsSync(), isFalse);
     });
 
     testWidgets('toggles volume when tapping volume button', (tester) async {
@@ -369,7 +373,7 @@ void main() {
       await tester.tap(find.text('Cancel'));
       await tester.pumpAndSettle();
 
-      File(path).deleteSync();
+      expect(File(path).existsSync(), isFalse);
     });
 
     testWidgets('saves video note to gallery when Save is tapped', (
@@ -399,7 +403,7 @@ void main() {
       expect(calls.where((c) => c == 'putVideo').length, 1);
       expect(find.byType(VideoNotePreviewDialog), findsNothing);
 
-      File(path).deleteSync();
+      expect(File(path).existsSync(), isFalse);
     });
 
     testWidgets('can seek using the timeline slider', (tester) async {
@@ -430,7 +434,7 @@ void main() {
       await tester.tap(find.text('Cancel'));
       await tester.pumpAndSettle();
 
-      File(path).deleteSync();
+      expect(File(path).existsSync(), isFalse);
     });
 
     testWidgets('taps inside video circle does not pause or resume', (
@@ -468,7 +472,7 @@ void main() {
       await tester.tap(find.text('Cancel'));
       await tester.pumpAndSettle();
 
-      File(path).deleteSync();
+      expect(File(path).existsSync(), isFalse);
     });
 
     testWidgets(
@@ -505,11 +509,117 @@ void main() {
         await tester.tap(find.text('Cancel'));
         await tester.pumpAndSettle();
 
-        File(path).deleteSync();
+        expect(File(path).existsSync(), isFalse);
+      },
+    );
+
+    testWidgets(
+      'transcribes video note, shows regenerate button, and scrolls long text',
+      (tester) async {
+        tester.view.physicalSize = const Size(400, 800);
+        tester.view.devicePixelRatio = 1.0;
+        addTearDown(() {
+          tester.view.resetPhysicalSize();
+          tester.view.resetDevicePixelRatio();
+        });
+
+        VideoPlayerPlatform.instance = _FakeVideoPlayerPlatform(
+          duration: const Duration(seconds: 20),
+        );
+        final path = createTmpMp4('video_note_transcribe.mp4');
+        when(
+          () => getIt<StorageService>().cacheFile(
+            uri: any(named: 'uri'),
+            fileName: any(named: 'fileName'),
+          ),
+        ).thenAnswer((_) async => path);
+
+        final longText = List.filled(
+          80,
+          'Transcribed video note sentence.',
+        ).join(' ');
+        final completer = Completer<String?>();
+        var callCount = 0;
+        when(
+          () => aiService.extractVideoTranscription(
+            video: any<MultimediaMetadata>(named: 'video'),
+            forceRefresh: any<bool>(named: 'forceRefresh'),
+          ),
+        ).thenAnswer((_) {
+          callCount++;
+          if (callCount == 1) {
+            return completer.future;
+          }
+          return Future.value('Regenerated video transcription');
+        });
+
+        await pumpDialog(tester, makeItem());
+        await tester.pump(const Duration(milliseconds: 300));
+        await tester.pump(const Duration(milliseconds: 300));
+
+        final transcribeIcon = find.byWidgetPredicate(
+          (widget) =>
+              widget is HugeIcon &&
+              widget.icon == HugeIcons.strokeRoundedAiTranscribeAudio,
+        );
+        expect(transcribeIcon, findsOneWidget);
+
+        await tester.tap(transcribeIcon);
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 100));
+
+        expect(transcribeIcon, findsNothing);
+        expect(find.byType(ExpressiveCard), findsOneWidget);
+        expect(
+          find.byType(ExpressiveCircularProgressIndicator),
+          findsOneWidget,
+        );
+
+        completer.complete(longText);
+        await tester.pumpAndSettle();
+
+        expect(find.text(longText), findsOneWidget);
+        expect(find.text('Regenerate'), findsOneWidget);
+
+        await tester.ensureVisible(find.text('Regenerate'));
+        await tester.tap(find.text('Regenerate'));
+        await tester.pumpAndSettle();
+
+        expect(find.text('Regenerated video transcription'), findsOneWidget);
+        verify(
+          () => getIt<AnalyticsService>().logEvent(
+            name: 'transcribe_video_note_action',
+            parameters: {'force_refresh': 'false'},
+          ),
+        ).called(1);
+        verify(
+          () => getIt<AnalyticsService>().logEvent(
+            name: 'transcribe_video_note_action',
+            parameters: {'force_refresh': 'true'},
+          ),
+        ).called(1);
+        verify(
+          () => aiService.extractVideoTranscription(
+            video: any<MultimediaMetadata>(named: 'video'),
+          ),
+        ).called(1);
+        verify(
+          () => aiService.extractVideoTranscription(
+            video: any<MultimediaMetadata>(named: 'video'),
+            forceRefresh: true,
+          ),
+        ).called(1);
+
+        await tester.tap(find.text('Cancel'));
+        await tester.pumpAndSettle();
+
+        expect(File(path).existsSync(), isFalse);
       },
     );
   });
 }
+
+class _MockAiService extends Mock implements AiService;
 
 class _FakeVideoPlayerPlatform extends VideoPlayerPlatform {
   new({required this.duration});

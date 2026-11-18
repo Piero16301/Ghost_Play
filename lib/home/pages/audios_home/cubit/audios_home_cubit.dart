@@ -8,13 +8,14 @@ import 'package:just_audio/just_audio.dart' as ja;
 part 'audios_home_state.dart';
 
 class AudiosHomeCubit extends Cubit<AudiosHomeState> {
-  new({ja.AudioPlayer? audioPlayer})
+  new({ja.AudioPlayer? audioPlayer, this._aiService})
     : _audioPlayer = audioPlayer ?? ja.AudioPlayer(),
       super(const AudiosHomeState()) {
     _initSubscriptions();
   }
 
   final ja.AudioPlayer _audioPlayer;
+  final AiService? _aiService;
   final AnalyticsService _analyticsService = getIt<AnalyticsService>();
   final CrashService _crashService = getIt<CrashService>();
   final PerformanceService _performanceService = getIt<PerformanceService>();
@@ -23,44 +24,63 @@ class AudiosHomeCubit extends Cubit<AudiosHomeState> {
   StreamSubscription<ja.PlayerState>? _playerStateSubscription;
 
   void _initSubscriptions() {
-    _positionSubscription = _audioPlayer.positionStream.listen((position) {
-      if (!isClosed) {
-        emit(state.copyWith(position: position));
-      }
-    });
+    _positionSubscription = _audioPlayer.positionStream.listen(
+      (position) {
+        if (!isClosed) {
+          emit(state.copyWith(position: position));
+        }
+      },
+      onError: (Object e, StackTrace stackTrace) => _crashService.recordError(
+        e,
+        stackTrace,
+        reason: 'AudioPlayer positionStream error',
+      ),
+    );
 
-    _durationSubscription = _audioPlayer.durationStream.listen((duration) {
-      if (!isClosed && duration != null) {
-        emit(state.copyWith(duration: duration));
-      }
-    });
+    _durationSubscription = _audioPlayer.durationStream.listen(
+      (duration) {
+        if (!isClosed && duration != null) {
+          emit(state.copyWith(duration: duration));
+        }
+      },
+      onError: (Object e, StackTrace stackTrace) => _crashService.recordError(
+        e,
+        stackTrace,
+        reason: 'AudioPlayer durationStream error',
+      ),
+    );
 
-    _playerStateSubscription = _audioPlayer.playerStateStream.listen((
-      playerState,
-    ) {
-      if (!isClosed) {
-        final processingState = playerState.processingState;
-        final playing = playerState.playing;
+    _playerStateSubscription = _audioPlayer.playerStateStream.listen(
+      (playerState) {
+        if (!isClosed) {
+          final processingState = playerState.processingState;
+          final playing = playerState.playing;
 
-        if (processingState == ja.ProcessingState.loading ||
-            processingState == ja.ProcessingState.buffering) {
-          emit(state.copyWith(status: AudiosHomeStatus.loading));
-        } else if (processingState == ja.ProcessingState.ready) {
-          if (playing) {
-            emit(state.copyWith(status: AudiosHomeStatus.playing));
-          } else {
-            emit(state.copyWith(status: AudiosHomeStatus.paused));
-          }
-        } else if (processingState == ja.ProcessingState.completed) {
-          emit(
-            state.copyWith(
-              status: AudiosHomeStatus.completed,
-              position: Duration.zero,
-            ),
-          );
-        } else if (processingState == ja.ProcessingState.idle) {}
-      }
-    });
+          if (processingState == ja.ProcessingState.loading ||
+              processingState == ja.ProcessingState.buffering) {
+            emit(state.copyWith(status: AudiosHomeStatus.loading));
+          } else if (processingState == ja.ProcessingState.ready) {
+            if (playing) {
+              emit(state.copyWith(status: AudiosHomeStatus.playing));
+            } else {
+              emit(state.copyWith(status: AudiosHomeStatus.paused));
+            }
+          } else if (processingState == ja.ProcessingState.completed) {
+            emit(
+              state.copyWith(
+                status: AudiosHomeStatus.completed,
+                position: Duration.zero,
+              ),
+            );
+          } else if (processingState == ja.ProcessingState.idle) {}
+        }
+      },
+      onError: (Object e, StackTrace stackTrace) => _crashService.recordError(
+        e,
+        stackTrace,
+        reason: 'AudioPlayer playerStateStream error',
+      ),
+    );
   }
 
   Future<void> playAudio(AudioMetadata audio) async {
@@ -81,6 +101,9 @@ class AudiosHomeCubit extends Cubit<AudiosHomeState> {
           position: Duration.zero,
           duration: Duration.zero,
           playbackSpeed: 1,
+          isTranscriptionVisible: false,
+          isTranscribing: false,
+          clearTranscription: true,
         ),
       );
 
@@ -147,6 +170,43 @@ class AudiosHomeCubit extends Cubit<AudiosHomeState> {
     );
     await _audioPlayer.setSpeed(nextSpeed);
     emit(state.copyWith(playbackSpeed: nextSpeed));
+  }
+
+  Future<void> transcribeAudio({bool forceRefresh = false}) async {
+    final audio = state.currentAudio;
+    if (audio == null || state.isTranscribing) return;
+
+    _analyticsService.logEvent(
+      name: 'transcribe_audio',
+      parameters: {'force_refresh': forceRefresh.toString()},
+    );
+    emit(
+      state.copyWith(
+        isTranscriptionVisible: true,
+        isTranscribing: true,
+        clearTranscription: true,
+      ),
+    );
+
+    try {
+      final aiService = _aiService ?? getIt<AiService>();
+      final result = await aiService.extractAudioTranscription(
+        audio: audio,
+        forceRefresh: forceRefresh,
+      );
+      if (!isClosed && state.currentAudio?.uri == audio.uri) {
+        emit(state.copyWith(isTranscribing: false, transcription: result));
+      }
+    } on Object catch (e, stackTrace) {
+      _crashService.recordError(
+        e,
+        stackTrace,
+        reason: 'Error transcribing audio: ${audio.uri}',
+      );
+      if (!isClosed && state.currentAudio?.uri == audio.uri) {
+        emit(state.copyWith(isTranscribing: false, clearTranscription: true));
+      }
+    }
   }
 
   Future<void> closePlayer() async {

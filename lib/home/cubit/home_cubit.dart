@@ -64,30 +64,43 @@ class HomeCubit extends Cubit<HomeState> {
 
   Future<void> requestPermission() async {
     _analyticsService.logEvent(name: 'request_permission_action');
-    final isGranted = await _storageService.getDirectoryPermission(
-      AppVariables.waVoiceNotesPath,
-    );
+    try {
+      final isGranted = await _storageService.getDirectoryPermission(
+        AppVariables.waVoiceNotesPath,
+      );
+      final granted = isGranted ?? false;
 
-    _crashService.setCustomKey('permission_granted', isGranted ?? false);
+      _crashService.setCustomKey('permission_granted', granted);
+      _analyticsService.logEvent(
+        name: 'permission_result',
+        parameters: {'granted': granted.toString()},
+      );
 
-    if (isGranted == true) {
-      final persistedDirs = await _storageService
-          .getPersistedPermissionDirectories();
-      if (persistedDirs != null && persistedDirs.isNotEmpty) {
-        final saf = Saf();
-        _crashService.log('Permission granted by user.');
-        emit(
-          state.copyWith(
-            saf: saf,
-            hasPermission: true,
-            savedDirectoryUri: persistedDirs.first,
-          ),
-        );
+      if (granted) {
+        final persistedDirs = await _storageService
+            .getPersistedPermissionDirectories();
+        if (persistedDirs != null && persistedDirs.isNotEmpty) {
+          final saf = Saf();
+          _crashService.log('Permission granted by user.');
+          emit(
+            state.copyWith(
+              saf: saf,
+              hasPermission: true,
+              savedDirectoryUri: persistedDirs.first,
+            ),
+          );
 
-        await Future.wait([loadAudios(), loadStates(), loadVideos()]);
+          await Future.wait([loadAudios(), loadStates(), loadVideos()]);
+        }
+      } else {
+        _crashService.log('Permission explicitly denied by user.');
       }
-    } else {
-      _crashService.log('Permission explicitly denied by user.');
+    } on Exception catch (e, stackTrace) {
+      _crashService.recordError(
+        e,
+        stackTrace,
+        reason: 'Failed to request directory permission',
+      );
     }
   }
 

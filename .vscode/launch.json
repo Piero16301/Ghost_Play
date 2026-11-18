@@ -2,16 +2,18 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Launch production",
+      "name": "Launch Production",
       "request": "launch",
       "type": "dart",
+      "flutterMode": "debug",
       "program": "lib/main.dart",
       "args": [
         "--flavor",
         "production",
         "--target",
-        "lib/main.dart"
+        "lib/main.dart",
+        "--dart-define-from-file=.env"
       ]
-    }
+    },
   ]
 }

@@ -311,7 +311,7 @@ void main() {
       expect(find.text('Cancel'), findsOneWidget);
       expect(find.text('Save'), findsOneWidget);
 
-      File(path).deleteSync();
+      if (File(path).existsSync()) File(path).deleteSync();
     });
 
     testWidgets('Cancel button pops dialog in success state', (tester) async {
@@ -330,7 +330,7 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.byType(MultimediaPreviewDialog), findsNothing);
 
-      File(path).deleteSync();
+      expect(File(path).existsSync(), isFalse);
     });
 
     testWidgets('Save button calls putImage when gallery access is granted', (
@@ -360,7 +360,7 @@ void main() {
       ).called(1);
       verify(() => getIt<PerformanceService>().stopTrace(any())).called(2);
 
-      File(path).deleteSync();
+      expect(File(path).existsSync(), isFalse);
     });
 
     testWidgets(
@@ -383,7 +383,7 @@ void main() {
 
         expect(find.byType(MultimediaPreviewDialog), findsNothing);
 
-        File(path).deleteSync();
+        expect(File(path).existsSync(), isFalse);
       },
     );
 
@@ -408,7 +408,7 @@ void main() {
       expect(find.byType(MultimediaPreviewDialog), findsOneWidget);
       expect(find.text('Permission denied'), findsOneWidget);
 
-      File(path).deleteSync();
+      if (File(path).existsSync()) File(path).deleteSync();
     });
 
     testWidgets('Save logs success and closes dialog after putImage succeeds', (
@@ -438,7 +438,7 @@ void main() {
 
       expect(find.byType(MultimediaPreviewDialog), findsNothing);
 
-      File(path).deleteSync();
+      expect(File(path).existsSync(), isFalse);
     });
 
     testWidgets('Save shows error snackbar when putImage throws exception', (
@@ -470,7 +470,7 @@ void main() {
         ),
       ).called(1);
 
-      File(path).deleteSync();
+      if (File(path).existsSync()) File(path).deleteSync();
     });
 
     testWidgets('video item save uses putVideo', (tester) async {
@@ -499,7 +499,7 @@ void main() {
       expect(calls.where((method) => method == 'putVideo').length, 1);
       expect(calls.where((method) => method == 'putImage'), isEmpty);
 
-      File(path).deleteSync();
+      expect(File(path).existsSync(), isFalse);
     });
 
     testWidgets('video content uses 9/16 when aspect ratio is 1:1', (
@@ -534,7 +534,7 @@ void main() {
       await tester.tap(find.text('Cancel'));
       await tester.pumpAndSettle();
 
-      File(path).deleteSync();
+      expect(File(path).existsSync(), isFalse);
     });
 
     testWidgets('video content inverts aspect ratio when rotated 90 degrees', (
@@ -569,7 +569,7 @@ void main() {
       await tester.tap(find.text('Cancel'));
       await tester.pumpAndSettle();
 
-      File(path).deleteSync();
+      expect(File(path).existsSync(), isFalse);
     });
 
     testWidgets('video controls handle pause, replay from end and volume', (
@@ -605,10 +605,21 @@ void main() {
       expect(fakePlatform.seekCalls.contains(Duration.zero), isTrue);
       expect(fakePlatform.setVolumeCalls.contains(0), isTrue);
 
+      verify(() => getIt<AnalyticsService>().logEvent(name: 'pause_video'))
+          .called(1);
+      verify(() => getIt<AnalyticsService>().logEvent(name: 'play_video'))
+          .called(1);
+      verify(
+        () => getIt<AnalyticsService>().logEvent(
+          name: 'toggle_video_mute',
+          parameters: {'muted': 'true'},
+        ),
+      ).called(1);
+
       await tester.tap(find.text('Cancel'));
       await tester.pumpAndSettle();
 
-      File(path).deleteSync();
+      expect(File(path).existsSync(), isFalse);
     });
 
     testWidgets('video slider onChanged and onChangeEnd update and seek', (
@@ -645,11 +656,17 @@ void main() {
         fakePlatform.seekCalls.contains(const Duration(milliseconds: 1200)),
         isTrue,
       );
+      verify(
+        () => getIt<AnalyticsService>().logEvent(
+          name: 'seek_video',
+          parameters: {'position_seconds': 1},
+        ),
+      ).called(1);
 
       await tester.tap(find.text('Cancel'));
       await tester.pumpAndSettle();
 
-      File(path).deleteSync();
+      expect(File(path).existsSync(), isFalse);
     });
   });
 }

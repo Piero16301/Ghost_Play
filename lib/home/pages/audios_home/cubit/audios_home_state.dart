@@ -25,6 +25,9 @@ class AudiosHomeState extends Equatable {
     this.duration = Duration.zero,
     this.errorMessage,
     this.playbackSpeed = 1.0,
+    this.isTranscriptionVisible = false,
+    this.isTranscribing = false,
+    this.transcription,
   });
 
   final AudiosHomeStatus status;
@@ -34,6 +37,9 @@ class AudiosHomeState extends Equatable {
   final Duration duration;
   final String? errorMessage;
   final double playbackSpeed;
+  final bool isTranscriptionVisible;
+  final bool isTranscribing;
+  final String? transcription;
 
   AudiosHomeState copyWith({
     AudiosHomeStatus? status,
@@ -43,6 +49,10 @@ class AudiosHomeState extends Equatable {
     Duration? duration,
     String? errorMessage,
     double? playbackSpeed,
+    bool? isTranscriptionVisible,
+    bool? isTranscribing,
+    String? transcription,
+    bool clearTranscription = false,
   }) {
     return AudiosHomeState(
       status: status ?? this.status,
@@ -52,6 +62,12 @@ class AudiosHomeState extends Equatable {
       duration: duration ?? this.duration,
       errorMessage: errorMessage ?? this.errorMessage,
       playbackSpeed: playbackSpeed ?? this.playbackSpeed,
+      isTranscriptionVisible:
+          isTranscriptionVisible ?? this.isTranscriptionVisible,
+      isTranscribing: isTranscribing ?? this.isTranscribing,
+      transcription: clearTranscription
+          ? null
+          : (transcription ?? this.transcription),
     );
   }
 
@@ -64,5 +80,8 @@ class AudiosHomeState extends Equatable {
     duration,
     errorMessage,
     playbackSpeed,
+    isTranscriptionVisible,
+    isTranscribing,
+    transcription,
   ];
 }

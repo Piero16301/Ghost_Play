@@ -53,12 +53,30 @@ class AppCubit extends Cubit<AppState> {
         fontFamily = defaultFont;
       }
 
-      // Emit consolidated state
+      // Setting custom keys and emitting consolidated state
+      final resolvedLanguage = _localStorage.getLanguage();
+      final resolvedTheme = _localStorage.getTheme();
+      final resolvedBaseColor = _localStorage.getBaseColor();
+
+      if (resolvedLanguage != null) {
+        _crashService.setCustomKey('language', resolvedLanguage.languageCode);
+      }
+      if (resolvedTheme != null) {
+        _crashService.setCustomKey('theme', resolvedTheme.name);
+      }
+      if (resolvedBaseColor != null) {
+        _crashService.setCustomKey(
+          'baseColor',
+          ExpressiveColors.toKey(resolvedBaseColor),
+        );
+      }
+      _crashService.setCustomKey('fontFamily', fontFamily);
+
       emit(
         state.copyWith(
-          language: _localStorage.getLanguage(),
-          theme: _localStorage.getTheme(),
-          baseColor: _localStorage.getBaseColor(),
+          language: resolvedLanguage,
+          theme: resolvedTheme,
+          baseColor: resolvedBaseColor,
           fontFamily: fontFamily,
         ),
       );
@@ -89,6 +107,7 @@ class AppCubit extends Cubit<AppState> {
 
   void changeBaseColor({required Color baseColor}) {
     _localStorage.saveBaseColor(baseColor: baseColor);
+    _crashService.setCustomKey('baseColor', ExpressiveColors.toKey(baseColor));
     _analyticsService.logEvent(
       name: 'change_base_color',
       parameters: {'color_value': ExpressiveColors.toKey(baseColor)},

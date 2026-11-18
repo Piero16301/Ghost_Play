@@ -312,6 +312,12 @@ void main() {
         verify: (_) {
           verify(() => storageService.getDirectoryPermission(any<String>()))
               .called(1);
+          verify(
+            () => analyticsService.logEvent(
+              name: 'permission_result',
+              parameters: {'granted': 'true'},
+            ),
+          ).called(1);
         },
       );
 
@@ -324,6 +330,14 @@ void main() {
         build: () => homeCubit,
         act: (cubit) => cubit.requestPermission(),
         expect: () => <HomeState>[],
+        verify: (_) {
+          verify(
+            () => analyticsService.logEvent(
+              name: 'permission_result',
+              parameters: {'granted': 'false'},
+            ),
+          ).called(1);
+        },
       );
 
       blocTest<HomeCubit, HomeState>(
@@ -348,6 +362,26 @@ void main() {
         build: () => homeCubit,
         act: (cubit) => cubit.requestPermission(),
         expect: () => <HomeState>[],
+      );
+
+      blocTest<HomeCubit, HomeState>(
+        'records error when getDirectoryPermission throws Exception',
+        setUp: () {
+          when(() => storageService.getDirectoryPermission(any<String>()))
+              .thenThrow(Exception('saf failed'));
+        },
+        build: () => homeCubit,
+        act: (cubit) => cubit.requestPermission(),
+        expect: () => <HomeState>[],
+        verify: (_) {
+          verify(
+            () => crashService.recordError(
+              any<dynamic>(),
+              any<StackTrace?>(),
+              reason: 'Failed to request directory permission',
+            ),
+          ).called(1);
+        },
       );
     });
 

@@ -1,7 +1,10 @@
 import 'package:bloc_test/bloc_test.dart';
+import 'package:firebase_ai/firebase_ai.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:firebase_performance/firebase_performance.dart';
+import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'package:flutter/services.dart';
 import 'package:ghost_play/app/app.dart';
 import 'package:ghost_play/home/home.dart';
@@ -29,6 +32,11 @@ class MocktailCrashRepository extends Mock implements CrashRepository;
 class MocktailPerformanceRepository extends Mock
     implements PerformanceRepository;
 
+class MocktailAiRepository extends Mock implements AiRepository;
+
+class MocktailRemoteConfigRepository extends Mock
+    implements RemoteConfigRepository;
+
 class MockLocalStorageService extends Mock implements LocalStorageService;
 
 class MockAnalyticsService extends Mock implements AnalyticsService;
@@ -36,6 +44,10 @@ class MockAnalyticsService extends Mock implements AnalyticsService;
 class MockCrashService extends Mock implements CrashService;
 
 class MockPerformanceService extends Mock implements PerformanceService;
+
+class MockRemoteConfigService extends Mock implements RemoteConfigService;
+
+class MockAiService extends Mock implements AiService;
 
 class MockAudioPlayer extends Mock implements ja.AudioPlayer;
 
@@ -49,11 +61,17 @@ class MockMethodChannel extends Mock implements MethodChannel;
 
 class MockStorageService extends Mock implements StorageService;
 
+class MockFirebaseAI extends Mock implements FirebaseAI;
+
 class MockFirebaseAnalytics extends Mock implements FirebaseAnalytics;
+
+class MockFirebaseApp extends Mock implements FirebaseApp;
 
 class MockFirebaseCrashlytics extends Mock implements FirebaseCrashlytics;
 
 class MockFirebasePerformance extends Mock implements FirebasePerformance;
+
+class MockFirebaseRemoteConfig extends Mock implements FirebaseRemoteConfig;
 
 class MockTrace extends Mock implements Trace;
 
@@ -67,12 +85,19 @@ class FakeAudioMetadata extends Fake implements AudioMetadata;
 
 class FakeMultimediaMetadata extends Fake implements MultimediaMetadata;
 
+class FakeTranscriptionMetadata extends Fake implements TranscriptionMetadata;
+
+class FakeRemoteConfigSettings extends Fake implements RemoteConfigSettings;
+
 void registerFallbackValues() {
   registerFallbackValue(FakeAppState());
   registerFallbackValue(FakeHomeState());
   registerFallbackValue(FakeAudiosHomeState());
   registerFallbackValue(FakeAudioMetadata());
   registerFallbackValue(FakeMultimediaMetadata());
+  registerFallbackValue(FakeTranscriptionMetadata());
+  registerFallbackValue(FakeRemoteConfigSettings());
+  registerFallbackValue(<PromptPart>[]);
   registerFallbackValue(const Locale('en', 'US'));
   registerFallbackValue(ThemeMode.system);
   registerFallbackValue(Colors.blue);

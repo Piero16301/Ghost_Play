@@ -50,6 +50,10 @@ class _MultimediaPreviewDialogState extends State<MultimediaPreviewDialog> {
       }
 
       _cachedFilePath = path;
+      if (!mounted) {
+        _deleteCachedFile();
+        return;
+      }
 
       if (widget.item.isVideo) {
         _videoPlayerController = VideoPlayerController.file(File(path));
@@ -86,7 +90,19 @@ class _MultimediaPreviewDialogState extends State<MultimediaPreviewDialog> {
   @override
   void dispose() {
     unawaited(_videoPlayerController?.dispose());
+    _deleteCachedFile();
     super.dispose();
+  }
+
+  void _deleteCachedFile() {
+    final path = _cachedFilePath;
+    if (path == null) return;
+    try {
+      final file = File(path);
+      if (file.existsSync()) {
+        file.deleteSync();
+      }
+    } on Object catch (_) {}
   }
 
   Future<void> _saveToGallery(AppLocalizations l10n) async {
@@ -140,10 +156,10 @@ class _MultimediaPreviewDialogState extends State<MultimediaPreviewDialog> {
         );
         Navigator.of(context).pop();
       }
-    } on Exception catch (e) {
+    } on Exception catch (e, stackTrace) {
       getIt<CrashService>().recordError(
         e,
-        StackTrace.current,
+        stackTrace,
         reason: 'Error saving multimedia to gallery',
       );
       if (mounted) {
