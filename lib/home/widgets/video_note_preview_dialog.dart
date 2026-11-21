@@ -5,6 +5,7 @@ import 'dart:math' as math;
 import 'package:expressive_kit/expressive_kit.dart';
 import 'package:gal/gal.dart';
 import 'package:ghost_play/app/app.dart';
+import 'package:ghost_play/home/widgets/transcription_markdown.dart';
 import 'package:ghost_play/home/widgets/video_progress_bar.dart';
 import 'package:ghost_play/l10n/l10n.dart';
 import 'package:hugeicons/hugeicons.dart';
@@ -395,13 +396,7 @@ class _VideoNotePreviewDialogState extends State<VideoNotePreviewDialog> {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   spacing: 12,
                   children: [
-                    Text(
-                      transcriptionText,
-                      style: theme.textTheme.bodyMedium?.copyWith(
-                        color: colorScheme.onSurface,
-                        height: 1.4,
-                      ),
-                    ),
+                    TranscriptionMarkdown(data: transcriptionText),
                     Align(
                       child: ExpressiveButton.tonal(
                         size: ExpressiveButtonSize.small,
