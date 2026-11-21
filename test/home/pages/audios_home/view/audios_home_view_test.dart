@@ -1,4 +1,5 @@
 import 'package:expressive_kit/expressive_kit.dart';
+import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ghost_play/app/app.dart';
 import 'package:ghost_play/home/home.dart';
@@ -250,6 +251,7 @@ void main() {
 
         final cardFinder = find.byType(ExpressiveCard);
         expect(cardFinder, findsOneWidget);
+        expect(find.byType(MarkdownBody), findsOneWidget);
         expect(find.text(longText), findsOneWidget);
         expect(find.text('Regenerate'), findsOneWidget);
         expect(tester.getSize(cardFinder).height, lessThanOrEqualTo(400));

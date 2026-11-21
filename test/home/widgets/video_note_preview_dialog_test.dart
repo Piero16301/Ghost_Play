@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:expressive_kit/expressive_kit.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:ghost_play/app/app.dart';
 import 'package:ghost_play/home/home.dart';
@@ -578,6 +579,7 @@ void main() {
         completer.complete(longText);
         await tester.pumpAndSettle();
 
+        expect(find.byType(MarkdownBody), findsOneWidget);
         expect(find.text(longText), findsOneWidget);
         expect(find.text('Regenerate'), findsOneWidget);
 

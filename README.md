@@ -5,7 +5,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Buy Me A Coffee](https://img.shields.io/badge/Buy%20Me%20A%20Coffee-FFDD00?logo=buy-me-a-coffee&logoColor=black)](https://buymeacoffee.com/sanjuanpamk)
 
-Welcome to the comprehensive documentation for the **Ghost Play** application. This guide covers the complete project structure, key Dart files organized by functional modules, their responsibilities, and how they interconnect to manage audio retrieval, playback, status media, video notes, and settings using Android Storage Access Framework (SAF), local device storage, and Firebase telemetry.
+Welcome to the comprehensive documentation for the **Ghost Play** application. This guide covers the project architecture, directory structure, core services, feature modules, AI transcription pipeline, and testing setup for managing WhatsApp voice notes, status media, circular video notes, and user preferences using Android Storage Access Framework (SAF), Material 3 Expressive UI (`expressive_kit`), local caching, and Firebase services.
 
 ---
 
@@ -14,17 +14,16 @@ Welcome to the comprehensive documentation for the **Ghost Play** application. T
 1. [Architecture](#%EF%B8%8F-architecture)
 2. [Project Directory Structure](#-project-directory-structure)
 3. [App Core (`lib/app`)](#app-core-libapp)
-   - 3.1 [State Management](#state-management)
-   - 3.2 [Global Utilities & Router](#global-utilities--router)
-   - 3.3 [Helpers](#helpers)
-   - 3.4 [Repositories & Services Layer](#repositories--services-layer)
-   - 3.5 [UI Layer (View, Widgets & Animations)](#ui-layer-view-widgets--animations)
+   - [State Management](#1-state-management)
+   - [Global Utilities & Router](#2-global-utilities--router)
+   - [Repositories & Services Layer](#3-repositories--services-layer)
+   - [UI Layer (View & Widgets)](#4-ui-layer-view--widgets)
 4. [Feature Modules](#feature-modules)
-   - 4.1 [Home (`lib/home`)](#home-libhome)
+   - [Home (`lib/home`)](#41-home-libhome)
      - [Audios Home (`audios_home`)](#audios-home-audios_home)
      - [States Home (`states_home`)](#states-home-states_home)
      - [Videos Home (`videos_home`)](#videos-home-videos_home)
-   - 4.2 [Settings (`lib/settings`)](#settings-libsettings)
+   - [Settings (`lib/settings`)](#42-settings-libsettings)
 5. [Localization (`lib/l10n`)](#localization-libl10n)
 6. [Bootstrap & Entrypoint](#bootstrap--entrypoint)
 7. [Packages & Data Models](#packages--data-models)
@@ -38,221 +37,198 @@ Welcome to the comprehensive documentation for the **Ghost Play** application. T
 flowchart TD
   subgraph "Mobile Application (Flutter)"
     direction TB
-    UI[UI Layer / Views & Widgets]
-    
-    subgraph "State Management (Bloc/Cubit)"
-      AppCubit[AppCubit<br>Theme, Language, App Preferences]
-      HomeCubit[HomeCubit<br>Storage Permissions, SAF, Media Loading & Navigation]
-      AudiosHomeCubit[AudiosHomeCubit<br>Audio Playback, Progress & MiniPlayer State]
+    UI["UI Layer / Views, Dialogs & Expressive Widgets"]
+
+    subgraph "State Management (Bloc / Cubit)"
+      AppCubit["AppCubit<br>Theme, Color, Font Family & Locale"]
+      HomeCubit["HomeCubit<br>SAF Permissions, Media Loading & Tab Navigation"]
+      AudiosHomeCubit["AudiosHomeCubit<br>Audio Playback, Speed, Progress & Transcription"]
     end
-    
+
     subgraph "Services Layer (Business Logic)"
-      AppServices[Analytics, Crash, Performance, LocalStorage, Storage]
+      AppServices["Ai, RemoteConfig, Storage, LocalStorage,<br>Analytics, Crash & Performance Services"]
     end
 
     subgraph "Repositories Layer (Data Access)"
-      AppRepos[AnalyticsRepo, CrashRepo, PerformanceRepo, LocalStorageRepo, StorageRepo]
+      AppRepos["AiRepo, RemoteConfigRepo, StorageRepo,<br>LocalStorageRepo, AnalyticsRepo, CrashRepo & PerformanceRepo"]
     end
-    
+
     subgraph "Dependency Injection (GetIt)"
-      DI[ServiceLocator / ServiceFactory<br>Mock & Prod Environments]
+      DI["ServiceLocator / ServiceFactory<br>Mock & Prod Environments"]
     end
-    
+
     subgraph "Local OS & Device APIs"
-      SAF[Storage Access Framework / SAF<br>Android Media & Scoped Directories]
-      SharedPrefs[(SharedPreferences)]
-      JustAudio[Just Audio Player]
-      GalApi[Gal / Media Gallery Saver]
+      SAF["Storage Access Framework (SAF)<br>Android Scoped Storage & MethodChannel"]
+      SharedPrefs[("SharedPreferences<br>Preferences & Transcription Cache")]
+      JustAudio["just_audio Player"]
+      VideoPlayer["video_player"]
+      GalApi["gal / Media Gallery Saver"]
     end
   end
 
   %% Flow
-  UI <-->|User Events & States| HomeCubit
-  UI <-->|Audio Controls & Progress| AudiosHomeCubit
-  UI <-->|Theme & Locale Settings| AppCubit
-  
+  UI <-->|"User Events & States"| HomeCubit
+  UI <-->|"Audio Controls & Transcription"| AudiosHomeCubit
+  UI <-->|"Theme, Font & Locale"| AppCubit
+
   HomeCubit --> AppServices
   AudiosHomeCubit --> AppServices
   AudiosHomeCubit --> JustAudio
   AppCubit --> AppServices
-  
+  UI --> VideoPlayer
+  UI <-->|"Save Media"| GalApi
+
   AppServices --> AppRepos
-  DI -.->|Injects Dependencies| AppServices
-  DI -.->|Injects Dependencies| AppRepos
-  
-  AppRepos <-->|Persist Settings| SharedPrefs
-  AppRepos <-->|Query Scoped Storage| SAF
-  UI <-->|Save Media| GalApi
-  
-  subgraph "Cloud Telemetry (Firebase)"
+  DI -.->|"Injects"| AppServices
+  DI -.->|"Injects"| AppRepos
+
+  AppRepos <-->|"Persist Preferences & Cached Transcriptions"| SharedPrefs
+  AppRepos <-->|"Query Media & Cache Temp Files"| SAF
+
+  subgraph "Cloud Services (Firebase)"
     direction TB
-    FirebaseTelemetry((Crashlytics, Analytics, Performance))
+    FirebaseAI(("Firebase AI / Gemini"))
+    FirebaseConfig(("Remote Config & App Check"))
+    FirebaseTelemetry(("Crashlytics, Analytics & Performance"))
   end
 
-  AppRepos <-->|Telemetry Data| FirebaseTelemetry
+  AppRepos <-->|"Audio & Video Transcription"| FirebaseAI
+  AppRepos <-->|"Model, Prompts & Cache TTL"| FirebaseConfig
+  AppRepos <-->|"Telemetry & Traces"| FirebaseTelemetry
 ```
 
-- **UI Layer**: Standardized presentation layer including the main dashboard navigation, WhatsApp audios tab with persistent floating mini-player, WhatsApp statuses gallery, video notes browser, and settings screen.
+- **UI Layer**: Built with Material 3 Expressive components (`expressive_kit` + `material_ui`), featuring a keep-alive tabbed home dashboard, modal bottom sheet audio player with Markdown transcription card, WhatsApp statuses gallery, circular video note player with Markdown transcription, and customizable settings.
 - **State (Bloc/Cubit)**:
-  - `AppCubit`: Manages global app configurations such as dark/light theme, custom accent color, and localization locale.
-  - `HomeCubit`: Manages the main scaffold, bottom tab selection, SAF permissions, and loads audios, cached statuses, and video notes.
-  - `AudiosHomeCubit`: Coordinates playback streams, position, duration, and controls for the floating audio player via `just_audio`.
-- **Persistence (Local DB - SharedPreferences)**: Stores local configurations (theme, color, language) across app reboots via `LocalStorageRepository`.
-- **Services & Repositories**: Follows the Repository Pattern with Dependency Injection (`get_it`). Business logic sits in Services; native data handling, preferences, and telemetry wrappers sit in Repositories.
-- **Native OS & Scoped Storage**: Uses `saf` (Storage Access Framework) to interact with scoped storage on modern Android versions without root access, seamlessly reading `.opus` audios, `.statuses`, and WhatsApp video notes.
+  - `AppCubit`: Manages global preferences (theme mode, accent color, font family, and locale) and syncs custom keys to Crashlytics.
+  - `HomeCubit`: Manages bottom navigation (`PageView`), SAF directory permissions, recency week filters, and loads audios, statuses, and video notes.
+  - `AudiosHomeCubit`: Coordinates `just_audio` playback streams, speed cycling (`1x`, `1.5x`, `2x`), seeking, error reporting, and AI voice-note transcription state.
+- **AI Transcription & Caching**:
+  - `AiService` transcribes `.opus` voice notes (`audio/ogg`) and `.mp4` video notes (`video/mp4`) via `FirebaseAiRepository` (`firebase_ai` / Gemini) using model names, system instructions, and prompts fetched from `RemoteConfigService`.
+  - Transcriptions are cached per file in `SharedPreferences` (`__transcription__<fileName>`) as JSON (`TranscriptionMetadata`: `text` + `timestamp`), avoiding duplicate AI calls unless regenerated (`forceRefresh: true`).
+  - Expired transcriptions older than `maxDaysSavedTranscriptions` (configured via Remote Config) are automatically cleaned up on startup.
+  - Temporary media files copied for playback or transcription are deleted automatically when no longer needed.
+- **Services & Repositories**: Follows the Repository Pattern with Dependency Injection (`get_it`) supporting `Environment.mock` (bundled sample media under `mocks/`) and `Environment.prod`.
+- **Native OS & Scoped Storage**: Uses `saf` (Storage Access Framework) and a native Android `MethodChannel` (`ghostplay/storage`) to read `.opus` voice notes, `.statuses`, and WhatsApp video notes without root access.
 
 ---
 
 # 📁 Project Directory Structure
 
-Below is the complete file and directory layout for the codebase under `lib/` and `test/`:
+Below is the current file and directory layout under `lib/` and `test/`:
 
-```
+```text
 lib/
-├── app/                                  # Global application core (shared infrastructure)
-│   ├── animations/                       # Reusable micro-animations & transitions
-│   │   ├── animations.dart               # Barrel file
-│   │   └── circular_loading_animation.dart # Custom circular spinning indicator
-│   ├── cubit/                            # Global application state management
-│   │   ├── app_cubit.dart                # AppCubit: theme, color, and locale state
-│   │   └── app_state.dart                # AppState: immutable state model with copyWith
-│   ├── global/                           # Global utilities, DI, router, and themes
-│   │   ├── app_dependencies.dart         # GetIt service locator & ServiceFactory
-│   │   ├── app_functions.dart            # Common helper functions (formatting, dates, durations)
-│   │   ├── app_router.dart               # GoRouter configuration & AppRoute enum
-│   │   ├── app_themes.dart               # ThemeData generation (Light, Dark, Custom Color)
-│   │   ├── app_variables.dart            # Global constants & default configurations
-│   │   └── global.dart                   # Barrel file for global utilities
-│   ├── helpers/                          # Helper logic & transformations
-│   │   ├── color_helper.dart             # Color conversion & manipulation utilities
-│   │   ├── helpers.dart                  # Barrel file
-│   │   └── theme_helper.dart             # Theme brightness & style utilities
-│   ├── models/                           # Global domain & transfer models
-│   │   ├── app_route_observer.dart       # Route observer logging page visits to Analytics
-│   │   ├── audio_metadata.dart           # Metadata representation for .opus audio files
-│   │   ├── models.dart                   # Barrel file
-│   │   └── multimedia_metadata.dart      # Media representation for statuses & video notes
-│   ├── repositories/                     # Data access layer (Storage, Prefs, Firebase SDKs)
-│   │   ├── analytics_repository.dart     # Firebase Analytics wrapper
-│   │   ├── crash_repository.dart         # Firebase Crashlytics wrapper
-│   │   ├── local_storage_repository.dart # SharedPreferences data access
-│   │   ├── performance_repository.dart   # Firebase Performance monitoring wrapper
-│   │   ├── repositories.dart             # Barrel file
-│   │   └── storage_repository.dart       # SAF & Android device storage operations
-│   ├── services/                         # Business logic layer orchestrating repositories
-│   │   ├── analytics_service.dart        # Event tracking & route analytics
-│   │   ├── crash_service.dart            # Error reporting & log aggregation
-│   │   ├── local_storage_service.dart    # User preferences business operations
-│   │   ├── performance_service.dart      # Custom trace performance tracking
-│   │   ├── services.dart                 # Barrel file
-│   │   └── storage_service.dart          # Scoped storage & media querying service
-│   ├── view/                             # Root application UI bootstrap
-│   │   ├── app_page.dart                 # Root widget injecting AppCubit & repositories
-│   │   ├── app_view.dart                 # MaterialApp.router configuration & localization setup
-│   │   └── view.dart                     # Barrel file
-│   ├── widgets/                          # Shared UI components
-│   │   ├── app_filled_button.dart        # Styled filled button component
-│   │   ├── app_outlined_button.dart      # Styled outlined button component
-│   │   └── widgets.dart                  # Barrel file
-│   └── app.dart                          # App module umbrella barrel file
-├── home/                                 # Home module (Main features & tabs)
-│   ├── cubit/                            # Main Home state management
-│   │   ├── home_cubit.dart               # HomeCubit: SAF permissions, media loading, tab indexing
-│   │   └── home_state.dart               # HomeState: active tab, lists of audios/statuses/videos
-│   ├── pages/                            # Tab sub-views
-│   │   ├── audios_home/                  # Audios tab: browse and listen to voice notes
-│   │   │   ├── cubit/                    # AudiosHomeCubit: player state & progress
+├── app/                                       # Global application core (shared infrastructure)
+│   ├── cubit/                                 # Global application state management
+│   │   ├── app_cubit.dart                     # AppCubit: theme, color, font family, and locale
+│   │   └── app_state.dart                     # AppState: immutable state model
+│   ├── global/                                # Global utilities, DI, and router
+│   │   ├── app_dependencies.dart              # GetIt service locator & ServiceFactory (mock/prod)
+│   │   ├── app_functions.dart                 # Formatting utilities & SnackBar helper
+│   │   ├── app_router.dart                    # GoRouter configuration & AppRoute enum
+│   │   ├── app_variables.dart                 # Global constants, timeouts & default options
+│   │   └── global.dart                        # Barrel file
+│   ├── models/                                # Global domain & transfer models
+│   │   ├── app_route_observer.dart            # NavigatorObserver logging screen views to Analytics
+│   │   ├── audio_metadata.dart                # Metadata for .opus voice notes
+│   │   ├── models.dart                        # Barrel file
+│   │   ├── multimedia_metadata.dart           # Unified metadata for statuses & video notes
+│   │   ├── prompt_part.dart                   # Text & inline file prompt parts for Gemini
+│   │   └── transcription_metadata.dart        # Cached transcription payload (text + timestamp)
+│   ├── repositories/                          # Data access layer (Firebase, Storage, SharedPrefs)
+│   │   ├── ai_repository.dart                 # Firebase AI (Gemini) & mock repository
+│   │   ├── analytics_repository.dart          # Firebase Analytics wrapper
+│   │   ├── crash_repository.dart              # Firebase Crashlytics wrapper
+│   │   ├── local_storage_repository.dart      # SharedPreferences preferences & transcription cache
+│   │   ├── performance_repository.dart        # Firebase Performance wrapper
+│   │   ├── remote_config_repository.dart      # Firebase Remote Config wrapper
+│   │   ├── repositories.dart                  # Barrel file
+│   │   └── storage_repository.dart            # SAF, MethodChannel & mock media storage
+│   ├── services/                              # Business logic layer orchestrating repositories
+│   │   ├── ai_service.dart                    # Audio/video transcription, caching & telemetry
+│   │   ├── analytics_service.dart             # Event tracking & screen analytics
+│   │   ├── crash_service.dart                 # Error reporting, logs & custom keys
+│   │   ├── local_storage_service.dart         # Preferences, transcription cache & TTL cleanup
+│   │   ├── performance_service.dart           # Custom performance traces
+│   │   ├── remote_config_service.dart         # Remote Config initialization & config getters
+│   │   ├── services.dart                      # Barrel file
+│   │   └── storage_service.dart               # Scoped storage, media queries & thumbnail cache
+│   ├── view/                                  # Root application UI bootstrap
+│   │   ├── app_page.dart                      # Root widget providing AppCubit
+│   │   ├── app_view.dart                      # MaterialApp.router, ExpressiveTheme & l10n setup
+│   │   └── view.dart                          # Barrel file
+│   ├── widgets/                               # Shared UI components
+│   │   ├── app_filled_button.dart             # Styled filled action button
+│   │   ├── app_outlined_button.dart           # Styled outlined action button
+│   │   └── widgets.dart                       # Barrel file
+│   └── app.dart                               # App module umbrella barrel file
+├── home/                                      # Home module (Main features & tabs)
+│   ├── cubit/                                 # Main Home state management
+│   │   ├── home_cubit.dart                    # HomeCubit: SAF permissions, media loading & tabs
+│   │   └── home_state.dart                    # HomeState: active tab, filters & media lists
+│   ├── pages/                                 # Tab sub-views
+│   │   ├── audios_home/                       # Voice Notes tab
+│   │   │   ├── cubit/                         # AudiosHomeCubit: playback & audio transcription
 │   │   │   │   ├── audios_home_cubit.dart
 │   │   │   │   └── audios_home_state.dart
-│   │   │   ├── view/                     # Audios views
-│   │   │   │   ├── audios_home_page.dart # Provider injector for AudiosHomeCubit
-│   │   │   │   ├── audios_home_view.dart # Audio list UI & item playback triggers
+│   │   │   ├── view/                          # Audios views & modal bottom sheet launcher
+│   │   │   │   ├── audios_home_page.dart
+│   │   │   │   ├── audios_home_view.dart
 │   │   │   │   └── view.dart
-│   │   │   ├── widgets/                  # Audio specific widgets
-│   │   │   │   ├── mini_player.dart      # Floating audio player bar with slider & controls
+│   │   │   ├── widgets/                       # Audio player & transcription UI
+│   │   │   │   ├── audio_transcription_card.dart # Scrollable Markdown transcription card
+│   │   │   │   ├── mini_player.dart           # Compact player with speed, transcribe & seek
 │   │   │   │   └── widgets.dart
-│   │   │   └── audios_home.dart          # Barrel file
-│   │   ├── states_home/                  # States tab: browse WhatsApp statuses
-│   │   │   ├── view/                     # States views
-│   │   │   │   ├── states_home_page.dart # Entry point for States tab
-│   │   │   │   ├── states_home_view.dart # Grid view of photo & video statuses
+│   │   │   └── audios_home.dart               # Barrel file
+│   │   ├── states_home/                       # Statuses tab
+│   │   │   ├── view/
+│   │   │   │   ├── states_home_page.dart
+│   │   │   │   ├── states_home_view.dart      # Grid view of photo & video statuses
 │   │   │   │   └── view.dart
-│   │   │   └── states_home.dart          # Barrel file
-│   │   ├── videos_home/                  # Videos tab: WhatsApp video notes
-│   │   │   ├── view/                     # Videos views
-│   │   │   │   ├── videos_home_page.dart # Entry point for Videos tab
-│   │   │   │   ├── videos_home_view.dart # Grid view of video notes with recency filter
+│   │   │   └── states_home.dart               # Barrel file
+│   │   ├── videos_home/                       # Video Notes tab
+│   │   │   ├── view/
+│   │   │   │   ├── videos_home_page.dart
+│   │   │   │   ├── videos_home_view.dart      # Grid view of circular video notes + filter
 │   │   │   │   └── view.dart
-│   │   │   └── videos_home.dart          # Barrel file
-│   │   └── pages.dart                    # Barrel file for all home pages
-│   ├── view/                             # Main Home Scaffold
-│   │   ├── home_page.dart                # Provider injector for HomeCubit
-│   │   ├── home_view.dart                # Main Scaffold with NavigationBar & app bar
-│   │   └── view.dart                     # Barrel file
-│   ├── widgets/                          # Home module widgets
-│   │   ├── multimedia_preview_dialog.dart# Fullscreen preview dialog for images & videos
-│   │   └── widgets.dart                  # Barrel file
-│   └── home.dart                         # Home module umbrella barrel file
-├── l10n/                                 # Localization module
-│   ├── arb/                              # Application Resource Bundle files (6 languages)
-│   │   ├── app_de.arb                    # German
-│   │   ├── app_en.arb                    # English (template source)
-│   │   ├── app_es.arb                    # Spanish
-│   │   ├── app_fr.arb                    # French
-│   │   ├── app_it.arb                    # Italian
-│   │   └── app_pt.arb                    # Portuguese
-│   ├── gen/                              # Auto-generated localization classes
-│   │   ├── app_localizations.dart
-│   │   ├── app_localizations_de.dart
-│   │   ├── app_localizations_en.dart
-│   │   ├── app_localizations_es.dart
-│   │   ├── app_localizations_fr.dart
-│   │   ├── app_localizations_it.dart
-│   │   └── app_localizations_pt.dart
-│   └── l10n.dart                         # Extension helpers for BuildContext localization
-├── settings/                             # Settings module (Preferences & App Info)
-│   ├── view/                             # Settings views
-│   │   ├── settings_page.dart            # Settings entry point
-│   │   ├── settings_view.dart            # Theme mode, accent color & language pickers
-│   │   └── view.dart                     # Barrel file
-│   ├── widgets/                          # Settings widgets
-│   │   ├── settings_app_specs.dart       # App version & build information display
-│   │   ├── settings_card_block.dart      # Standardized group card container
-│   │   └── widgets.dart                  # Barrel file
-│   └── settings.dart                     # Settings module umbrella barrel file
-├── bootstrap.dart                        # Initialization wrapper & zone error handling
-├── firebase_options.dart                 # Auto-generated Firebase configuration
-└── main.dart                             # Application entrypoint (DI & Firebase setup)
+│   │   │   └── videos_home.dart               # Barrel file
+│   │   └── pages.dart                         # Barrel file for all home pages
+│   ├── view/                                  # Main Home Scaffold
+│   │   ├── home_page.dart                     # Provider injector for HomeCubit
+│   │   ├── home_view.dart                     # Scaffold with keep-alive PageView & NavigationBar
+│   │   └── view.dart                          # Barrel file
+│   ├── widgets/                               # Shared Home dialogs & media controls
+│   │   ├── multimedia_preview_dialog.dart     # Preview & gallery save dialog for statuses
+│   │   ├── transcription_markdown.dart        # Theme-aware Markdown renderer for transcriptions
+│   │   ├── video_note_preview_dialog.dart     # Circular video note player, transcription & save
+│   │   ├── video_progress_bar.dart            # Reusable VideoControlsBar & VideoProgressBar
+│   │   └── widgets.dart                       # Barrel file
+│   └── home.dart                              # Home module umbrella barrel file
+├── l10n/                                      # Localization module (6 languages)
+│   ├── arb/                                   # ARB source files (de, en, es, fr, it, pt)
+│   ├── gen/                                   # Auto-generated AppLocalizations delegates
+│   └── l10n.dart                              # Localization exports
+├── settings/                                  # Settings module (Preferences & App Info)
+│   ├── view/
+│   │   ├── settings_page.dart                 # Settings entry point
+│   │   ├── settings_view.dart                 # Theme, color, font family & language modals
+│   │   └── view.dart                          # Barrel file
+│   ├── widgets/
+│   │   ├── settings_app_specs.dart            # App version, build number & last update date
+│   │   └── widgets.dart                       # Barrel file
+│   └── settings.dart                          # Settings module umbrella barrel file
+├── bootstrap.dart                             # AppBlocObserver & global error handlers
+├── firebase_options.dart                      # Auto-generated Firebase configuration
+└── main.dart                                  # Entrypoint (Firebase, App Check, DI & bootstrap)
 ```
 
-```
-test/                                     # Comprehensive unit & widget test suite (~100% coverage)
-├── app/                                  # Tests for app core
-│   ├── animations/                       # Tests for animations
-│   ├── cubit/                            # Tests for AppCubit & AppState
-│   ├── global/                           # Tests for router, dependencies, themes, functions
-│   ├── helpers/                          # Tests for color and theme helpers
-│   ├── models/                           # Tests for data models (audio, multimedia, observer)
-│   ├── repositories/                     # Tests for all repositories (Mocked & real)
-│   ├── services/                         # Tests for all services
-│   ├── view/                             # Tests for AppPage & AppView
-│   └── widgets/                          # Tests for shared buttons and components
-├── helpers/                              # Test utility helpers & mock definitions
-│   ├── helpers.dart                      # Barrel file
-│   ├── mocks.dart                        # Mocktail mock class definitions
-│   ├── pump_app.dart                     # pumpApp test extension with localization & theme
-│   └── service_locator.dart              # Test service locator configurations
-├── home/                                 # Tests for Home feature
-│   ├── cubit/                            # Tests for HomeCubit & HomeState
-│   ├── pages/                            # Tests for Audios, States, and Videos home pages & views
-│   │   ├── audios_home/
-│   │   ├── states_home/
-│   │   └── videos_home/
-│   ├── view/                             # Tests for HomePage & HomeView
-│   └── widgets/                          # Tests for MultimediaPreviewDialog & sub-widgets
-├── l10n/                                 # Tests verifying localization delegates
-└── settings/                             # Tests for Settings feature
-    └── view/                             # Tests for SettingsPage & SettingsView
+```text
+test/                                          # Unit & widget test suite (315+ tests)
+├── app/                                       # Core tests (cubit, global, models, repos, services, view, widgets)
+├── helpers/                                   # Shared test utilities (mocks.dart, pump_app.dart, service_locator.dart)
+├── home/                                      # Home tests (cubit, view, audios_home, states_home, videos_home, dialogs)
+├── l10n/                                      # Localization tests
+└── settings/                                  # Settings page & view tests
 ```
 
 ---
@@ -263,8 +239,8 @@ test/                                     # Comprehensive unit & widget test sui
 
 | File | Role |
 |------|------|
-| **lib/app/cubit/app_cubit.dart** | Manages **global app state**: theme mode (system/light/dark), primary accent color selection, and selected locale. |
-| **lib/app/cubit/app_state.dart** | Immutable state structure representing theme settings, custom color values, and active locale. |
+| **lib/app/cubit/app_cubit.dart** | Manages **global app state**: theme mode (`system`/`light`/`dark`), base accent color, font family (`ExpressiveFonts`), and locale. Syncs preferences with `LocalStorageService`, logs Analytics events, and sets Crashlytics custom keys. |
+| **lib/app/cubit/app_state.dart** | Immutable Equatable state holding `language`, `theme`, `baseColor`, and `fontFamily`. |
 
 ---
 
@@ -272,53 +248,39 @@ test/                                     # Comprehensive unit & widget test sui
 
 | File | Role |
 |------|------|
-| **lib/app/global/app_dependencies.dart** | Configures `GetIt` service locator (`ServiceFactory`) for production and mock test environments. |
-| **lib/app/global/app_functions.dart** | General formatting utilities: format byte sizes, convert timestamps to readable dates, format audio durations. |
-| **lib/app/global/app_router.dart** | Declares `GoRouter` navigation graph (`AppRoute.home` at `/`, `AppRoute.settings` at `/settings`) with analytics tracking. |
-| **lib/app/global/app_themes.dart** | Creates customizable `ThemeData` instances for light, dark, and dynamic color palettes. |
-| **lib/app/global/app_variables.dart** | Application-wide constants, default fallback values, and shared configuration variables. |
+| **lib/app/global/app_dependencies.dart** | Configures `GetIt` service locator (`ServiceFactory`) for `Environment.mock` and `Environment.prod`. |
+| **lib/app/global/app_functions.dart** | Common helpers such as file name truncation and styled `SnackBar` presentation. |
+| **lib/app/global/app_router.dart** | Declares `GoRouter` navigation graph (`AppRoute.home` at `/`, `AppRoute.settings` at `/settings`) with `AppRouteObserver` for screen analytics. |
+| **lib/app/global/app_variables.dart** | Application-wide constants, animation/timeout durations (`timeoutDuration`, `aiTimeoutDuration`, Remote Config fetch settings), week filter options, and asset paths. |
 
 ---
 
-### 3. Helpers
+### 3. Repositories & Services Layer
 
-| File | Role |
-|------|------|
-| **lib/app/helpers/color_helper.dart** | Provides color space conversion and tone manipulation helpers. |
-| **lib/app/helpers/theme_helper.dart** | Evaluates theme brightness, contrast settings, and color adaptations. |
-
----
-
-### 4. Repositories & Services Layer
-
-Employs the Repository Pattern connected via Dependency Injection. Business logic is isolated in Services, while Repositories abstract lower-level data sources.
+Employs the Repository Pattern wired through `GetIt`. Business orchestration, caching, and telemetry live in Services; SDK wrappers and native platform integrations live in Repositories.
 
 | Layer | Responsibility | Key Files |
 |-------|----------------|-----------|
-| **Repositories** (`lib/app/repositories/`) | Low-level storage interactions, shared preference management, and Firebase SDK wrappers. | `analytics_repository.dart`, `crash_repository.dart`, `local_storage_repository.dart`, `performance_repository.dart`, `storage_repository.dart` |
-| **Services** (`lib/app/services/`) | Provides high-level business flows orchestrating the repository layers, consumed by Cubits and Views. | `analytics_service.dart`, `crash_service.dart`, `local_storage_service.dart`, `performance_service.dart`, `storage_service.dart` |
+| **Repositories** (`lib/app/repositories/`) | Low-level Firebase SDKs, SharedPreferences persistence, SAF / `MethodChannel` storage, and mock implementations. | `ai_repository.dart`, `analytics_repository.dart`, `crash_repository.dart`, `local_storage_repository.dart`, `performance_repository.dart`, `remote_config_repository.dart`, `storage_repository.dart` |
+| **Services** (`lib/app/services/`) | High-level business flows orchestrating repositories and telemetry, consumed by Cubits and Views. | `ai_service.dart`, `analytics_service.dart`, `crash_service.dart`, `local_storage_service.dart`, `performance_service.dart`, `remote_config_service.dart`, `storage_service.dart` |
 
 **Key Capabilities:**
-- **Local Storage**: `LocalStorageService` to read and write application user preferences (theme mode, color index, locale).
-- **Media Storage**: `StorageService` using the Storage Access Framework (`saf`) to access Android scoped storage, query `.opus` audio files, read cached WhatsApp statuses, and retrieve video notes.
-- **Infrastructure & Telemetry**: Firebase Crashlytics error logging, performance tracing for disk/loading operations, and screen tracking via Firebase Analytics.
+- **AI Transcription (`AiService`)**: Extracts transcriptions from `.opus` voice notes (`audio/ogg`) and `.mp4` video notes (`video/mp4`) via Gemini (`FirebaseAiRepository`), checks/updates local cache (`cache_hit` vs `remote_call` analytics), cleans up temporary `.opus` files, traces latency, and reports failures to Crashlytics.
+- **Remote Config (`RemoteConfigService`)**: Initializes and serves `geminiModelName`, `geminiSystemInstruction`, `geminiPromptExtractAudio`, `geminiPromptExtractVideo`, and `maxDaysSavedTranscriptions`, with performance tracing and Crashlytics error handling.
+- **Local Storage (`LocalStorageService`)**: Persists theme, accent color, font family, locale, and per-file `TranscriptionMetadata` JSON entries with traced TTL cleanup (`clearOldTranscriptions`).
+- **Media Storage (`StorageService`)**: Queries Android scoped storage via SAF / `MethodChannel`, caches temporary files for playback/transcription, and maintains an in-memory thumbnail cache with `thumbnail_generation_latency` traces and Crashlytics error reporting.
+- **Telemetry (`AnalyticsService`, `CrashService`, `PerformanceService`)**: Tracks user interactions, screen transitions, custom traces, breadcrumbs, custom keys, and non-fatal/fatal crashes.
 
 ---
 
-### 5. UI Layer (View, Widgets & Animations)
+### 4. UI Layer (View & Widgets)
 
-#### View
 | File | Role |
 |------|------|
-| **lib/app/view/app_page.dart** | Root widget bootstrapping `AppCubit` and passing repositories down the tree. |
-| **lib/app/view/app_view.dart** | Sets up `MaterialApp.router`, subscribing to `AppCubit` to reflect dynamic theme and language changes. |
-
-#### Widgets & Animations
-| File | Role |
-|------|------|
-| **lib/app/widgets/app_filled_button.dart** | Standard filled action button with loading states. |
-| **lib/app/widgets/app_outlined_button.dart** | Standard outlined action button with custom styling. |
-| **lib/app/animations/circular_loading_animation.dart** | Reusable spinning indicator for media loading states. |
+| **lib/app/view/app_page.dart** | Root widget providing `AppCubit` and triggering `initialLoad()`. |
+| **lib/app/view/app_view.dart** | Configures `MaterialApp.router` with `ExpressiveTheme.light` / `ExpressiveTheme.dark`, dynamic font family, and localization delegates. |
+| **lib/app/widgets/app_filled_button.dart** | Standard filled action button. |
+| **lib/app/widgets/app_outlined_button.dart** | Standard outlined action button. |
 
 ---
 
@@ -326,35 +288,33 @@ Employs the Repository Pattern connected via Dependency Injection. Business logi
 
 ### 4.1 Home (`lib/home`)
 
-The primary feature module composed of three main tabs and coordinated by `HomeCubit`:
+Coordinated by `HomeCubit` with three keep-alive tabs inside a `PageView` and `ExpressiveNavigationBar`:
 
 - **Home Scaffold (`home_page.dart`, `home_view.dart`)**:
-  - Displays the bottom `NavigationBar` switching between **Audios**, **States**, and **Videos**.
-  - Hosts the app bar action leading to `/settings`.
-  - Prompts for SAF storage permissions when not yet granted.
-  - Automatically loads and refreshes media across all three categories.
+  - Switches smoothly between **Voice Notes**, **States**, and **Video Notes** while preserving tab state (`_KeepAliveTab`).
+  - Hosts the app bar settings button (`/settings`).
+  - Prompts for SAF storage permission when not yet granted and loads all three media categories in parallel.
 
 #### Audios Home (`audios_home`)
 - **Location**: `lib/home/pages/audios_home/`
 - **Cubit**: `AudiosHomeCubit` (`audios_home_cubit.dart`, `audios_home_state.dart`)
 - **Key Features**:
-  - Lists ingested `.opus` voice notes with duration, date, and file size.
-  - Controls playback through `just_audio` (play, pause, seek, completion).
-  - Contains `MiniPlayer` (`mini_player.dart`): an interactive floating playback bar overlaid at the bottom of the screen with slider seek support.
+  - Lists `.opus` voice notes with formatted duration, date, and recency week filter.
+  - Opens a dark-scrim modal bottom sheet (`_AudioPlayerSheetLauncher`) displaying `AudioTranscriptionCard` above `MiniPlayer`; tapping outside dismisses and closes the player.
+  - Full `just_audio` playback controls: play, pause, resume, seek slider, and speed cycling (`1x`, `1.5x`, `2x`).
+  - On-demand AI transcription with Markdown rendering (`TranscriptionMarkdown`), local caching, and **Regenerate** (`forceRefresh: true`).
 
 #### States Home (`states_home`)
 - **Location**: `lib/home/pages/states_home/`
 - **Key Features**:
-  - Displays cached WhatsApp status media (images and videos).
-  - Tapping a status opens `MultimediaPreviewDialog` (`multimedia_preview_dialog.dart`) for full-screen photo viewing or video playback.
-  - Allows saving statuses directly to the user's gallery using `gal`.
+  - Displays cached WhatsApp image and video statuses in a responsive 2-column grid with cached thumbnails.
+  - Tapping an item opens `MultimediaPreviewDialog` with `VideoControlsBar` for videos, gallery export via `gal`, and automatic temporary file cleanup on dispose.
 
 #### Videos Home (`videos_home`)
 - **Location**: `lib/home/pages/videos_home/`
 - **Key Features**:
-  - Displays WhatsApp video notes in a clean grid.
-  - Supports filtering video notes by recency (e.g., all, past week, past 2 weeks).
-  - Tapping a video opens `MultimediaPreviewDialog` for playback and gallery export.
+  - Displays WhatsApp circular video notes in a 2-column grid with recency week filtering and cached thumbnails.
+  - Tapping a video note opens `VideoNotePreviewDialog` featuring a circular video player (`_CircularVideoPlayer`), `VideoControlsBar` (play/pause, seek, mute/unmute, transcribe), scrollable Markdown transcription (`TranscriptionMarkdown`) with **Regenerate**, gallery export via `gal`, and automatic temporary file cleanup on dispose.
 
 ---
 
@@ -362,12 +322,11 @@ The primary feature module composed of three main tabs and coordinated by `HomeC
 
 - **Location**: `lib/settings/`
 - **View**: `SettingsPage`, `SettingsView`
-- **Widgets**: `SettingsAppSpecs`, `SettingsCardBlock`
+- **Widgets**: `SettingsAppSpecs`
 - **Key Features**:
-  - **Theme Selection**: Switch between System, Light, and Dark mode.
-  - **Color Scheme**: Choose from predefined accent colors dynamically updating the app theme.
-  - **Language**: Switch app locale across 6 supported languages.
-  - **App Information**: Displays package version, build number, and links via `SettingsAppSpecs`.
+  - **Appearance**: Theme mode (System, Light, Dark), accent color palette (`ExpressiveColors`), and font family (`ExpressiveFonts`) via modal bottom sheets.
+  - **Language**: Switch locale across 6 supported languages with country flags.
+  - **App Information**: Displays app version, build number, and last update date via `package_info_plus`.
 
 ---
 
@@ -385,7 +344,6 @@ The application supports **6 languages** with compile-time type safety:
 | **Portuguese** | `lib/l10n/arb/app_pt.arb` |
 
 - Generated delegates reside under `lib/l10n/gen/`.
-- Convenient `BuildContext` extensions are provided by `lib/l10n/l10n.dart` (e.g., `context.l10n.appName`).
 
 ---
 
@@ -393,9 +351,9 @@ The application supports **6 languages** with compile-time type safety:
 
 | File | Role |
 |------|------|
-| **lib/main.dart** | App entrypoint: initializes `WidgetsFlutterBinding`, Firebase, and calls `setupServiceLocator()`. Runs `bootstrap(() => const AppPage())`. |
-| **lib/bootstrap.dart** | Sets up `FlutterError.onError` and `PlatformDispatcher.instance.onError` for Firebase Crashlytics tracking and launches the app zone. |
-| **lib/firebase_options.dart** | Auto-generated Firebase configuration values per platform. |
+| **lib/main.dart** | Initializes `WidgetsFlutterBinding`, Firebase, and `setupServiceLocator()`. Runs `FirebaseAppCheck.activate`, `LocalStorageService.initialize`, and `RemoteConfigService.initialize` in parallel, cleans expired cached transcriptions (`clearOldTranscriptions`), and launches `bootstrap(() => const AppPage())`. |
+| **lib/bootstrap.dart** | Configures `AppBlocObserver`, `FlutterError.onError`, and `PlatformDispatcher.instance.onError` to forward uncaught errors to `CrashService`. |
+| **lib/firebase_options.dart** | Auto-generated Firebase configuration per platform. |
 
 ---
 
@@ -403,18 +361,20 @@ The application supports **6 languages** with compile-time type safety:
 
 ### Key Data Models
 
-- **`lib/app/models/audio_metadata.dart`**: Model holding file URI, name, formatted date, duration, and size for voice notes.
-- **`lib/app/models/multimedia_metadata.dart`**: Unified model for visual media (WhatsApp statuses and video notes), holding URI, name, timestamp, size, `isVideo` flag, and video duration.
+- **`lib/app/models/audio_metadata.dart`**: File URI, name, date, duration, and formatted size for `.opus` voice notes.
+- **`lib/app/models/multimedia_metadata.dart`**: Unified model for WhatsApp statuses and video notes (`uri`, `name`, `date`, `sizeBytes`, `isVideo`, `videoDurationMs`).
+- **`lib/app/models/prompt_part.dart`**: Typed prompt parts (`PromptPart.text` and `PromptPart.file`) passed to `AiRepository`.
+- **`lib/app/models/transcription_metadata.dart`**: Serializable transcription cache entry (`text`, `timestamp`, `toJson` / `fromJson`).
 - **`lib/app/models/app_route_observer.dart`**: Custom `NavigatorObserver` logging screen transitions to Firebase Analytics.
 
 ### Core Dependencies
 
-- **State Management**: `bloc`, `flutter_bloc`, `equatable`.
-- **Storage & Native Access**: `saf` (Storage Access Framework), `shared_preferences`, `gal` (Gallery saver).
-- **Media Playback**: `just_audio` (voice notes), `video_player` (video notes & status playback).
+- **SDK**: Dart `>=3.14.0`, Flutter `>=3.50.0`.
+- **UI & Design System**: `expressive_kit`, `material_ui`, `hugeicons`, `country_flags`, `flutter_markdown_plus`.
+- **State Management & DI**: `bloc`, `flutter_bloc`, `equatable`, `get_it`.
 - **Navigation**: `go_router`.
-- **Telemetry**: `firebase_core`, `firebase_crashlytics`, `firebase_analytics`, `firebase_performance`.
-- **DI**: `get_it`.
+- **AI & Firebase**: `firebase_core`, `firebase_ai`, `firebase_remote_config`, `firebase_app_check`, `firebase_crashlytics`, `firebase_analytics`, `firebase_performance`.
+- **Storage & Media**: `saf`, `shared_preferences`, `just_audio`, `video_player`, `gal`, `package_info_plus`, `intl`.
 
 ---
 
@@ -426,8 +386,7 @@ The application supports **6 languages** with compile-time type safety:
 - Clean static analysis with `fvm flutter analyze`.
 
 ### Testing Suite
-- Comprehensive unit and widget tests across all layers with **>99% line coverage**.
-- Test mocks built using `mocktail`.
+- Comprehensive unit and widget tests (`315+` tests) built with `mocktail` and `bloc_test`, with 100% line coverage across core cubits, models, repositories, and services.
 - Run tests and coverage with:
   ```bash
   fvm flutter test --coverage

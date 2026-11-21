@@ -58,13 +58,7 @@ class AudioTranscriptionCard extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       spacing: 12,
                       children: [
-                        Text(
-                          transcriptionText,
-                          style: theme.textTheme.bodyMedium?.copyWith(
-                            color: colorScheme.onSurface,
-                            height: 1.4,
-                          ),
-                        ),
+                        TranscriptionMarkdown(data: transcriptionText),
                         Align(
                           child: ExpressiveButton.tonal(
                             size: ExpressiveButtonSize.small,
